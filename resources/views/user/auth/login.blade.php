@@ -28,7 +28,9 @@
         }
         
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #f8f9fa 100%);
+            background: 
+                linear-gradient(rgba(238, 206, 0, 0.1), rgba(248,100,53, 0.975)),
+                url('{{ asset('assets/assets/images/bggg.jpg') }}');
             display: flex;
             justify-content: center;
             align-items: center;

@@ -6,15 +6,15 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="shortcut icon" href="{{asset('assets/assets/img/logo pla.jpeg')}}" />
+    <link rel="shortcut icon" href="{{asset('assets/assets/images/logo E-messe.jpeg')}}" />
     <title>Parish login</title>
     <style>
         :root {
-            --primary-color: #06634e;
-            --secondary-color: #06634e;
-            --accent-color: #06634e;
+            --primary-color: #f86435;
+            --secondary-color: #f86435;
+            --accent-color: #f86435;
             --error-color: #f72585;
-            --success-color: #06634e;
+            --success-color: #f86435;
             --light-color: #f8f9fa;
             --dark-color: #212529;
             --transition-speed: 0.3s;
@@ -34,8 +34,8 @@
             min-height: 100vh;
             margin: 0;
             background: 
-                linear-gradient(rgba(238, 206, 0, 0.1), rgba(29, 114, 56, 0.975)),
-                url('{{ asset('assets/assets/img/backgroud.jpg') }}');
+                linear-gradient(rgba(238, 206, 0, 0.1), rgba(248,100,53, 0.975)),
+                url('{{ asset('assets/assets/images/bggg.jpg') }}');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -96,7 +96,7 @@
         }
 
         .subtitle {
-            color: #06634e;
+            color: #f86435;
             font-size: 0.9rem;
         }
 
@@ -111,7 +111,7 @@
             left: 15px;
             top: 50%;
             transform: translateY(-50%);
-            color: #06634e;
+            color: #f86435;
             transition: all var(--transition-speed) ease;
             z-index: 2;
         }
@@ -131,12 +131,12 @@
         }
 
         .input-field:focus {
-            border-color: #06634e;
+            border-color: #f86435;
             box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
         }
 
         .input-field:focus ~ .input-icon {
-            color:#06634e;
+            color:#f86435;
         }
 
         .input-label {
@@ -166,14 +166,14 @@
             right: 15px;
             top: 50%;
             transform: translateY(-50%);
-            color: #06634e;
+            color: #f86435;
             cursor: pointer;
             transition: all var(--transition-speed) ease;
             z-index: 2;
         }
 
         .password-toggle:hover {
-            color:#06634e;
+            color:#f86435;
         }
 
         .submit-btn {
@@ -301,7 +301,7 @@
 <body>
     <form class="form-container animate__animated animate__fadeIn" method="POST" action="{{ route('paroisse.handleLogin') }}">
         <div class="form-header">
-            <img src="{{ asset('assets/assets/images/kks.jpeg') }}" style="height: 50%; width:25%" alt="">
+            <img src="{{ asset('assets/assets/images/logo_E-messeFORME.png') }}" style="height: 50%; width:25%" alt="">
             <p class="subtitle">Entrez vos identifiants pour accéder à votre espace</p>
         </div>
 

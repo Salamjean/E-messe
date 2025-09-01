@@ -156,18 +156,18 @@
             
             <div class="form-group">
                 <label for="nom_demandeur">Nom et prénom *</label>
-                <input type="text" id="nom_demandeur" name="nom_demandeur" required>
+                <input type="text" id="nom_demandeur" name="nom_demandeur" value="{{Auth::user()->name}}" readonly>
             </div>
             
             <div class="form-row">
                 <div class="form-group">
                     <label for="email_demandeur">Email *</label>
-                    <input type="email" id="email_demandeur" name="email_demandeur" required>
+                    <input type="email" id="email_demandeur" name="email_demandeur" value="{{Auth::user()->email}}" readonly>
                 </div>
                 
                 <div class="form-group">
                     <label for="telephone_demandeur">Téléphone *</label>
-                    <input type="tel" id="telephone_demandeur" name="telephone_demandeur" required>
+                    <input type="tel" id="telephone_demandeur" name="telephone_demandeur" value="{{Auth::user()->contact}}" readonly>
                 </div>
             </div>
         </div>

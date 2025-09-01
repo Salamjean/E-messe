@@ -7,19 +7,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="shortcut icon" href="{{asset('assets/assets/img/logo pla.jpeg')}}" />
+    <link rel="shortcut icon" href="{{asset('assets/assets/images/logo E-messe.jpeg')}}" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Parish - Login</title>
+    <title>Parish - Sing up</title>
 </head>
 
 <style>
   :root {
-    --primary-color: #06634e;
-    --primary-light: #06634e;
-    --primary-dark: #078668;
+    --primary-color: #f86435;
+    --primary-light: #f86435;
+    --primary-dark: #f86435;
     --light-color: #ffffff;
     --dark-color: #212529;
-    --gray-color: #078668;
+    --gray-color: #f86435;
     --error-color: #dc3545;
     --success-color: #28a745;
     --transition-speed: 0.3s;
@@ -31,8 +31,8 @@
     justify-content: center;
     min-height: 100vh;
     background: 
-      linear-gradient(rgba(238, 206, 0, 0.1), rgba(29, 114, 56, 0.975)),
-      url('{{ asset('assets/assets/img/backgroud.jpg') }}');
+      linear-gradient(rgba(238, 206, 0, 0.1), rgba(248,100,53, 0.975)),
+                url('{{ asset('assets/assets/images/bggg.jpg') }}');
     background-size: cover;
     background-position: center;
     padding: 2rem;
@@ -204,7 +204,7 @@
 <div class="auth-container">
   <div class="auth-card animate__animated animate__fadeIn">
     <div class="auth-header">
-      <img src="{{ asset('assets/assets/images/kks.jpeg') }}" class="auth-logo floating" alt="Logo">
+      <img src="{{ asset('assets/assets/images/logo_E-messeFORME.png') }}" class="auth-logo floating" alt="Logo">
       <h1 class="auth-title">Finalisation de l'inscription</h1>
       <p class="auth-subtitle">Complétez les informations pour finaliser votre compte</p>
     </div>

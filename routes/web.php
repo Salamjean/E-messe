@@ -46,6 +46,10 @@ Route::middleware('paroisse')->prefix('parish')->group(function(){
     Route::get('/dahboard', [ParoisseDashboard::class, 'dashboard'])->name('paroisse.dashboard');
     Route::get('/logout', [ParoisseDashboard::class, 'logout'])->name('paroisse.logout');
 
+     //Les routes pour modifier des informations de la paroisse 
+      Route::get('/profile',[AuthenticateParoisse::class,'editProfile'])->name('paroisse.profile');
+      Route::put('/profile/update', [AuthenticateParoisse::class, 'updateProfile'])->name('paroisse.update');
+
     //Routes de gestion des demandes de messes 
     Route::get('/index',[DemandeController::class,'index'])->name('demandes.messes.index');
     Route::get('/validate',[DemandeController::class,'validate'])->name('demandes.messes.validate');
@@ -71,6 +75,10 @@ Route::middleware('auth')->prefix('user')->group(function(){
      Route::get('/dashboard',[UserDashboard::class,'dashboard'])->name('user.dashboard');
      Route::get('/logout', [UserDashboard::class, 'logout'])->name('user.logout');
 
+     //Les routes pour modifier le profil d'utilisateur
+      Route::get('/profile',[AuthenticateUser::class,'editProfile'])->name('user.profile');
+      Route::put('/profile/update', [AuthenticateUser::class, 'updateProfile'])->name('profile.update');
+
      //Les demandes de messes 
      Route::get('/index',[MesseController::class,'index'])->name('user.messe.index');
      Route::get('/create/massess',[MesseController::class,'create'])->name('user.messe.create');
@@ -82,12 +90,8 @@ Route::middleware('auth')->prefix('user')->group(function(){
      // Routes pour le paiement
     Route::get('/messe/paiement/{reference}', [PaiementController::class, 'showPaiementForm'])->name('user.messe.paiement');
     Route::post('/messe/paiement/{reference}/initier', [PaiementController::class, 'initierPaiement'])->name('user.messe.initier-paiement');
-    
-Route::get('/messe/paiement/{reference}/verification', [PaiementController::class, 'verifierPaiement'])
-    ->name('user.messe.verification-paiement');
-    
-Route::post('/messe/paiement/{reference}/verifier', [PaiementController::class, 'verifierManuellement'])
-    ->name('user.messe.verifier-manuellement');
+    Route::get('/messe/paiement/{reference}/verification', [PaiementController::class, 'verifierPaiement'])->name('user.messe.verification-paiement'); 
+    Route::post('/messe/paiement/{reference}/verifier', [PaiementController::class, 'verifierManuellement'])->name('user.messe.verifier-manuellement');
     
 });
 

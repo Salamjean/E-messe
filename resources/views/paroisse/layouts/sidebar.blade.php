@@ -1,7 +1,9 @@
 <aside class="mdc-drawer mdc-drawer--dismissible mdc-drawer--open" style="background-color: red">
       <div class="mdc-drawer__header" >
         <a href="{{route('paroisse.dashboard')}}" class="brand-logo">
-          <img src="{{asset('assets/assets/images/logo_E-messeFORME.png')}}" style="width: 50%" alt="logo">
+          <img src="{{ optional(Auth::guard('paroisse')->user())->profile_picture 
+                                                ? asset('storage/' . Auth::guard('paroisse')->user()->profile_picture) 
+                                                : asset('assets/assets/images/logo_E-messeFORME.png') }}" style="width: 50%" alt="logo">
         </a>
       </div>
       <div class="mdc-drawer__content">

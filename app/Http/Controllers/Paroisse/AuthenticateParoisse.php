@@ -8,6 +8,7 @@ use App\Models\ResetCodePasswordParoisse;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class AuthenticateParoisse extends Controller
@@ -78,7 +79,7 @@ class AuthenticateParoisse extends Controller
 
     public function login(){
         if (auth('paroisse')->check()) {
-            return redirect()->route('delivery.dashboard');
+            return redirect()->route('paroisse.dashboard');
         }
         return view('paroisse.auth.login');
     }
@@ -116,4 +117,83 @@ class AuthenticateParoisse extends Controller
             return redirect()->back()->with('error', 'Une erreur s\'est produite lors de la connexion.');
         }
     }
+
+    public function editProfile(){
+        return view('paroisse.auth.profile');
+    }
+
+    public function updateProfile(Request $request)
+{
+    $paroisse = Paroisse::findOrFail(auth()->guard('paroisse')->user()->id);
+    
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'localisation' => 'required|string|max:255',
+        'email' => 'required|email|unique:paroisses,email,' . $paroisse->id,
+        'contact' => 'required|string|max:255',
+        'profile_picture' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
+        'password' => [
+            'nullable',
+            'min:8',
+            'confirmed',
+            'regex:/[a-z]/',      
+            'regex:/[A-Z]/',     
+            'regex:/[0-9]/',     
+            'regex:/[@$!%*#?&.]/',
+        ],
+        'current_password' => ['required', function ($attribute, $value, $fail) use ($paroisse) {
+            if (!Hash::check($value, $paroisse->password)) {
+                $fail('Le mot de passe actuel est incorrect.');
+            }
+        }],
+    ], [
+        'name.required' => 'Le nom de la paroisse est obligatoire.',
+        'localisation.required' => 'La localisation est obligatoire.',
+        'email.required' => 'L\'adresse e-mail est obligatoire.',
+        'email.email' => 'L\'adresse e-mail n\'est pas valide.',
+        'email.unique' => 'Cette adresse e-mail est déjà utilisée.',
+        'contact.required' => 'Le contact est obligatoire.',
+        'montant_offrande.numeric' => 'Le montant de l\'offrande doit être un nombre.',
+        'montant_offrande.min' => 'Le montant de l\'offrande ne peut pas être négatif.',
+        'password.min' => 'Le mot de passe doit avoir au moins 8 caractères.',
+        'password.confirmed' => 'Les mots de passe ne correspondent pas.',
+        'password.regex' => 'Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial.',
+        'current_password.required' => 'Le mot de passe actuel est requis pour confirmer les modifications.',
+        'profile_picture.image' => 'Le fichier doit être une image.',
+        'profile_picture.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou svg.',
+        'profile_picture.max' => 'L\'image ne doit pas dépasser 2048 KB.',
+    ]);
+
+    try {
+        // Mettre à jour l'image de profil si fournie
+        if ($request->hasFile('profile_picture')) {
+            // Supprimer l'ancienne image si elle existe
+            if ($paroisse->profile_picture) {
+                Storage::disk('public')->delete($paroisse->profile_picture);
+            }
+            
+            $profilePicturePath = $request->file('profile_picture')->store('profile_pictures', 'public');
+            $paroisse->profile_picture = $profilePicturePath;
+        }
+
+        // Mettre à jour les autres champs
+        $paroisse->name = $validated['name'];
+        $paroisse->localisation = $validated['localisation'];
+        $paroisse->email = $validated['email'];
+        $paroisse->contact = $validated['contact'];
+
+        // Mettre à jour le mot de passe si fourni
+        if (!empty($validated['password'])) {
+            $paroisse->password = Hash::make($validated['password']);
+        }
+
+        $paroisse->save();
+
+        return redirect()->back()->with('success', 'Les informations de la paroisse ont été mises à jour avec succès.');
+
+    } catch (\Exception $e) {
+        Log::error('Error updating paroisse: ' . $e->getMessage());
+        return back()->withErrors(['error' => 'Une erreur est survenue lors de la mise à jour. Veuillez réessayer.'])->withInput();
+    }
+}
 }

@@ -8,7 +8,9 @@
               <button class="mdc-button mdc-menu-button">
                 <span class="d-flex align-items-center">
                   <span class="figure">
-                    <img src="{{asset('assets/assets/images/logo_E-messeFORME.png')}}" alt="user" class="user">
+                    <img src="{{ optional(Auth::guard('paroisse')->user())->profile_picture 
+                                                ? asset('storage/' . Auth::guard('paroisse')->user()->profile_picture) 
+                                                : asset('assets/assets/images/logo_E-messeFORME.png') }}" alt="user" class="user">
                   </span>
                   <span class="user-name text-white"> {{Auth::guard('paroisse')->user()->name}} </span>
                 </span>
@@ -16,12 +18,12 @@
               <div class="mdc-menu mdc-menu-surface" tabindex="-1">
                 <ul class="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical">
                   <li>
-                    <a href="" class="mdc-list-item" role="menuitem">
+                    <a href="{{route('paroisse.profile')}}" class="mdc-list-item" role="menuitem">
                       <div class="item-thumbnail item-thumbnail-icon-only">
-                        <i class="mdi mdi-account-edit-outline text-primary"></i>
+                        <i class="mdi mdi-home text-primary"></i>
                       </div>
                       <div class="item-content d-flex align-items-start flex-column justify-content-center">
-                        <h6 class="item-subject font-weight-normal">Edit profile</h6>
+                        <h6 class="item-subject font-weight-normal">Mon compte</h6>
                       </div>
                     </a>
                   </li>
