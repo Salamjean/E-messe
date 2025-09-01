@@ -1,0 +1,390 @@
+
+    /* Styles généraux */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        color: #333;
+        line-height: 1.6;
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+    
+    .messe-container {
+        width: 90%;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    
+    .messe-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 30px 20px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+    
+    .messe-header h1 {
+        color: #f35525;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+    
+    .messe-header p {
+        color: #666;
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    /* Formulaire */
+    .messe-form {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+        padding: 40px;
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .messe-form::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, #f35525 0%, #ff7c52 100%);
+    }
+    
+    .form-section {
+        margin-bottom: 40px;
+        padding-bottom: 30px;
+        border-bottom: 2px dashed #eee;
+        position: relative;
+    }
+    
+    .form-section:last-of-type {
+        border-bottom: none;
+        margin-bottom: 20px;
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .section-icon {
+        background: rgba(243, 85, 37, 0.1);
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        font-size: 1.5rem;
+    }
+    
+    .form-section h2 {
+        color: #333;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    
+    /* Groupes de formulaire */
+    .form-group {
+        margin-bottom: 25px;
+        position: relative;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #444;
+        font-size: 0.95rem;
+    }
+    
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    select {
+        width: 100%;
+        padding: 15px 18px;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-family: 'Poppins', sans-serif;
+        background: #fcfcfc;
+    }
+    
+    input:focus,
+    select:focus {
+        outline: none;
+        border-color: #f35525;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(243, 85, 37, 0.15);
+    }
+    
+    input[readonly] {
+        background-color: #f8f9fa;
+        color: #6c757d;
+        padding-left: 40px;
+    }
+    
+    .input-with-icon {
+        position: relative;
+    }
+    
+    .currency-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        font-weight: 600;
+        z-index: 1;
+    }
+    
+    small {
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin-top: 6px;
+        display: block;
+    }
+    
+    /* Boutons radio */
+    .radio-group {
+        margin-bottom: 25px;
+    }
+    
+    .radio-label {
+        margin-bottom: 12px;
+        font-size: 0.95rem;
+    }
+    
+    .radio-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+    }
+    
+    .radio-option {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        padding: 15px 20px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .radio-option:hover {
+        background: #f0f2f5;
+        transform: translateY(-2px);
+    }
+    
+    .radio-option input {
+        display: none;
+    }
+    
+    .radio-custom {
+        width: 22px;
+        height: 22px;
+        border: 2px solid #ced4da;
+        border-radius: 50%;
+        margin-right: 12px;
+        position: relative;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+    
+    .radio-option input:checked + .radio-custom {
+        border-color: #f35525;
+        background: #f35525;
+    }
+    
+    .radio-option input:checked + .radio-custom::after {
+        content: '';
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        width: 10px;
+        height: 10px;
+        background: white;
+        border-radius: 50%;
+    }
+    
+    .radio-text {
+        font-weight: 500;
+    }
+    
+    /* Champs conditionnels */
+    .conditional-field {
+        display: none;
+        margin-top: 20px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        border-left: 4px solid #f35525;
+        animation: fadeIn 0.4s ease;
+    }
+    
+    /* Bouton de soumission */
+    .form-actions {
+        text-align: center;
+        margin-top: 30px;
+    }
+    
+    .btn-submit {
+        background: linear-gradient(90deg, #f35525 0%, #ff7c52 100%);
+        color: white;
+        border: none;
+        padding: 18px 35px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px rgba(243, 85, 37, 0.25);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 25px rgba(243, 85, 37, 0.35);
+    }
+    
+    .btn-submit:active {
+        transform: translateY(0);
+    }
+    
+    .btn-icon {
+        margin-right: 10px;
+        font-size: 1.2rem;
+    }
+
+     .nom-input-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .nom-input {
+        flex: 1;
+        padding: 15px 18px;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-family: 'Poppins', sans-serif;
+        background: #fcfcfc;
+    }
+    
+    .nom-input:focus {
+        outline: none;
+        border-color: #f35525;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(243, 85, 37, 0.15);
+    }
+    
+    .add-nom-btn {
+        background: #f35525;
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-left: 10px;
+        cursor: pointer;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .add-nom-btn:hover {
+        background: #ff7c52;
+        transform: scale(1.05);
+    }
+    
+    .remove-nom-btn {
+        background: #6c757d;
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-left: 10px;
+        cursor: pointer;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .remove-nom-btn:hover {
+        background: #495057;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .messe-form {
+            padding: 25px;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+        
+        .radio-options {
+            grid-template-columns: 1fr;
+        }
+        
+        .messe-header h1 {
+            font-size: 2rem;
+        }
+        
+        .section-header {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .section-icon {
+            margin-right: 0;
+            margin-bottom: 15px;
+        }
+    }
