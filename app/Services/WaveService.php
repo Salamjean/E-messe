@@ -107,7 +107,17 @@ class WaveService
             ]);
             
             if ($response->successful()) {
-                return $response->json();
+                $data = $response->json();
+                
+                // Ajoutez du logging pour voir la structure de la réponse
+                Log::debug('Structure réponse Wave:', [
+                    'keys' => array_keys($data),
+                    'has_status' => isset($data['status']),
+                    'has_state' => isset($data['state']),
+                    'data' => $data
+                ]);
+                
+                return $data;
             }
             
             return null;

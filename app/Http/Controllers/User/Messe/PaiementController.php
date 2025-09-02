@@ -148,16 +148,19 @@ public function verifierPaiement(Request $request, $reference)
         if ($status === 'success') {
             Log::debug('Paiement réussi détecté via URL');
             
-            // Vérifier avec l'API Wave pour confirmation
+            // Vérifier avec l'API Wave pour confirmation (OPTIONNEL)
+            $waveStatus = null;
             if ($paiement->transaction_id) {
                 $session = $this->waveService->verifyBySessionId($paiement->transaction_id);
                 
-                if ($session && ($session['status'] === 'completed' || $session['status'] === 'success')) {
-                    Log::debug('Session Wave confirmée: ' . $session['status']);
+                if ($session) {
+                    // Gérer différentes structures de réponse Wave
+                    $waveStatus = $session['status'] ?? $session['state'] ?? $session['payment_status'] ?? null;
+                    Log::debug('Statut Wave détecté: ' . $waveStatus);
                 }
             }
             
-            // Paiement réussi
+            // Paiement réussi (basé sur le statut URL)
             $paiement->statut = 'paye';
             $paiement->date_paiement = now();
             $paiement->save();
@@ -186,16 +189,18 @@ public function verifierPaiement(Request $request, $reference)
                 ->with('error', 'Le paiement a échoué. Veuillez réessayer.');
         }
         else {
-            Log::debug('Statut inconnu, tentative de vérification via API');
+            Log::debug('Aucun statut dans URL, vérification via API Wave');
             
             // Essayer avec le session ID
             if ($paiement->transaction_id) {
                 $session = $this->waveService->verifyBySessionId($paiement->transaction_id);
                 
                 if ($session) {
-                    Log::debug('Statut session Wave: ' . ($session['status'] ?? 'inconnu'));
+                    // CORRECTION: Vérifier l'existence de la clé avant d'y accéder
+                    $waveStatus = $session['status'] ?? $session['state'] ?? $session['payment_status'] ?? 'inconnu';
+                    Log::debug('Statut session Wave: ' . $waveStatus);
                     
-                    if ($session['status'] === 'completed' || $session['status'] === 'success') {
+                    if (in_array($waveStatus, ['completed', 'success', 'paid', 'succeeded'])) {
                         // Paiement réussi via API
                         $paiement->statut = 'paye';
                         $paiement->date_paiement = now();
