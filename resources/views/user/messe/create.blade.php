@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="{{asset('assets/styles.css')}}">
 <div class="messe-container">
     <div class="messe-header">
-        <h1>Demande de Messe</h1>
+        <h1></h1>
         <p>Remplissez ce formulaire pour demander une célébration de messe selon vos intentions.</p>
     </div>
 
