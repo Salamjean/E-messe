@@ -181,7 +181,7 @@ public function verifierPaiement(Request $request, $reference)
             $transaction = $this->waveService->verifyByMerchantReference($reference);
             
             if ($transaction) {
-                $waveStatus = $transaction['status'] ?? $transaction['state'] ?? null;
+                $waveStatus = $transaction['status'] ?? $transaction['state'] ?? $transaction['payment_status'] ?? null;
                 
                 if ($waveStatus === 'completed' || $waveStatus === 'success') {
                     // Paiement réussi via API

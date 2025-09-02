@@ -110,16 +110,13 @@ class WaveService
    /**
  * Vérifier le statut par référence marchand - Version CORRIGÉE
  */
-/**
- * Vérifier le statut par référence marchand - Version corrigée
- */
 public function verifyByMerchantReference($merchantReference)
 {
     try {
-        // CORRECTION: Utiliser le bon endpoint avec la référence dans l'URL
-        $url = $this->baseUrl . 'checkout/sessions?merchant_reference=' . urlencode($merchantReference);
+        // Alternative: utiliser l'endpoint de listage des transactions
+        $url = $this->baseUrl . 'transactions?merchant_reference=' . urlencode($merchantReference);
         
-        Log::debug('Requête vérification Wave:', [
+        Log::debug('Requête vérification Wave (transactions):', [
             'url' => $url,
             'merchant_reference' => $merchantReference
         ]);
@@ -128,7 +125,7 @@ public function verifyByMerchantReference($merchantReference)
             'Authorization' => 'Bearer ' . $this->apiKey,
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
-        ])->get($url); // Utiliser GET avec les paramètres dans l'URL
+        ])->get($url);
         
         Log::debug('Réponse vérification Wave:', [
             'status' => $response->status(),
@@ -137,8 +134,7 @@ public function verifyByMerchantReference($merchantReference)
         
         if ($response->successful()) {
             $data = $response->json();
-            // L'API Wave retourne généralement un tableau de sessions
-            // On prend la première session trouvée
+            // Retourner la première transaction trouvée
             return $data['data'][0] ?? null;
         }
         
