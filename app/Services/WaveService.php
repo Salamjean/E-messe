@@ -110,11 +110,14 @@ class WaveService
    /**
  * Vérifier le statut par référence marchand - Version CORRIGÉE
  */
+/**
+ * Vérifier le statut par référence marchand - Version corrigée
+ */
 public function verifyByMerchantReference($merchantReference)
 {
     try {
-        // CORRECTION: Utiliser le bon endpoint selon la documentation Wave
-        $url = $this->baseUrl . 'checkout/sessions/';
+        // CORRECTION: Utiliser le bon endpoint avec la référence dans l'URL
+        $url = $this->baseUrl . 'checkout/sessions?merchant_reference=' . urlencode($merchantReference);
         
         Log::debug('Requête vérification Wave:', [
             'url' => $url,
@@ -123,12 +126,9 @@ public function verifyByMerchantReference($merchantReference)
         
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $this->apiKey,
+            'Content-Type' => 'application/json',
             'Accept' => 'application/json',
-        ])->get($url, [
-            // CORRECTION: Envoyer les paramètres comme query string
-            'merchant_reference' => $merchantReference,
-            'limit' => 1 // Limiter à 1 résultat
-        ]);
+        ])->get($url); // Utiliser GET avec les paramètres dans l'URL
         
         Log::debug('Réponse vérification Wave:', [
             'status' => $response->status(),
@@ -137,13 +137,9 @@ public function verifyByMerchantReference($merchantReference)
         
         if ($response->successful()) {
             $data = $response->json();
-            
-            // L'API Wave retourne généralement un tableau 'data'
-            if (isset($data['data']) && count($data['data']) > 0) {
-                return $data['data'][0]; // Retourner la première session
-            }
-            
-            return $data;
+            // L'API Wave retourne généralement un tableau de sessions
+            // On prend la première session trouvée
+            return $data['data'][0] ?? null;
         }
         
         Log::error('Erreur vérification Wave', [
