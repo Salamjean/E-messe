@@ -128,8 +128,8 @@ class WaveService
             ])->withOptions([
                 'verify' => app()->environment('production'),
             ])->get($this->baseUrl . 'transactions', [
-                'merchant_reference' => $reference,
-                'limit' => 1 // Limiter à 1 résultat
+                // 'merchant_reference' => $reference,
+                // 'limit' => 1 // Limiter à 1 résultat
             ]);
 
             Log::debug('Réponse vérification Wave', [
