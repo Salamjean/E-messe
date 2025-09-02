@@ -24,57 +24,47 @@ class WaveService
      * Créer une session de paiement Wave
      */
     public function createCheckoutSession($amount, $currency, $reference, $redirectUrl, $customer = [])
-    {
-        try {
-            Log::debug('Tentative de création de session Wave', [
-                'amount' => $amount,
-                'currency' => $currency,
-                'reference' => $reference,
-                'redirect_url' => $redirectUrl
-            ]);
-
-            // Forcer l'URL en HTTPS pour le développement local
-            $secureRedirectUrl = $this->ensureHttps($redirectUrl);
-
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
-                'Content-Type' => 'application/json',
-            ])->timeout(30)->withOptions([
-                'verify' => app()->environment('production'), // SSL seulement en production
-            ])->post($this->baseUrl . 'checkout/sessions', [
-                'amount' => $amount,
-                'currency' => $currency,
-                'success_url' => $secureRedirectUrl . '?status=success&reference=' . $reference,
-                'error_url' => $secureRedirectUrl . '?status=error&reference=' . $reference,
-                // Note: cancel_url et merchant_reference ne sont pas supportés selon l'erreur
-            ]);
-
-            Log::debug('Réponse de l\'API Wave', [
-                'status' => $response->status(),
-                'body' => $response->body()
-            ]);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                Log::info('Session Wave créée avec succès', ['session_id' => $data['id'] ?? null]);
-                return $data;
-            } else {
-                Log::error('Wave API Error', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                    'reference' => $reference
-                ]);
-                return null;
-            }
-        } catch (\Exception $e) {
-            Log::error('Wave Service Exception', [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
-            ]);
-            return null;
+{
+    try {
+        $secureRedirectUrl = $this->ensureHttps($redirectUrl);
+        
+        $data = [
+            'amount' => $amount,
+            'currency' => $currency,
+            'success_url' => $secureRedirectUrl . '?status=success&reference=' . $reference,
+            'error_url' => $secureRedirectUrl . '?status=error&reference=' . $reference,
+            'cancel_url' => $secureRedirectUrl . '?status=cancel&reference=' . $reference,
+        ];
+        
+        // Ajouter les infos client si disponibles
+        if (!empty($customer['email'])) {
+            $data['customer_email'] = $customer['email'];
         }
+        if (!empty($customer['name'])) {
+            $data['customer_name'] = $customer['name'];
+        }
+        
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $this->apiKey,
+            'Content-Type' => 'application/json',
+        ])->post($this->baseUrl . 'checkout/sessions', $data);
+        
+        if ($response->successful()) {
+            return $response->json();
+        }
+        
+        Log::error('Erreur création session Wave', [
+            'status' => $response->status(),
+            'body' => $response->body()
+        ]);
+        
+        return null;
+        
+    } catch (\Exception $e) {
+        Log::error('Exception création session Wave: ' . $e->getMessage());
+        return null;
     }
+}
 
     /**
      * Forcer les URLs en HTTPS pour le développement
@@ -117,46 +107,55 @@ class WaveService
     /**
      * Vérifier le statut par référence marchand - Version corrigée
      */
-   public function verifyByMerchantReference($merchantReference)
-    {
-        try {
-            $url = $this->baseUrl . '/v1/checkout/sessions/verify/';
+   /**
+ * Vérifier le statut par référence marchand - Version CORRIGÉE
+ */
+public function verifyByMerchantReference($merchantReference)
+{
+    try {
+        // CORRECTION: Utiliser le bon endpoint selon la documentation Wave
+        $url = $this->baseUrl . 'checkout/sessions/';
+        
+        Log::debug('Requête vérification Wave:', [
+            'url' => $url,
+            'merchant_reference' => $merchantReference
+        ]);
+        
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $this->apiKey,
+            'Accept' => 'application/json',
+        ])->get($url, [
+            // CORRECTION: Envoyer les paramètres comme query string
+            'merchant_reference' => $merchantReference,
+            'limit' => 1 // Limiter à 1 résultat
+        ]);
+        
+        Log::debug('Réponse vérification Wave:', [
+            'status' => $response->status(),
+            'body' => $response->body()
+        ]);
+        
+        if ($response->successful()) {
+            $data = $response->json();
             
-            // CORRECTION: Envoyer les données dans le body JSON, pas en query params
-            $data = [
-                'merchant_reference' => $merchantReference
-            ];
-            
-            Log::debug('Requête vérification Wave:', [
-                'url' => $url,
-                'data' => $data
-            ]);
-            
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-            ])->post($url, $data); // Utiliser POST au lieu de GET avec query params
-            
-            Log::debug('Réponse vérification Wave:', [
-                'status' => $response->status(),
-                'body' => $response->body()
-            ]);
-            
-            if ($response->successful()) {
-                return $response->json();
+            // L'API Wave retourne généralement un tableau 'data'
+            if (isset($data['data']) && count($data['data']) > 0) {
+                return $data['data'][0]; // Retourner la première session
             }
             
-            Log::error('Erreur vérification Wave', [
-                'status' => $response->status(),
-                'body' => $response->body()
-            ]);
-            
-            return null;
-            
-        } catch (\Exception $e) {
-            Log::error('Exception vérification Wave: ' . $e->getMessage());
-            return null;
+            return $data;
         }
+        
+        Log::error('Erreur vérification Wave', [
+            'status' => $response->status(),
+            'body' => $response->body()
+        ]);
+        
+        return null;
+        
+    } catch (\Exception $e) {
+        Log::error('Exception vérification Wave: ' . $e->getMessage());
+        return null;
     }
+}
 }
