@@ -136,7 +136,7 @@ public function verifierPaiement(Request $request, $reference)
         ]);
         
         // Vérifier si le paiement est déjà complété
-        if ($paiement->statut === 'paye') {
+        if ($paiement->statut === 'payé') {
             DB::commit();
             return redirect()->route('user.messe.index')
                 ->with('success', 'Paiement déjà confirmé. Votre demande de messe est traitée.');
@@ -155,13 +155,13 @@ public function verifierPaiement(Request $request, $reference)
             
             if ($waveStatus === 'completed' || $waveStatus === 'success') {
                 // Paiement réussi - Mettre à jour les deux tables
-                $paiement->statut = 'paye';
+                $paiement->statut = 'payé';
                 $paiement->date_paiement = now();
                 $paiement->donnees_transaction = json_encode($transaction);
                 $paiement->save();
                 
                 // CORRECTION: Utiliser le bon nom de statut
-                $messe->statut = 'confirmee';
+                $messe->statut = 'en attente';
                 $messe->save();
                 
                 DB::commit();
@@ -218,7 +218,7 @@ public function verifierPaiement(Request $request, $reference)
                 $paiement->donnees_transaction = json_encode($transaction);
                 $paiement->save();
                 
-                $messe->statut = 'confirmee';
+                $messe->statut = 'en attente';
                 $messe->save();
                 
                 DB::commit();
@@ -283,12 +283,12 @@ public function verifierPaiement(Request $request, $reference)
             if ($transaction) {
                 if ($transaction['status'] === 'completed') {
                     // Paiement réussi
-                    $paiement->statut = 'paye';
+                    $paiement->statut = 'payé';
                     $paiement->date_paiement = now();
                     $paiement->donnees_transaction = json_encode($transaction);
                     $paiement->save();
                     
-                    $messe->statut = 'confirmee'; // CORRECTION: 'confirmee' avec deux 'e'
+                    $messe->statut = 'en attente'; // CORRECTION: 'confirmee' avec deux 'e'
                     $messe->save();
                     
                     DB::commit();

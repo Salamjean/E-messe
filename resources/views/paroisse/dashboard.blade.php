@@ -1,7 +1,11 @@
 @extends('paroisse.layouts.template')
 @section('content')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 <link rel="stylesheet" href="{{asset('assets/paroiStyle.css')}}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <div class="modern-dashboard">
     <!-- En-tête du tableau de bord -->
     <div class="dashboard-header">
@@ -79,6 +83,54 @@
                 </div>
             </div>
         </div>
+
+        <div class="stat-card">
+        <div class="card-icon">
+            <div class="icon-wrapper" style="background: rgba(255, 193, 7, 0.1);">
+                <i class="fas fa-wallet" style="color: #FFC107;"></i>
+            </div>
+        </div>
+        <div class="card-content">
+            <h3>Portefeuille électronique</h3>
+            <span class="stat-number">{{ number_format($soldeDisponible, 0, ',', ' ') }} FCFA</span>
+            <div class="progress-bar">
+                <div class="progress" style="width: 100%; background: #FFC107;"></div>
+            </div>
+            <div class="mt-2">
+                <a href="#" class="btn-retrait" style="color: #FFC107; font-size: 12px;">
+                    <i class="fas fa-money-bill-wave"></i> Demander un retrait
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Graphiques -->
+    <div class="charts-section">
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3>Répartition des demandes</h3>
+                <select id="chart-type-selector" class="chart-selector">
+                    <option value="doughnut">Anneau</option>
+                    <option value="pie">Circulaire</option>
+                    <option value="bar">Barres</option>
+                </select>
+            </div>
+            <div class="chart-container">
+                <canvas id="demands-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3>Évolution mensuelle des offrandes</h3>
+            </div>
+            <div class="chart-container">
+                <canvas id="offrandes-chart"></canvas>
+            </div>
+        </div>
+
+        
     </div>
 
     <!-- Actions rapides -->
@@ -159,42 +211,95 @@
             </div>
         </div>
 
-          <!-- Dernières offrandes -->
-<div class="recent-offrandes">
-    <div class="card-header">
-        <h2>Dernières Offrandes</h2>
-        <a href="#" class="view-all">Voir tout</a>
-    </div>
-    <div class="offrande-list">
-        @if($latestOffrandes->count() > 0)
-            @foreach($latestOffrandes as $offrande)
-            <div class="offrande-item">
-                <div class="offrande-icon">
-                    <i class="fas fa-donate" style="color: #4CAF50;"></i>
-                </div>
-                <div class="offrande-details">
-                    <p>Offrande pour {{ $offrande->type_intention }}</p>
-                    <span class="offrande-amount">{{ number_format($offrande->montant_offrande, 0, ',', ' ') }} FCFA</span>
-                    <span class="offrande-donor">Par: {{ $offrande->nom_demandeur }}</span>
-                    <span class="offrande-time">{{ $offrande->created_at->diffForHumans() }}</span>
-                </div>
+        <!-- Dernières offrandes -->
+        <div class="recent-offrandes">
+            <div class="card-header">
+                <h2>Dernières Offrandes</h2>
+                <a href="#" class="view-all">Voir tout</a>
             </div>
-            @endforeach
-        @else
-            <div class="offrande-item">
-                <div class="offrande-icon">
-                    <i class="fas fa-donate" style="color: #6c757d;"></i>
-                </div>
-                <div class="offrande-details">
-                    <p>Aucune offrande enregistrée</p>
-                    <span class="offrande-time">Les offrandes apparaîtront ici</span>
-                </div>
+            <div class="offrande-list">
+                @if($latestOffrandes->count() > 0)
+                    @foreach($latestOffrandes as $offrande)
+                    <div class="offrande-item">
+                        <div class="offrande-icon">
+                            <i class="fas fa-donate" style="color: #4CAF50;"></i>
+                        </div>
+                        <div class="offrande-details">
+                            <p>Offrande pour {{ $offrande->type_intention }}</p>
+                            <span class="offrande-amount">{{ number_format($offrande->montant_offrande, 0, ',', ' ') }} FCFA</span>
+                            <span class="offrande-donor">Par: {{ $offrande->nom_demandeur }}</span>
+                            <span class="offrande-time">{{ $offrande->created_at->diffForHumans() }}</span>
+                        </div>
+                    </div>
+                    @endforeach
+                @else
+                    <div class="offrande-item">
+                        <div class="offrande-icon">
+                            <i class="fas fa-donate" style="color: #6c757d;"></i>
+                        </div>
+                        <div class="offrande-details">
+                            <p>Aucune offrande enregistrée</p>
+                            <span class="offrande-time">Les offrandes apparaîtront ici</span>
+                        </div>
+                    </div>
+                @endif
             </div>
-        @endif
+        </div>
     </div>
 </div>
+
+<!-- Modal pour effectuer un retrait -->
+<!-- Modal pour effectuer un retrait -->
+<div class="modal fade" id="retraitModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Demander un retrait</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="retraitForm" action="{{ route('paroisse.retrait.request') }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Solde disponible</label>
+                        <input type="text" class="form-control" value="{{ number_format($soldeDisponible, 0, ',', ' ') }} FCFA" disabled>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Montant à retirer (FCFA)</label>
+                        <input type="number" name="montant" class="form-control" required min="1000" max="{{ $soldeDisponible }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Méthode de retrait</label>
+                        <select name="methode" class="form-select" required>
+                            <option value="">Sélectionnez une méthode</option>
+                            <option value="wave">Wave</option>
+                            <option value="orange_money">Orange Money</option>
+                            <option value="mtn_money">MTN Money</option>
+                            <option value="virement_bancaire">Virement Bancaire</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Numéro de compte / Téléphone</label>
+                        <input type="text" name="numero_compte" class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Nom du titulaire du compte</label>
+                        <input type="text" name="nom_titulaire" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Demander le retrait</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+<!-- Bootstrap CSS -->
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -236,89 +341,228 @@
             }, 300);
         });
 
-        // Calendrier dynamique
-        let currentDate = new Date();
-        const calendarDays = document.getElementById('calendar-days');
-        const currentMonthElement = document.getElementById('current-month');
-        const prevMonthButton = document.getElementById('prev-month');
-        const nextMonthButton = document.getElementById('next-month');
-
-        // Données des messes pour le calendrier (simulées pour l'exemple)
-        // En réalité, vous devriez passer ces données depuis votre contrôleur
-        const messesData = {!! json_encode($upcomingMessess) !!};
-        
-        // Formater les dates des messes pour faciliter la comparaison
-        const messeDates = messesData.map(messe => {
-            return new Date(messe.date_souhaitee).toDateString();
+        // Graphique de répartition des demandes
+        const demandsCtx = document.getElementById('demands-chart').getContext('2d');
+        let demandsChart = new Chart(demandsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['En attente', 'Confirmées', 'Célébrées'],
+                datasets: [{
+                    data: [{{ $pendingDemandes }}, {{ $confirmedDemandes }}, {{ $celebratedDemandes }}],
+                    backgroundColor: [
+                        '#f35525',
+                        '#4CAF50',
+                        '#2196F3'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 12
+                            },
+                            padding: 20
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
         });
 
-        function renderCalendar() {
-            // Effacer le calendrier actuel
-            calendarDays.innerHTML = '';
-            
-            // Mettre à jour le mois en cours
-            const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
-                               'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-            currentMonthElement.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-            
-            // Premier jour du mois
-            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-            // Dernier jour du mois
-            const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-            
-            // Jour de la semaine du premier jour (0 = dimanche, 1 = lundi, etc.)
-            let firstDayIndex = firstDay.getDay();
-            // Ajuster pour que lundi soit le premier jour (1)
-            firstDayIndex = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
-            
-            // Jour actuel
-            const today = new Date();
-            const todayFormatted = today.toDateString();
-            
-            // Remplir les cases vides avant le premier jour du mois
-            for (let i = 0; i < firstDayIndex; i++) {
-                const emptyDay = document.createElement('div');
-                emptyDay.className = 'day empty';
-                calendarDays.appendChild(emptyDay);
-            }
-            
-            // Remplir les jours du mois
-            for (let i = 1; i <= lastDay.getDate(); i++) {
-                const day = document.createElement('div');
-                day.className = 'day';
-                day.textContent = i;
-                
-                // Créer une date pour ce jour
-                const dayDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), i);
-                const dayFormatted = dayDate.toDateString();
-                
-                // Vérifier si c'est aujourd'hui
-                if (dayFormatted === todayFormatted) {
-                    day.classList.add('today');
+        // Changer le type de graphique
+        document.getElementById('chart-type-selector').addEventListener('change', function() {
+            demandsChart.destroy();
+            demandsChart = new Chart(demandsCtx, {
+                type: this.value,
+                data: {
+                    labels: ['En attente', 'Confirmées', 'Célébrées'],
+                    datasets: [{
+                        data: [{{ $pendingDemandes }}, {{ $confirmedDemandes }}, {{ $celebratedDemandes }}],
+                        backgroundColor: [
+                            '#f35525',
+                            '#4CAF50',
+                            '#2196F3'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    size: 12
+                                },
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
                 }
-                
-                // Vérifier si ce jour a une messe
-                if (messeDates.includes(dayFormatted)) {
-                    day.classList.add('has-event');
+            });
+        });
+
+        // Graphique d'évolution des offrandes (données réelles)
+        const offrandesCtx = document.getElementById('offrandes-chart').getContext('2d');
+        const monthlyOffrandeData = @json($monthlyOffrandeData);
+        const monthlyOffrandeLabels = @json($monthlyOffrandeLabels);
+
+        new Chart(offrandesCtx, {
+            type: 'line',
+            data: {
+                labels: monthlyOffrandeLabels,
+                datasets: [{
+                    label: 'Montant des offrandes (FCFA)',
+                    data: monthlyOffrandeData,
+                    borderColor: '#9C27B0',
+                    backgroundColor: 'rgba(156, 39, 176, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#9C27B0',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.raw.toLocaleString('fr-FR')} FCFA`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('fr-FR') + ' FCFA';
+                            }
+                        }
+                    }
                 }
-                
-                calendarDays.appendChild(day);
             }
+        });
+
+        // Gestion du modal de retrait - CODE CORRIGÉ
+        const retraitBtn = document.querySelector('.btn-retrait');
+        if (retraitBtn) {
+            retraitBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Bouton retrait cliqué');
+                
+                // Vérifier si Bootstrap est chargé
+                if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
+                    const retraitModalElement = document.getElementById('retraitModal');
+                    if (retraitModalElement) {
+                        const retraitModal = new bootstrap.Modal(retraitModalElement);
+                        retraitModal.show();
+                    } else {
+                        console.error('Element #retraitModal non trouvé');
+                    }
+                } else {
+                    console.error('Bootstrap non chargé');
+                    // Fallback manuel si Bootstrap n'est pas disponible
+                    const modal = document.getElementById('retraitModal');
+                    if (modal) {
+                        modal.style.display = 'block';
+                        modal.classList.add('show');
+                        document.body.classList.add('modal-open');
+                        
+                        // Ajouter le backdrop manuellement
+                        const backdrop = document.createElement('div');
+                        backdrop.className = 'modal-backdrop fade show';
+                        document.body.appendChild(backdrop);
+                    }
+                }
+            });
+        } else {
+            console.error('Bouton .btn-retrait non trouvé');
         }
-        
-        // Événements pour changer de mois
-        prevMonthButton.addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() - 1);
-            renderCalendar();
+
+        // Fermer le modal (fallback manuel)
+        const closeButtons = document.querySelectorAll('[data-bs-dismiss="modal"], .btn-close');
+        closeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const modal = this.closest('.modal');
+                if (modal) {
+                    modal.style.display = 'none';
+                    modal.classList.remove('show');
+                    document.body.classList.remove('modal-open');
+                    
+                    // Supprimer le backdrop
+                    const backdrop = document.querySelector('.modal-backdrop');
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
+                }
+            });
         });
-        
-        nextMonthButton.addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            renderCalendar();
-        });
-        
-        // Initialiser le calendrier
-        renderCalendar();
+
+       // Valider le formulaire de retrait
+        const retraitForm = document.getElementById('retraitForm');
+        if (retraitForm) {
+            retraitForm.addEventListener('submit', function(e) {
+                const montantInput = this.querySelector('input[name="montant"]');
+                if (montantInput) {
+                    const montant = parseFloat(montantInput.value);
+                    const solde = parseFloat({{ $soldeDisponible }});
+                    
+                    if (montant > solde) {
+                        e.preventDefault();
+                        alert('Le montant demandé dépasse votre solde disponible.');
+                        return false;
+                    }
+                    
+                    if (montant < 1000) {
+                        e.preventDefault();
+                        alert('Le montant minimum de retrait est de 1 000 FCFA.');
+                        return false;
+                    }
+                }
+            });
+        }
     });
 </script>
+
 @endsection

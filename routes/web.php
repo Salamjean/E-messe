@@ -3,10 +3,12 @@
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AuthenticateAdmin;
 use App\Http\Controllers\Admin\Paroisse\ParoisseController;
+use App\Http\Controllers\Admin\User\AdminUserController;
 use App\Http\Controllers\Home\HomeController;
 use App\Http\Controllers\Paroisse\AuthenticateParoisse;
 use App\Http\Controllers\Paroisse\Demande\DemandeController;
 use App\Http\Controllers\Paroisse\Offrande\OffrandeController;
+use App\Http\Controllers\Paroisse\Paiement\ParoissePaiement;
 use App\Http\Controllers\Paroisse\ParoisseDashboard;
 use App\Http\Controllers\User\AuthenticateUser;
 use App\Http\Controllers\User\Messe\MesseController;
@@ -28,11 +30,22 @@ Route::middleware('admin')->prefix('admin')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/logout', [AdminController::class, 'logout'])->name('admin.logout');
 
+    //Les routes de destion des utilisateurs par l'admin 
+    Route::prefix('users')->group(function () {
+        Route::get('/indexed', [AdminUserController::class, 'index'])->name('admin.user.index');
+        Route::delete('/{user}/archive', [AdminUserController::class, 'archive'])->name('users.archive');
+        Route::get('/archived', [AdminUserController::class, 'archived'])->name('users.archived');
+        Route::post('/{user}/restore', [AdminUserController::class, 'restore'])->name('users.restore');
+        Route::delete('/{user}/force-delete', [AdminUserController::class, 'forceDelete'])->name('users.force-delete');
+    });  
     //Les routes de gestion de la paroisse par l'admin 
      Route::prefix('parish')->group(function () {
-        Route::get('/index', [ParoisseController::class, 'index'])->name('paroisse.index');
+        Route::get('/indexparish', [ParoisseController::class, 'index'])->name('paroisse.index');
         Route::get('/createed', [ParoisseController::class, 'create'])->name('paroisse.create');
         Route::post('/createed', [ParoisseController::class, 'store'])->name('paroisse.store');
+        Route::get('/{paroisse}/edit', [ParoisseController::class, 'edit'])->name('admin.paroisses.edit');
+        Route::put('/{paroisse}', [ParoisseController::class, 'update'])->name('admin.paroisses.update');
+        Route::delete('/{paroisse}', [ParoisseController::class, 'destroy'])->name('admin.paroisses.destroy');
     });
 });
 
@@ -45,6 +58,10 @@ Route::prefix('parish')->group(function() {
 Route::middleware('paroisse')->prefix('parish')->group(function(){
     Route::get('/dahboard', [ParoisseDashboard::class, 'dashboard'])->name('paroisse.dashboard');
     Route::get('/logout', [ParoisseDashboard::class, 'logout'])->name('paroisse.logout');
+
+    //retraits
+    Route::post('/retrait/request', [ParoissePaiement::class, 'requestRetrait'])->name('paroisse.retrait.request');
+    Route::get('/retraits', [ParoissePaiement::class, 'retraits'])->name('paroisse.retraits');
 
      //Les routes pour modifier des informations de la paroisse 
       Route::get('/profile',[AuthenticateParoisse::class,'editProfile'])->name('paroisse.profile');

@@ -44,8 +44,19 @@ public function dashboard()
     ));
 }
 
-    public function logout(){
+    public function logout(Request $request)
+    {
+        // Mettre à jour le statut actif à 0 avant la déconnexion
+        if (Auth::check()) {
+            $user = Auth::user();
+            $user->actif = 0;
+            $user->save();
+        }
+
         Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect()->route('login');
     }
 }

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('commune');
             $table->string('CMU')->nullable();
             $table->string('profile_picture')->nullable();
+            $table->boolean('actif')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });

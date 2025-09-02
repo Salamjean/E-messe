@@ -28,7 +28,6 @@ return new class extends Migration
             $table->index('reference');
             $table->index('statut');
             $table->index('transaction_id');
-            // Supprimez le deuxième appel à timestamps()
         });
     }
 

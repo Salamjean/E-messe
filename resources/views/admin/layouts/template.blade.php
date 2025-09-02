@@ -17,7 +17,7 @@
   <!-- Layout styles -->
   <link rel="stylesheet" href="{{asset('assetsPoste/assets/css/demo/style.css')}}">
   <!-- End layout styles -->
-  <link rel="shortcut icon" href="{{asset('assets/assets/img/logo pla.jpeg')}}" />
+ <link rel="shortcut icon" href="{{asset('assets/assets/images/logo E-messe.jpeg')}}" />
 </head>
 <body>
 <script src="{{asset('assetsPoste/assets/js/preloader.js')}}"></script>

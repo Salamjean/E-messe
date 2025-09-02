@@ -75,7 +75,7 @@ class AuthenticateUser extends Controller
             $users->profile_picture = $profilePicturePath;
             $users->save();
 
-            return redirect()->route('login')->with('success', 'Votre compte a été créé avec succès. Vous pouvez vous connecter.');
+            return redirect()->route('user.dashboard')->with('success', 'Votre compte a été créé avec succès. Vous pouvez vous connecter.');
 
         } catch (\Exception $e) {
             Log::error('Error during registration: ' . $e->getMessage());
@@ -106,6 +106,11 @@ class AuthenticateUser extends Controller
                 'password' => 'Mot de passe incorrect.',
             ]);
         }
+
+        // Mettre à jour le statut actif à 1
+        $user = Auth::user();
+        $user->actif = 1;
+        $user->save();
 
         $request->session()->regenerate();
 

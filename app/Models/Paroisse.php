@@ -23,4 +23,30 @@ class Paroisse extends Authenticatable
     {
         return $this->hasMany(Messe::class);
     }
+
+    public function solde()
+    {
+        return $this->hasOne(ParoisseSolde::class);
+    }
+
+    public function retraits()
+    {
+        return $this->hasMany(ParoisseRetrait::class);
+    }
+
+    // Méthode pour récupérer ou créer le solde
+    public function getSolde()
+    {
+        return $this->solde()->firstOrCreate([], ['solde' => 0]);
+    }
+
+    // Méthode pour mettre à jour le solde
+    public function updateSolde($montant)
+    {
+        $solde = $this->getSolde();
+        $solde->solde += $montant;
+        $solde->save();
+        
+        return $solde;
+    }
 }
