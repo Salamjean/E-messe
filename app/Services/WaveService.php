@@ -15,10 +15,9 @@ class WaveService
     {
         $this->apiKey = config('services.wave.api_key');
         $this->businessId = config('services.wave.business_id');
-        // Assure-toi que la configuration de l'environnement est correcte
-        $this->baseUrl = config('services.wave.env') === 'production'
-            ? 'https://api.wave.com/v1/'
-            : 'https://api.wave.com/v1/'; // Pour le sandbox/staging, l'URL peut être différente si Wave a un environnement de test dédié. Si c'est la même URL, tant pis.
+        $this->baseUrl = config('services.wave.env') === 'production' 
+            ? 'https://api.wave.com/v1/' 
+            : 'https://api.wave.com/v1/';
     }
 
     /**
@@ -31,42 +30,28 @@ class WaveService
                 'amount' => $amount,
                 'currency' => $currency,
                 'reference' => $reference,
-                'redirect_url' => $redirectUrl,
-                'customer' => $customer
+                'redirect_url' => $redirectUrl
             ]);
 
-            // Wave exige souvent HTTPS pour les URLs de redirection.
-            // En local, tu devras utiliser ngrok ou un setup HTTPS.
+            // Forcer l'URL en HTTPS pour le développement local
             $secureRedirectUrl = $this->ensureHttps($redirectUrl);
-
-            // Wave a parfois des attentes spécifiques pour les paramètres.
-            // merchant_reference n'est pas toujours supporté dans ce endpoint.
-            // On l'ajoute comme metadata si possible, sinon on le gère via les URLs de redirection.
-            $metadata = [
-                'merchant_reference' => $reference,
-                'email' => $customer['email'] ?? null,
-                'name' => $customer['name'] ?? null,
-            ];
 
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
             ])->timeout(30)->withOptions([
-                'verify' => !app()->environment('local'), // Désactiver SSL en local si tu n'as pas de certificat valide
+                'verify' => app()->environment('production'), // SSL seulement en production
             ])->post($this->baseUrl . 'checkout/sessions', [
-                'amount' => (int)($amount * 100), // Généralement, les montants des paiements sont en cents/centimes
+                'amount' => $amount,
                 'currency' => $currency,
                 'success_url' => $secureRedirectUrl . '?status=success&reference=' . $reference,
                 'error_url' => $secureRedirectUrl . '?status=error&reference=' . $reference,
-                // Wave n'a pas explicitement de champ pour merchant_reference ici, on le passe en metadata ou via URL de retour
-                // Les détails du client peuvent être passés comme metadata si le support existe.
-                'client_reference' => $reference, // Certains gateways utilisent cela comme référence unique
-                'metadata' => $metadata // Passe la référence comme metadata si Wave le supporte
+                // Note: cancel_url et merchant_reference ne sont pas supportés selon l'erreur
             ]);
 
-            Log::debug('Réponse de l\'API Wave pour createCheckoutSession', [
+            Log::debug('Réponse de l\'API Wave', [
                 'status' => $response->status(),
-                'body' => $response->json() // Utiliser json() ici car body() est une string
+                'body' => $response->body()
             ]);
 
             if ($response->successful()) {
@@ -74,19 +59,18 @@ class WaveService
                 Log::info('Session Wave créée avec succès', ['session_id' => $data['id'] ?? null]);
                 return $data;
             } else {
-                Log::error('Wave API Error pour createCheckoutSession', [
+                Log::error('Wave API Error', [
                     'status' => $response->status(),
-                    'body' => $response->json(),
+                    'body' => $response->body(),
                     'reference' => $reference
                 ]);
                 return null;
             }
         } catch (\Exception $e) {
-            Log::error('Wave Service Exception dans createCheckoutSession', [
+            Log::error('Wave Service Exception', [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'line' => $e->getLine()
             ]);
             return null;
         }
@@ -97,72 +81,93 @@ class WaveService
      */
     private function ensureHttps($url)
     {
-        // En environnement local, il est courant d'utiliser un tunnel comme ngrok
-        // ou de configurer un serveur local HTTPS.
-        // Si tu utilises ngrok, l'URL de base est déjà HTTPS.
-        // Si tu es sur un serveur local sans HTTPS, Wave refusera la redirection.
-        if (app()->environment('local')) {
-            // Supposons que tu utilises ngrok ou un service similaire qui donne une URL HTTPS
-            // Remplace 'http://localhost' par l'URL de ton tunnel si nécessaire.
-            return str_replace('http://', 'https://', $url);
+        if (app()->environment('local') || app()->environment('development')) {
+            // Pour le développement local, utilisez un service de tunnel HTTPS comme ngrok
+            // ou configurez votre environnement local avec HTTPS
+            return preg_replace('/^http:/', 'https:', $url);
         }
         return $url;
     }
 
     /**
-     * Vérifier le statut d'une transaction par son ID (l'ID de session de checkout)
+     * Vérifier le statut d'une transaction
      */
     public function verifyTransaction($transactionId)
     {
         try {
-            Log::debug('Début vérification transaction Wave par ID', ['transaction_id' => $transactionId]);
-
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
             ])->withOptions([
-                'verify' => !app()->environment('local'),
-            ])->get($this->baseUrl . 'checkout/sessions/' . $transactionId); // Utilise l'endpoint pour les sessions de checkout
-
-            Log::debug('Réponse vérification Wave par ID', [
-                'status' => $response->status(),
-                'body' => $response->json()
-            ]);
+                'verify' => app()->environment('production'),
+            ])->get($this->baseUrl . 'transactions/' . $transactionId);
 
             if ($response->successful()) {
-                $data = $response->json();
-                // La structure de la réponse d'une session de checkout contient le statut de la transaction
-                // Vérifie la documentation de l'API Wave pour la structure exacte.
-                // Généralement, il y aura un champ 'status' ou 'transaction' à l'intérieur de la session.
-                return $data; // Retourne la session complète, le controller extraira le statut.
+                return $response->json();
             } else {
-                Log::error('Erreur vérification Wave par ID', [
-                    'status' => $response->status(),
-                    'body' => $response->json(),
-                    'transaction_id' => $transactionId
-                ]);
+                Log::error('Wave Verification Error: ' . $response->body());
                 return null;
             }
         } catch (\Exception $e) {
-            Log::error('Exception vérification Wave par ID: ' . $e->getMessage(), [
-                'transaction_id' => $transactionId,
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
+            Log::error('Wave Verification Exception: ' . $e->getMessage());
             return null;
         }
     }
 
     /**
-     * Cette méthode ne sera plus utilisée car l'API Wave ne supporte pas le filtrage par merchant_reference sur /transactions
-     * Nous nous baserons sur l'ID de transaction (session ID) pour la vérification.
+     * Vérifier le statut par référence marchand - Version corrigée
      */
     public function verifyByMerchantReference($reference)
     {
-        // Cette méthode est obsolète ou son usage incorrect pour l'API Wave actuelle.
-        // Nous allons logguer un avertissement si elle est appelée accidentellement.
-        Log::warning('Appel obsolète ou incorrect de verifyByMerchantReference. Utiliser verifyTransaction avec l\'ID de session.');
-        return null;
+        try {
+            Log::debug('Début vérification transaction Wave', ['reference' => $reference]);
+            
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Content-Type' => 'application/json',
+            ])->withOptions([
+                'verify' => app()->environment('production'),
+            ])->get($this->baseUrl . 'transactions', [
+                'merchant_reference' => $reference,
+                'limit' => 1 // Limiter à 1 résultat
+            ]);
+
+            Log::debug('Réponse vérification Wave', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                Log::debug('Données transaction Wave', ['data' => $data]);
+                
+                // Structure de réponse typique de Wave API
+                if (isset($data['data']['transactions']) && count($data['data']['transactions']) > 0) {
+                    return $data['data']['transactions'][0];
+                }
+                
+                // Autre format possible
+                if (isset($data['data']) && count($data['data']) > 0) {
+                    return $data['data'][0];
+                }
+                
+                // Format direct
+                if (isset($data['status'])) {
+                    return $data;
+                }
+                
+                Log::warning('Aucune transaction trouvée pour la référence', ['reference' => $reference]);
+                return null;
+            } else {
+                Log::error('Erreur vérification Wave', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                return null;
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception vérification Wave: ' . $e->getMessage());
+            return null;
+        }
     }
 }
