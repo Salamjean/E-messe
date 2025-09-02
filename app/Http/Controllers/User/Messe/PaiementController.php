@@ -165,7 +165,7 @@ public function verifierPaiement(Request $request, $reference)
             $paiement->date_paiement = now();
             $paiement->save();
             
-            $messe->statut = 'confirmee';
+            $messe->statut = 'en attente';
             $messe->save();
             
             DB::commit();
@@ -207,7 +207,7 @@ public function verifierPaiement(Request $request, $reference)
                         $paiement->donnees_transaction = json_encode($session);
                         $paiement->save();
                         
-                        $messe->statut = 'confirmee';
+                        $messe->statut = 'en attente';
                         $messe->save();
                         
                         DB::commit();
@@ -262,7 +262,7 @@ public function verifierPaiement(Request $request, $reference)
                     $paiement->donnees_transaction = json_encode($transaction);
                     $paiement->save();
                     
-                    $messe->statut = 'confirmee'; // CORRECTION: 'confirmee' avec deux 'e'
+                    $messe->statut = 'en attente'; // CORRECTION: 'en attente' avec deux 'e'
                     $messe->save();
                     
                     DB::commit();
