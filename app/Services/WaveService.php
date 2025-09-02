@@ -89,6 +89,35 @@ class WaveService
         return $url;
     }
 
+    public function verifyBySessionId($sessionId)
+    {
+        try {
+            $url = $this->baseUrl . 'checkout/sessions/' . $sessionId;
+            
+            Log::debug('Vérification session Wave:', ['session_id' => $sessionId]);
+            
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Accept' => 'application/json',
+            ])->get($url);
+            
+            Log::debug('Réponse vérification session:', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+            
+            if ($response->successful()) {
+                return $response->json();
+            }
+            
+            return null;
+            
+        } catch (\Exception $e) {
+            Log::error('Exception vérification session: ' . $e->getMessage());
+            return null;
+        }
+    }
+
     /**
      * Vérifier le statut d'une transaction
      */

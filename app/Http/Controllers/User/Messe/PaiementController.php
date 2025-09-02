@@ -129,107 +129,51 @@ public function verifierPaiement(Request $request, $reference)
         
         $messe = $paiement->messe;
         
-        Log::debug('Début vérification paiement', [
+        Log::debug('Vérification paiement', [
             'reference' => $reference,
-            'statut_actuel_paiement' => $paiement->statut,
-            'statut_actuel_messe' => $messe->statut
+            'session_id' => $paiement->transaction_id,
+            'statut_url' => $request->query('status')
         ]);
         
-        // Vérifier si le paiement est déjà complété
+        // Vérifier si déjà payé
         if ($paiement->statut === 'paye') {
             DB::commit();
             return redirect()->route('user.messe.index')
-                ->with('success', 'Paiement déjà confirmé. Votre demande de messe est traitée.');
+                ->with('success', 'Paiement déjà confirmé.');
         }
         
         $status = $request->query('status');
-        Log::debug('Paramètres de requête', ['status' => $status, 'all' => $request->all()]);
         
-        // Vérifier le statut avec l'API Wave
-        $transaction = $this->waveService->verifyByMerchantReference($reference);
-        Log::debug('Résultat vérification Wave', ['transaction' => $transaction]);
-        
-        if ($transaction) {
-            // Vérifier différents formats de réponse Wave
-            $waveStatus = $transaction['status'] ?? $transaction['state'] ?? null;
-            
-            if ($waveStatus === 'completed' || $waveStatus === 'success') {
-                // Paiement réussi - Mettre à jour les deux tables
-                $paiement->statut = 'paye';
-                $paiement->date_paiement = now();
-                $paiement->donnees_transaction = json_encode($transaction);
-                $paiement->save();
-                
-                // CORRECTION: Utiliser le bon nom de statut
-                $messe->statut = 'confirmee';
-                $messe->save();
-                
-                DB::commit();
-                Log::info('Paiement confirmé avec succès', [
-                    'reference' => $reference,
-                    'paiement_id' => $paiement->id,
-                    'messe_id' => $messe->id
-                ]);
-                
-                return redirect()->route('user.messe.index')
-                    ->with('success', 'Paiement effectué avec succès. Votre demande de messe est confirmée.');
-            } 
-            else if ($waveStatus === 'pending' || $waveStatus === 'initiated') {
-                // Paiement en attente
-                $paiement->statut = 'en_attente'; // CORRECTION: utiliser underscore
-                $paiement->save();
-                
-                // Mettre à jour le statut de la messe aussi
-                $messe->statut = 'en_attente_paiement';
-                $messe->save();
-                
-                DB::commit();
-                
-                return view('user.messe.verification', [
-                    'paiement' => $paiement,
-                    'status' => $waveStatus
-                ]);
-            }
-            else {
-                // Paiement échoué ou annulé
-                $paiement->statut = 'echec';
-                $paiement->save();
-                
-                $messe->statut = 'en attente'; // Revenir au statut initial
-                $messe->save();
-                
-                DB::commit();
-                
-                return redirect()->route('user.messe.paiement', $reference)
-                    ->with('error', 'Le paiement a échoué. Statut: ' . $waveStatus);
-            }
-        }
-        
-        // Si pas de transaction trouvée mais statut dans l'URL
+        // SOLUTION PRINCIPALE: Utiliser le statut de l'URL
         if ($status === 'success') {
-            // Attendre et réessayer
-            sleep(3);
-            $transaction = $this->waveService->verifyByMerchantReference($reference);
+            Log::debug('Paiement réussi détecté via URL');
             
-            if ($transaction && ($transaction['status'] === 'completed' || $transaction['status'] === 'success')) {
-                // Paiement réussi
-                $paiement->statut = 'paye';
-                $paiement->date_paiement = now();
-                $paiement->donnees_transaction = json_encode($transaction);
-                $paiement->save();
+            // Vérifier avec l'API Wave pour confirmation
+            if ($paiement->transaction_id) {
+                $session = $this->waveService->verifyBySessionId($paiement->transaction_id);
                 
-                $messe->statut = 'confirmee';
-                $messe->save();
-                
-                DB::commit();
-                
-                return redirect()->route('user.messe.index')
-                    ->with('success', 'Paiement effectué avec succès. Votre demande de messe est confirmée.');
+                if ($session && ($session['status'] === 'completed' || $session['status'] === 'success')) {
+                    Log::debug('Session Wave confirmée: ' . $session['status']);
+                }
             }
+            
+            // Paiement réussi
+            $paiement->statut = 'paye';
+            $paiement->date_paiement = now();
+            $paiement->save();
+            
+            $messe->statut = 'confirmee';
+            $messe->save();
+            
+            DB::commit();
+            
+            return redirect()->route('user.messe.index')
+                ->with('success', 'Paiement effectué avec succès. Votre demande de messe est confirmée.');
         }
-        
-        // Si échec ou statut inconnu
-        if ($status === 'error' || $status === 'cancel') {
+        elseif ($status === 'error' || $status === 'cancel') {
+            Log::debug('Paiement échoué détecté via URL');
+            
+            // Paiement échoué
             $paiement->statut = 'echec';
             $paiement->save();
             
@@ -241,18 +185,43 @@ public function verifierPaiement(Request $request, $reference)
             return redirect()->route('user.messe.paiement', $reference)
                 ->with('error', 'Le paiement a échoué. Veuillez réessayer.');
         }
-        
-        DB::commit();
-        return redirect()->route('user.messe.paiement', $reference)
-            ->with('info', 'Paiement en cours de traitement. Veuillez actualiser dans quelques instants.');
+        else {
+            Log::debug('Statut inconnu, tentative de vérification via API');
+            
+            // Essayer avec le session ID
+            if ($paiement->transaction_id) {
+                $session = $this->waveService->verifyBySessionId($paiement->transaction_id);
+                
+                if ($session) {
+                    Log::debug('Statut session Wave: ' . ($session['status'] ?? 'inconnu'));
+                    
+                    if ($session['status'] === 'completed' || $session['status'] === 'success') {
+                        // Paiement réussi via API
+                        $paiement->statut = 'paye';
+                        $paiement->date_paiement = now();
+                        $paiement->donnees_transaction = json_encode($session);
+                        $paiement->save();
+                        
+                        $messe->statut = 'confirmee';
+                        $messe->save();
+                        
+                        DB::commit();
+                        
+                        return redirect()->route('user.messe.index')
+                            ->with('success', 'Paiement effectué avec succès.');
+                    }
+                }
+            }
+            
+            // Si on arrive ici, le paiement est en attente
+            DB::commit();
+            return view('user.messe.verification', compact('paiement'))
+                ->with('info', 'Paiement en cours de traitement. Veuillez actualiser dans quelques instants.');
+        }
         
     } catch (\Exception $e) {
         DB::rollBack();
-        Log::error('Erreur verifierPaiement: ' . $e->getMessage(), [
-            'reference' => $reference,
-            'trace' => $e->getTraceAsString()
-        ]);
-        
+        Log::error('Erreur verifierPaiement: ' . $e->getMessage());
         return redirect()->route('user.messe.paiement', $reference)
             ->with('error', 'Erreur de vérification: ' . $e->getMessage());
     }
