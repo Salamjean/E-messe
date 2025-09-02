@@ -90,7 +90,7 @@ class ParoisseDashboard extends Controller
             ->sum('montant');
         
         // Calculer le solde disponible (paiements - retraits)
-        $soldeDisponible = $totalPaiements - $totalRetraits;
+        $soldeDisponible = ($totalPaiements - $totalRetraits) / 1.01 ;
         
         // Récupérer les retraits récents
         $derniersRetraits = DB::table('paroisse_retraits')

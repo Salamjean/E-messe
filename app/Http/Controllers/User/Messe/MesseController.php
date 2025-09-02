@@ -135,7 +135,7 @@ class MesseController extends Controller
                 'messe_id' => $messe->id,
                 'user_id' => Auth::user()->id,
                 'reference' => $reference,
-                'montant' => $request->montant_offrande,
+                'montant' => $request->montant_offrande  * 1.01,
                 'devise' => 'XOF',
                 'methode' => 'wave',
                 'statut' => 'en_attente',
