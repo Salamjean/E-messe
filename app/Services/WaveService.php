@@ -117,54 +117,43 @@ class WaveService
     /**
      * Vérifier le statut par référence marchand - Version corrigée
      */
-    public function verifyByMerchantReference($reference)
+   public function verifyByMerchantReference($merchantReference)
     {
         try {
-            Log::debug('Début vérification transaction Wave', ['reference' => $reference]);
+            $url = $this->baseUrl . '/v1/checkout/sessions/verify/';
+            
+            // CORRECTION: Envoyer les données dans le body JSON, pas en query params
+            $data = [
+                'merchant_reference' => $merchantReference
+            ];
+            
+            Log::debug('Requête vérification Wave:', [
+                'url' => $url,
+                'data' => $data
+            ]);
             
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
-            ])->withOptions([
-                'verify' => app()->environment('production'),
-            ])->get($this->baseUrl . 'transactions', [
-                'merchant_reference' => $reference,
-                'limit' => 1 // Limiter à 1 résultat
-            ]);
-
-            Log::debug('Réponse vérification Wave', [
+                'Accept' => 'application/json',
+            ])->post($url, $data); // Utiliser POST au lieu de GET avec query params
+            
+            Log::debug('Réponse vérification Wave:', [
                 'status' => $response->status(),
                 'body' => $response->body()
             ]);
-
+            
             if ($response->successful()) {
-                $data = $response->json();
-                Log::debug('Données transaction Wave', ['data' => $data]);
-                
-                // Structure de réponse typique de Wave API
-                if (isset($data['data']['transactions']) && count($data['data']['transactions']) > 0) {
-                    return $data['data']['transactions'][0];
-                }
-                
-                // Autre format possible
-                if (isset($data['data']) && count($data['data']) > 0) {
-                    return $data['data'][0];
-                }
-                
-                // Format direct
-                if (isset($data['status'])) {
-                    return $data;
-                }
-                
-                Log::warning('Aucune transaction trouvée pour la référence', ['reference' => $reference]);
-                return null;
-            } else {
-                Log::error('Erreur vérification Wave', [
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
-                return null;
+                return $response->json();
             }
+            
+            Log::error('Erreur vérification Wave', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+            
+            return null;
+            
         } catch (\Exception $e) {
             Log::error('Exception vérification Wave: ' . $e->getMessage());
             return null;
