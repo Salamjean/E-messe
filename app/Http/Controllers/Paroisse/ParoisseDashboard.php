@@ -80,7 +80,7 @@ class ParoisseDashboard extends Controller
         $totalPaiements = DB::table('paiements')
             ->join('messes', 'paiements.messe_id', '=', 'messes.id')
             ->where('messes.paroisse_id', $paroisse->id)
-            ->where('paiements.statut', 'payé')
+            ->where('paiements.statut', 'paye')
             ->sum('paiements.montant');
         
         // Calculer le total des retraits déjà effectués
@@ -104,7 +104,7 @@ class ParoisseDashboard extends Controller
             ->join('messes', 'paiements.messe_id', '=', 'messes.id')
             ->selectRaw('YEAR(paiements.created_at) as year, MONTH(paiements.created_at) as month, SUM(paiements.montant) as total')
             ->where('messes.paroisse_id', $paroisse->id)
-            ->where('paiements.statut', 'payé')
+            ->where('paiements.statut', 'paye')
             ->where('paiements.created_at', '>=', now()->subMonths(5)->startOfMonth())
             ->groupBy('year', 'month')
             ->orderBy('year', 'asc')
