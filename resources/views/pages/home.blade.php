@@ -110,7 +110,7 @@
                         <div class="mass-icon">
                             <i class="fas fa-pray"></i>
                         </div>
-                        <h4>Messe de demande</h4>
+                        <h4>Demande de messe</h4>
                         <p>Pour présenter une intention particulière à Dieu</p>
                         <a href="#" class="btn btn-outline">En savoir plus</a>
                     </div>

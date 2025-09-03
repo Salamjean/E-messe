@@ -397,9 +397,6 @@
         
         <div class="left-panel">
             <div class="left-content">
-                <div class="logo">
-                    <img src="{{asset('assets/assets/images/pape.jpg')}}" style="width: 400px; border-radius:100px" alt="">
-                </div>
                 <h2>Rejoignez-nous dès aujourd'hui</h2>
                 <p>Inscrivez-vous pour accéder à votre espace personnel et découvrir toutes les fonctionnalités de notre plateforme.</p>
                 
@@ -535,20 +532,6 @@
 
                 <!-- Quatrième ligne: CMU et Photo de profil -->
                 <div class="form-row">
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label for="CMU">CMU (facultatif)</label>
-                            <div class="input-with-icon">
-                                <i class="input-icon fas fa-id-card"></i>
-                                <input type="text" id="CMU" name="CMU" placeholder="Entrez votre numéro CMU (si applicable)">
-                                @error('CMU')
-                                    <div class="error-message" style="color: rgb(184, 8, 8)"> 
-                                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
                     <div class="form-col">
                         <div class="form-group">
                             <label for="profile_picture">Photo de profil (facultatif)</label>

@@ -260,29 +260,36 @@
             margin-top: 5px;
         }
         
+        /* Style pour la section QR Code */
+        .qr-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-top: 30px;
+            padding: 20px;
+            background: var(--gray-100);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--accent);
+        }
+        
         .qr-code {
-            margin-top: 20px;
-            text-align: center;
+            flex-shrink: 0;
         }
         
-        .qr-placeholder {
-            display: inline-block;
-            width: 100px;
-            height: 100px;
-            background: var(--gray-200);
-            border-radius: 8px;
-            position: relative;
+        .qr-info {
+            flex: 1;
         }
         
-        .qr-placeholder::before {
-            content: 'QR Code';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        .qr-info h4 {
+            margin: 0 0 10px 0;
+            color: var(--secondary);
+            font-size: 16px;
+        }
+        
+        .qr-info p {
+            margin: 5px 0;
+            font-size: 12px;
             color: var(--gray-600);
-            font-size: 10px;
-            font-weight: 500;
         }
         
         @media print {
@@ -308,6 +315,11 @@
             .info-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .qr-section {
+                flex-direction: column;
+                text-align: center;
+            }
         }
     </style>
 </head>
@@ -317,7 +329,7 @@
             <h1>CONFIRMATION DE DEMANDE DE MESSE</h1>
             <p>Votre demande a été enregistrée avec succès</p>
             <div class="church-name">
-                {{ $messe->paroisse->nom ?? 'Paroisse Non Spécifiée' }}
+                {{ $messe->paroisse->name ?? 'Paroisse Non Spécifiée' }}
             </div>
         </div>
         
@@ -448,17 +460,28 @@
                 </div>
             </div>
             
-            <div class="signature-area">
-                <div class="signature-line"></div>
-                <div class="signature-text">Signature et cachet de la paroisse</div>
-                
+            <!-- Section Code QR -->
+            {{-- Section Code QR --}}
+            @if(isset($qrCode) && (extension_loaded('imagick') || extension_loaded('gd')))
+            <div class="qr-section">
                 <div class="qr-code">
-                    <div class="qr-placeholder"></div>
-                    <div style="font-size: 10px; color: var(--gray-600); margin-top: 5px;">
-                        Code de vérification
-                    </div>
+                    <img src="data:image/png;base64,{{ $qrCode }}" alt="Code QR de vérification" style="width: 120px; height: 120px;">
+                </div>
+                <div class="qr-info">
+                    <h4>Code de Vérification</h4>
+                    <p>Ce code QR contient les informations essentielles de votre demande.</p>
+                    <p>Il peut être scanné pour vérifier l'authenticité de ce reçu.</p>
+                    <p><strong>Référence:</strong> {{ $messe->reference ?? $messe->id }}</p>
                 </div>
             </div>
+            @else
+            <div class="info-section">
+                <h4>Informations de Vérification</h4>
+                <p><strong>Référence:</strong> {{ $messe->reference ?? $messe->id }}</p>
+                <p><strong>Date:</strong> {{ $messe->created_at->format('d/m/Y') }}</p>
+                <p><strong>Demandeur:</strong> {{ $messe->nom_demandeur }}</p>
+            </div>
+            @endif
         </div>
         
         <div class="receipt-footer">
@@ -467,15 +490,5 @@
             <p>Émis le {{ now()->format('d/m/Y à H:i') }}</p>
         </div>
     </div>
-    
-    <script>
-        // Ajout des icônes Font Awesome via JavaScript
-        document.addEventListener('DOMContentLoaded', function() {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
-            document.head.appendChild(link);
-        });
-    </script>
 </body>
 </html>

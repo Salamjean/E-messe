@@ -2,6 +2,7 @@
 
 @section('content')
 <link rel="stylesheet" href="{{asset('assets/styles.css')}}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <div class="messe-container">
     <div class="messe-header">
         <h1>Demande de Messe</h1>
@@ -43,21 +44,36 @@
             <div id="defunt_fields" class="conditional-field">
                 <div class="form-group">
                     <label for="nom_defunt">Motif de demande *</label>
-                    <input type="text" id="nom_defunt" name="nom_defunt" style="padding: 50px">
+                    <input type="text" id="nom_defunt" name="nom_defunt" value="{{old('nom_defunt')}}" style="padding: 50px">
+                    @error('nom_defunt')
+                        <div class="error-message" style="color: rgb(184, 8, 8)">
+                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                        </div>
+                    @enderror
                 </div>
             </div>
             
             <div id="action_graces_fields" class="conditional-field">
                 <div class="form-group">
                     <label for="motif_action_graces">Motif de l'action de grâces *</label>
-                    <input type="text" id="motif_action_graces" name="motif_action_graces" style="padding: 50px">
+                    <input type="text" id="motif_action_graces" value="{{old('motif_action_graces')}}" name="motif_action_graces" style="padding: 50px">
+                    @error('motif_action_graces')
+                        <div class="error-message" style="color: rgb(184, 8, 8)">
+                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                        </div>
+                    @enderror
                 </div>
             </div>
             
             <div id="intention_particuliere_fields" class="conditional-field">
                 <div class="form-group">
                     <label for="motif_intention">Motif de l'intention particulière *</label>
-                    <input type="text" id="motif_intention" name="motif_intention" style="padding: 50px">
+                    <input type="text" id="motif_intention" value="{{old('motif_intention')}}" name="motif_intention" style="padding: 50px">
+                    @error('motif_intention')
+                        <div class="error-message" style="color: rgb(184, 8, 8)">
+                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                        </div>
+                    @enderror
                 </div>
             </div>
         </div>
@@ -76,16 +92,26 @@
                             <option value="{{ $paroisse->id }}" data-montant="{{ $paroisse->montant_offrande }}">{{ $paroisse->name }}</option>
                         @endforeach
                     </select>
+                    @error('paroisse_id')
+                        <div class="error-message" style="color: rgb(184, 8, 8)">
+                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                        </div>
+                    @enderror
                 </div>
 
                 <div class="form-group">
                 <label for="celebration_choisie">Type de célébration *</label>
-                <select id="celebration_choisie" name="celebration_choisie" required>
+                <select id="celebration_choisie" name="celebration_choisie"  required>
                     <option value="">Sélectionnez une option</option>
                     <option value="Messe quotidienne">Messe quotidienne</option>
                     <option value="Messe dominicale">Messe dominicale</option>
                     <option value="Messe solennelle">Messe solennelle</option>
                 </select>
+                @error('celebration_choisie')
+                    <div class="error-message" style="color: rgb(184, 8, 8)">
+                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                    </div>
+                @enderror
             </div>
             
             <!-- Champs conditionnels pour les jours de messe -->
@@ -104,6 +130,11 @@
                             </label>
                         @endforeach
                     </div>
+                    @error('jours_quotidienne')
+                        <div class="error-message" style="color: rgb(184, 8, 8)">
+                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                        </div>
+                    @enderror
                 </div>
             </div>
             <div id="jours_messe_dominicale" class="conditional-field">
@@ -112,6 +143,11 @@
                     <div class="jours-selection" id="dimanches-container">
                         <!-- Les dimanches seront générés dynamiquement en JS -->
                     </div>
+                    @error('jours_dominicale')
+                        <div class="error-message" style="color: rgb(184, 8, 8)">
+                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                        </div>
+                    @enderror
                 </div>
             </div>
             <div class="form-row">
@@ -126,11 +162,16 @@
                     <label for="nom_prenom_concernes">Noms et prénoms des concernés *</label>
                     <div id="noms-container">
                         <div class="nom-input-group">
-                            <input type="text" name="nom_prenom_concernes[]" class="nom-input" required>
+                            <input type="text" name="nom_prenom_concernes[]" value="{{old('nom_prenom_concernes')}}" class="nom-input" required>
                             <button type="button" class="add-nom-btn">+</button>
                         </div>
                     </div>
                     <small>Cliquez sur "+" pour ajouter un autre nom</small>
+                    @error('nom_prenom_concernes')
+                        <div class="error-message" style="color: rgb(184, 8, 8)">
+                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                        </div>
+                    @enderror
                 </div>
             </div>
             
@@ -138,11 +179,21 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="date_souhaitee">Date de début *</label>
-                    <input type="date" id="date_souhaitee" name="date_souhaitee">
+                    <input type="date" id="date_souhaitee" value="{{old('date_souhaitee')}}" name="date_souhaitee">
+                    @error('date_souhaitee')
+                        <div class="error-message" style="color: rgb(184, 8, 8)">
+                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                        </div>
+                    @enderror
                 </div>
                 <div class="form-group">
                     <label for="heure_souhaitee">Heure souhaitée</label>
-                    <input type="time" id="heure_souhaitee" name="heure_souhaitee">
+                    <input type="time" id="heure_souhaitee" value="{{old('heure_souhaitee')}}" name="heure_souhaitee">
+                    @error('heure_souhaitee')
+                        <div class="error-message" style="color: rgb(184, 8, 8)">
+                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                        </div>
+                    @enderror
                 </div>
             </div>
         </div>

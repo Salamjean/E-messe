@@ -392,14 +392,22 @@
             text-decoration: underline;
         }
         
+        /* Media Queries pour le responsive */
         @media (max-width: 900px) {
             .container {
                 flex-direction: column;
                 max-width: 500px;
+                min-height: auto;
             }
             
             .left-panel {
                 padding: 30px;
+                text-align: center;
+            }
+            
+            .left-panel::before,
+            .left-panel::after {
+                display: none;
             }
             
             .right-panel {
@@ -411,6 +419,165 @@
                 left: 15px;
                 width: 40px;
                 height: 40px;
+            }
+            
+            .logo img {
+                max-width: 250px;
+                margin: 0 auto;
+            }
+            
+            .features {
+                margin-top: 20px;
+            }
+            
+            .features li {
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            body {
+                padding: 15px;
+            }
+            
+            .container {
+                border-radius: 12px;
+            }
+            
+            .left-panel {
+                padding: 25px 20px;
+            }
+            
+            .left-panel h2 {
+                font-size: 24px;
+            }
+            
+            .left-panel p {
+                font-size: 14px;
+            }
+            
+            .right-panel {
+                padding: 30px 20px;
+            }
+            
+            .right-panel h2 {
+                font-size: 24px;
+            }
+            
+            .welcome-text {
+                font-size: 14px;
+                margin-bottom: 30px;
+            }
+            
+            .form-group {
+                margin-bottom: 20px;
+            }
+            
+            .form-group input {
+                padding: 12px 12px 12px 40px;
+                font-size: 14px;
+            }
+            
+            .input-icon {
+                left: 12px;
+                font-size: 14px;
+            }
+            
+            .password-toggle {
+                right: 12px;
+                font-size: 14px;
+            }
+            
+            .remember-forgot {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .login-button {
+                padding: 14px;
+                font-size: 15px;
+            }
+            
+            .social-button {
+                width: 45px;
+                height: 45px;
+            }
+            
+            .back-button {
+                top: 10px;
+                left: 10px;
+                width: 35px;
+                height: 35px;
+            }
+            
+            .logo img {
+                max-width: 200px;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .left-panel h2 {
+                font-size: 22px;
+            }
+            
+            .features li {
+                font-size: 14px;
+            }
+            
+            .features i {
+                width: 25px;
+                height: 25px;
+                margin-right: 10px;
+                font-size: 12px;
+            }
+        }
+        
+        /* Pour les très petits appareils en mode portrait */
+        @media (max-height: 600px) and (orientation: portrait) {
+            body {
+                align-items: flex-start;
+                padding-top: 20px;
+                padding-bottom: 20px;
+            }
+            
+            .container {
+                max-width: 100%;
+            }
+        }
+        
+        /* Pour les appareils en mode paysage */
+        @media (max-height: 500px) and (orientation: landscape) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                min-height: auto;
+                flex-direction: row;
+            }
+            
+            .left-panel, .right-panel {
+                padding: 20px;
+            }
+            
+            .left-panel h2 {
+                font-size: 20px;
+                margin-bottom: 10px;
+            }
+            
+            .left-panel p {
+                margin-bottom: 15px;
+                font-size: 13px;
+            }
+            
+            .features {
+                margin-top: 15px;
+            }
+            
+            .features li {
+                margin-bottom: 10px;
+                font-size: 12px;
             }
         }
         
@@ -427,6 +594,13 @@
         .right-panel {
             animation: fadeIn 0.6s ease-out 0.4s both;
         }
+        
+        /* Correction pour l'image du logo */
+        .logo img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 100px;
+        }
     </style>
 </head>
 <body>
@@ -437,11 +611,6 @@
         
         <div class="left-panel">
             <div class="left-content">
-                <div class="logo">
-                    <div class="logo">
-                    <img src="{{asset('assets/assets/images/pape.jpg')}}" style="width: 400px; border-radius:100px" alt="">
-                </div>
-                </div>
                 <h2>Découvrez notre plateforme innovante</h2>
                 <p>Connectez-vous pour accéder à votre espace personnel et découvrir toutes nos fonctionnalités exclusives.</p>
                 
@@ -463,7 +632,7 @@
                     <label for="text">Nom d'utilisateur</label>
                     <div class="input-with-icon">
                         <i class="input-icon fas fa-at"></i>
-                        <input type="text" id="email" name="user_name" placeholder="Entrez votre nom d'utilisateur">
+                        <input type="text" id="email" name="user_name" value="{{old('user_name')}}" placeholder="Entrez votre nom d'utilisateur">
                         @error('user_name')
                             <div class="error-message" style="color: rgb(184, 8, 8)">
                                 <i class="fas fa-exclamation-circle"></i> {{ $message }}
