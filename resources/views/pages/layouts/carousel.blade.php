@@ -2,20 +2,21 @@
     <div class="owl-carousel owl-banner">
       <div class="item item-1">
         <div class="header-text">
-          <span class="category">Toronto, <em>Canada</em></span>
-          <h2>Hurry!<br>Get the Best Villa for you</h2>
+          <span class="category">Pape, <em>Actuel</em></span>
+          <h2>Léon XIV!<br>Le pape actuel</h2>
         </div>
       </div>
       <div class="item item-2">
         <div class="header-text">
-          <span class="category">Melbourne, <em>Australia</em></span>
-          <h2>Be Quick!<br>Get the best villa in town</h2>
+          <span class="category">Basilique, <em>Côte d'ivoire</em></span>
+          <h2>Basilique!<br>Notre-Dame-de-la-Paix de Yamoussoukro
+</h2>
         </div>
       </div>
       <div class="item item-3">
         <div class="header-text">
-          <span class="category">Miami, <em>South Florida</em></span>
-          <h2>Act Now!<br>Get the highest level penthouse</h2>
+          <span class="category">Cathédrale, <em>Abidjan</em></span>
+          <h2>Cathédrale!<br>Saint-Paul du plateau</h2>
         </div>
       </div>
     </div>

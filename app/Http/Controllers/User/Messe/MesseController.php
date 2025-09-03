@@ -9,6 +9,7 @@ use App\Models\Paroisse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use PDF;
 
 class MesseController extends Controller
 {
@@ -187,5 +188,21 @@ class MesseController extends Controller
             ->with('success', 'Demande supprimée avec succès');
     }
 
+    public function downloadReceipt(Messe $messe)
+    {
+        // Vérifier que l'utilisateur a le droit de télécharger ce reçu
+        if ($messe->user_id !== Auth::user()->id) {
+            abort(403, 'Accès non autorisé');
+        }
+
+        // Générer le PDF du reçu
+        $pdf = PDF::loadView('user.messe.receipt', compact('messe'));
+
+        // Nom du fichier
+        $filename = 'reçu-messe-' . $messe->reference . '.pdf';
+
+        // Télécharger le PDF
+        return $pdf->download($filename);
+    }
     
 }

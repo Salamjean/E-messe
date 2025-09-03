@@ -99,10 +99,16 @@
             </div>
             
             <div class="card-actions">
-                <!-- CORRECTION ICI : Passage de l'ID de la messe à la route -->
+                <!-- Bouton pour voir les détails -->
                 <a href="{{ route('user.messe.show', ['messe' => $messe->id]) }}" class="card-action-btn view-btn">
                     👁️ Voir détails
                 </a>
+                
+                <!-- Bouton pour télécharger le reçu -->
+                <a href="{{ route('user.messe.receipt', ['messe' => $messe->id]) }}" class="card-action-btn download-btn" target="_blank">
+                    📄 Reçu
+                </a>
+                
                 @if($messe->statut === 'en attente')
                 <form action="{{ route('user.messe.destroy', ['messe' => $messe->id]) }}" method="POST" class="d-inline">
                     @csrf
@@ -282,6 +288,7 @@
         border-top: 1px solid #e9ecef;
         display: flex;
         gap: 10px;
+        flex-wrap: wrap;
     }
     
     .card-action-btn {
@@ -295,6 +302,8 @@
         cursor: pointer;
         display: inline-block;
         text-align: center;
+        flex: 1;
+        min-width: 100px;
     }
     
     .view-btn {
@@ -304,6 +313,16 @@
     
     .view-btn:hover {
         background: #ff7c52;
+        color: white;
+    }
+    
+    .download-btn {
+        background: #17a2b8;
+        color: white;
+    }
+    
+    .download-btn:hover {
+        background: #138496;
         color: white;
     }
     

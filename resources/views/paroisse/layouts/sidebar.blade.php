@@ -43,27 +43,32 @@
                 Historiques 
               </a>
             </div>
-            {{-- <div class="mdc-list-item mdc-drawer-item">
+            <div class="mdc-list-item mdc-drawer-item">
               <a class="mdc-expansion-panel-link" href="#" data-toggle="expansionPanel" data-target="ui-sub-menu">
                 <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">dashboard</i>
-                Livreur
+                Retrait
                 <i class="mdc-drawer-arrow material-icons">chevron_right</i>
               </a>
               <div class="mdc-expansion-panel" id="ui-sub-menu">
                 <nav class="mdc-list mdc-drawer-submenu">
                   <div class="mdc-list-item mdc-drawer-item">
-                    <a class="mdc-drawer-link" href="#">
-                      Ajout d'un livreur
+                    <a class="mdc-drawer-link" href="{{route('paroisse.retrait.create')}}">
+                      Demander 
                     </a>
                   </div>
                   <div class="mdc-list-item mdc-drawer-item">
-                    <a class="mdc-drawer-link" href="#">
-                      Liste des livreurs
+                    <a class="mdc-drawer-link" href="{{route('paroisse.retraits')}}">
+                     En attente
+                    </a>
+                  </div>
+                  <div class="mdc-list-item mdc-drawer-item">
+                    <a class="mdc-drawer-link" href="{{route('paroisse.history')}}">
+                      Historiques
                     </a>
                   </div>
                 </nav>
               </div>
-            </div> --}}
+            </div>
             {{-- <div class="mdc-list-item mdc-drawer-item">
               <a class="mdc-expansion-panel-link" href="#" data-toggle="expansionPanel" data-target="sample-page-submenu">
                 <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">pages</i>

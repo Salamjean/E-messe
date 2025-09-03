@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AuthenticateAdmin;
 use App\Http\Controllers\Admin\Paroisse\ParoisseController;
+use App\Http\Controllers\Admin\Paroisse\RetraitController;
 use App\Http\Controllers\Admin\User\AdminUserController;
 use App\Http\Controllers\Home\HomeController;
 use App\Http\Controllers\Paroisse\AuthenticateParoisse;
@@ -47,6 +48,14 @@ Route::middleware('admin')->prefix('admin')->group(function () {
         Route::put('/{paroisse}', [ParoisseController::class, 'update'])->name('admin.paroisses.update');
         Route::delete('/{paroisse}', [ParoisseController::class, 'destroy'])->name('admin.paroisses.destroy');
     });
+
+    //Les routes de gestions de retraits par l'admin 
+    Route::prefix('withdrawal')->group(function () {
+        Route::get('/request/parishe', [RetraitController::class, 'request'])->name('admin.paroisse.index');
+        Route::get('/parish/history', [RetraitController::class, 'history'])->name('admin.paroisse.history');
+        Route::post('/{id}/confirmer', [RetraitController::class, 'confirmer'])->name('admin.retraits.confirmer');
+         Route::post('/{id}/rejeter', [RetraitController::class, 'rejeter'])->name('admin.retraits.rejeter');
+    });
 });
 
 //Les routes des @paroisses 
@@ -61,11 +70,14 @@ Route::middleware('paroisse')->prefix('parish')->group(function(){
 
     //retraits
     Route::post('/retrait/request', [ParoissePaiement::class, 'requestRetrait'])->name('paroisse.retrait.request');
-    Route::get('/retraits', [ParoissePaiement::class, 'retraits'])->name('paroisse.retraits');
+    Route::get('/request/create', [ParoissePaiement::class, 'create'])->name('paroisse.retrait.create');
+    Route::get('/retraits', [ParoissePaiement::class, 'index'])->name('paroisse.retraits');
+    Route::get('/historye', [ParoissePaiement::class, 'history'])->name('paroisse.history');
+    Route::delete('/retrait/{id}/annuler', [ParoissePaiement::class, 'annuler'])->name('paroisse.retrait.annuler');
 
      //Les routes pour modifier des informations de la paroisse 
-      Route::get('/profile',[AuthenticateParoisse::class,'editProfile'])->name('paroisse.profile');
-      Route::put('/profile/update', [AuthenticateParoisse::class, 'updateProfile'])->name('paroisse.update');
+    Route::get('/profile',[AuthenticateParoisse::class,'editProfile'])->name('paroisse.profile');
+    Route::put('/profile/update', [AuthenticateParoisse::class, 'updateProfile'])->name('paroisse.update');
 
     //Routes de gestion des demandes de messes 
     Route::get('/index',[DemandeController::class,'index'])->name('demandes.messes.index');
@@ -79,7 +91,7 @@ Route::middleware('paroisse')->prefix('parish')->group(function(){
     //Routes de gestion des offrandes 
     Route::get('/offerings',[OffrandeController::class,'create'])->name('paroisse.offrande');
     Route::post('/parish/offrande', [OffrandeController::class, 'storeOffrande'])->name('paroisse.offrande.store');
-    Route::get('/request/history',[OffrandeController::class,'history'])->name('demandes.messes.history');
+    Route::get('/request/historys',[OffrandeController::class,'history'])->name('demandes.messes.history');
 });
 //Les routes des @utilisateurs (@fideles)
 Route::prefix('user')->group(function(){
@@ -103,6 +115,7 @@ Route::middleware('auth')->prefix('user')->group(function(){
      Route::get('/mes-messes/{messe}', [MesseController::class, 'show'])->name('user.messe.show');
      Route::get('/masses/history',[MesseController::class,'history'])->name('user.messe.history');
      Route::delete('/mes-messes/{messe}', [MesseController::class, 'destroy'])->name('user.messe.destroy');
+     Route::get('/mes-messes/{messe}/receipt', [MesseController::class, 'downloadReceipt'])->name('user.messe.receipt');
 
      // Routes pour le paiement
     Route::get('/messe/paiement/{reference}', [PaiementController::class, 'showPaiementForm'])->name('user.messe.paiement');

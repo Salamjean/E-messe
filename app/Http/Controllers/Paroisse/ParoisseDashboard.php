@@ -42,7 +42,7 @@ class ParoisseDashboard extends Controller
             ->whereNotNull('montant_offrande')
             ->where('montant_offrande', '>', 0)
             ->orderBy('created_at', 'desc')
-            ->take(3)
+            ->take(2)
             ->get(['montant_offrande', 'created_at', 'type_intention', 'nom_demandeur']);
         
         // Récupérer les offrandes des 6 derniers mois
@@ -90,7 +90,7 @@ class ParoisseDashboard extends Controller
             ->sum('montant');
         
         // Calculer le solde disponible (paiements - retraits)
-        $soldeDisponible = ($totalPaiements - $totalRetraits) / 1.01 ;
+        $soldeDisponible = ($totalPaiements / 1.01) - $totalRetraits ;
         
         // Récupérer les retraits récents
         $derniersRetraits = DB::table('paroisse_retraits')

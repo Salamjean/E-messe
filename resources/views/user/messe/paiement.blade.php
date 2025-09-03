@@ -47,7 +47,7 @@
                         <form action="{{ route('user.messe.initier-paiement', $paiement->reference) }}" method="POST">
                             @csrf
                             <input type="hidden" name="montant_total" value="{{ $paiement->montant * 1.01 }}">
-                            <button type="submit" class="btn btn-primary btn-lg rounded-2 py-3 px-5 fw-bold">
+                            <button type="submit" class="btn btn-lg rounded-2 py-3 px-5 fw-bold text-white" style="background-color: #181824">
                                 <i class="fas fa-check-circle me-2"></i>Payer avec Wave
                             </button>
                         </form>

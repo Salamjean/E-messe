@@ -5,7 +5,7 @@
                 <nav class="main-nav">
                     <!-- ***** Logo Start ***** -->
                     <a href="/" class="logo">
-                        <img src="{{asset('assets/assets/images/logo_E-messeFORME.png')}}" style="width:100px; margin-top:10px" alt="">
+                        <img src="{{asset('assets/assets/images/sancta.jpg')}}" style="width:100px; margin-top:10px" alt="">
                     </a>
                     <!-- ***** Logo End ***** -->
                     <!-- ***** Menu Start ***** -->

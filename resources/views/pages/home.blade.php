@@ -1,445 +1,713 @@
 @extends('pages.layouts.template')
 @section('content')
 
- <div class="featured section">
+<!-- Features Section -->
+<section class="features-section section-padding">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-4">
-          <div class="left-image">
-            <img src="#" alt="">
-            <a href="property-details.html"><img src="assets/images/featured-icon.png" alt="" style="max-width: 60px; padding: 0px;"></a>
-          </div>
-        </div>
-        <div class="col-lg-5">
-          <div class="section-heading">
-            <h6>| Featured</h6>
-            <h2>Best Appartment &amp; Sea view</h2>
-          </div>
-          <div class="accordion" id="accordionExample">
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingOne">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                  Best useful links ?
-                </button>
-              </h2>
-              <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
-                <div class="accordion-body">
-                Get <strong>the best villa</strong> website template in HTML CSS and Bootstrap for your business. TemplateMo provides you the <a href="https://www.google.com/search?q=best+free+css+templates" target="_blank">best free CSS templates</a> in the world. Please tell your friends about it.</div>
-              </div>
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="section-title">Pourquoi choisir notre service?</h2>
+                <p class="section-subtitle">Une expérience simplifiée pour vos intentions de messe</p>
             </div>
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingTwo">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                  How does this work ?
-                </button>
-              </h2>
-              <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
-                <div class="accordion-body">
-                  Dolor <strong>almesit amet</strong>, consectetur adipiscing elit, sed doesn't eiusmod tempor incididunt ut labore consectetur <code>adipiscing</code> elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        </div>
+        <div class="row">
+            <div class="col-md-4 feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-clock"></i>
                 </div>
-              </div>
+                <h3>Rapide et Simple</h3>
+                <p>Effectuez votre demande en quelques minutes, sans déplacement.</p>
             </div>
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingThree">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                  Why is Villa Agency the best ?
-                </button>
-              </h2>
-              <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
-                <div class="accordion-body">
-                  Dolor <strong>almesit amet</strong>, consectetur adipiscing elit, sed doesn't eiusmod tempor incididunt ut labore consectetur <code>adipiscing</code> elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            <div class="col-md-4 feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
                 </div>
-              </div>
+                <h3>Sécurisé</h3>
+                <p>Paiement sécurisé et confidentialité de vos intentions respectée.</p>
             </div>
-          </div>
+            <div class="col-md-4 feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <h3>Suivi en Temps Réel</h3>
+                <p>Suivez l'état de votre demande et recevez des confirmations.</p>
+            </div>
         </div>
-        <div class="col-lg-3">
-          <div class="info-table">
-            <ul>
-              <li>
-                <img src="assets/images/info-icon-01.png" alt="" style="max-width: 52px;">
-                <h4>250 m2<br><span>Total Flat Space</span></h4>
-              </li>
-              <li>
-                <img src="assets/images/info-icon-02.png" alt="" style="max-width: 52px;">
-                <h4>Contract<br><span>Contract Ready</span></h4>
-              </li>
-              <li>
-                <img src="assets/images/info-icon-03.png" alt="" style="max-width: 52px;">
-                <h4>Payment<br><span>Payment Process</span></h4>
-              </li>
-              <li>
-                <img src="assets/images/info-icon-04.png" alt="" style="max-width: 52px;">
-                <h4>Safety<br><span>24/7 Under Control</span></h4>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
+</section>
 
-  <div class="video section">
+<!-- How it Works Section -->
+<section id="how-it-works" class="how-it-works section-padding">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-4 offset-lg-4">
-          <div class="section-heading text-center">
-            <h6>| Video View</h6>
-            <h2>Get Closer View & Different Feeling</h2>
-          </div>
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="section-title">Comment faire une demande?</h2>
+                <p class="section-subtitle">Quatre étapes simples pour votre intention de messe</p>
+            </div>
         </div>
-      </div>
+        <div class="row">
+            <div class="col-lg-3 col-md-6 step-item">
+                <div class="step-number">1</div>
+                <h4>Choisissez l'intention</h4>
+                <p>Sélectionnez le type de messe que vous souhaitez demander.</p>
+            </div>
+            <div class="col-lg-3 col-md-6 step-item">
+                <div class="step-number">2</div>
+                <h4>Renseignez les détails</h4>
+                <p>Précisez la date, l'heure et les noms des défunts ou intentions.</p>
+            </div>
+            <div class="col-lg-3 col-md-6 step-item">
+                <div class="step-number">3</div>
+                <h4>Effectuez le paiement</h4>
+                <p>Procédez au règlement sécurisé de votre offrande.</p>
+            </div>
+            <div class="col-lg-3 col-md-6 step-item">
+                <div class="step-number">4</div>
+                <h4>Confirmation</h4>
+                <p>Recevez une confirmation et suivez votre demande.</p>
+            </div>
+        </div>
     </div>
-  </div>
+</section>
 
-  <div class="video-content">
+<!-- Types of Masses -->
+<section class="masses-types section-padding">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-10 offset-lg-1">
-          <div class="video-frame">
-            <img src="assets/images/video-frame.jpg" alt="">
-            <a href="https://youtube.com" target="_blank"><i class="fa fa-play"></i></a>
-          </div>
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="section-title">Types de messes disponibles</h2>
+                <p class="section-subtitle">Différentes intentions pour répondre à vos besoins spirituels</p>
+            </div>
         </div>
-      </div>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card mass-card">
+                    <div class="card-body text-center">
+                        <div class="mass-icon">
+                            <i class="fas fa-cross"></i>
+                        </div>
+                        <h4>Messe pour les défunts</h4>
+                        <p>Pour le repos de l'âme de vos proches disparus</p>
+                        <a href="#" class="btn btn-outline">En savoir plus</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card mass-card">
+                    <div class="card-body text-center">
+                        <div class="mass-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h4>Messe d'action de grâce</h4>
+                        <p>Pour remercier Dieu pour ses bienfaits</p>
+                        <a href="#" class="btn btn-outline">En savoir plus</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card mass-card">
+                    <div class="card-body text-center">
+                        <div class="mass-icon">
+                            <i class="fas fa-pray"></i>
+                        </div>
+                        <h4>Messe de demande</h4>
+                        <p>Pour présenter une intention particulière à Dieu</p>
+                        <a href="#" class="btn btn-outline">En savoir plus</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
+</section>
 
-  <div class="fun-facts">
+<!-- Statistics Section -->
+<section class="statistics-section section-padding">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="wrapper">
-            <div class="row">
-              <div class="col-lg-4">
-                <div class="counter">
-                  <h2 class="timer count-title count-number" data-to="34" data-speed="1000"></h2>
-                   <p class="count-text ">Buildings<br>Finished Now</p>
+        <div class="row">
+            <div class="col-md-3 col-6 text-center">
+                <div class="stat-item">
+                    <h3 class="stat-number" data-count="1250">0</h3>
+                    <p>Messes célébrées</p>
                 </div>
-              </div>
-              <div class="col-lg-4">
-                <div class="counter">
-                  <h2 class="timer count-title count-number" data-to="12" data-speed="1000"></h2>
-                  <p class="count-text ">Years<br>Experience</p>
-                </div>
-              </div>
-              <div class="col-lg-4">
-                <div class="counter">
-                  <h2 class="timer count-title count-number" data-to="24" data-speed="1000"></h2>
-                  <p class="count-text ">Awwards<br>Won 2023</p>
-                </div>
-              </div>
             </div>
-          </div>
+            <div class="col-md-3 col-6 text-center">
+                <div class="stat-item">
+                    <h3 class="stat-number" data-count="350">0</h3>
+                    <p>Familles satisfaites</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 text-center">
+                <div class="stat-item">
+                    <h3 class="stat-number" data-count="24">0</h3>
+                    <p>Heures de traitement</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 text-center">
+                <div class="stat-item">
+                    <h3 class="stat-number" data-count="98">0</h3>
+                    <p>% de satisfaction</p>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
+</section>
 
-  <div class="section best-deal">
+<!-- Testimonials -->
+<section class="testimonials section-padding">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-4">
-          <div class="section-heading">
-            <h6>| Best Deal</h6>
-            <h2>Find Your Best Deal Right Now!</h2>
-          </div>
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="section-title">Témoignages</h2>
+                <p class="section-subtitle">Ce que nos fidèles disent de notre service</p>
+            </div>
         </div>
-        <div class="col-lg-12">
-          <div class="tabs-content">
-            <div class="row">
-              <div class="nav-wrapper ">
-                <ul class="nav nav-tabs" role="tablist">
-                  <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="appartment-tab" data-bs-toggle="tab" data-bs-target="#appartment" type="button" role="tab" aria-controls="appartment" aria-selected="true">Appartment</button>
-                  </li>
-                  <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="villa-tab" data-bs-toggle="tab" data-bs-target="#villa" type="button" role="tab" aria-controls="villa" aria-selected="false">Villa House</button>
-                  </li>
-                  <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="penthouse-tab" data-bs-toggle="tab" data-bs-target="#penthouse" type="button" role="tab" aria-controls="penthouse" aria-selected="false">Penthouse</button>
-                  </li>
-                </ul>
-              </div>              
-              <div class="tab-content" id="myTabContent">
-                <div class="tab-pane fade show active" id="appartment" role="tabpanel" aria-labelledby="appartment-tab">
-                  <div class="row">
-                    <div class="col-lg-3">
-                      <div class="info-table">
-                        <ul>
-                          <li>Total Flat Space <span>185 m2</span></li>
-                          <li>Floor number <span>26th</span></li>
-                          <li>Number of rooms <span>4</span></li>
-                          <li>Parking Available <span>Yes</span></li>
-                          <li>Payment Process <span>Bank</span></li>
-                        </ul>
-                      </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-text">
+                        <p>"Service très simple d'utilisation. J'ai pu faire célébrer une messe pour mon père depuis l'étranger sans difficulté."</p>
                     </div>
-                    <div class="col-lg-6">
-                      <img src="assets/images/deal-01.jpg" alt="">
+                    <div class="testimonial-author">
+                        <h5>Kadio L.</h5>
+                        <span>Abidjan</span>
                     </div>
-                    <div class="col-lg-3">
-                      <h4>Extra Info About Property</h4>
-                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, do eiusmod tempor pack incididunt ut labore et dolore magna aliqua quised ipsum suspendisse. 
-                      <br><br>When you need free CSS templates, you can simply type TemplateMo in any search engine website. In addition, you can type TemplateMo Portfolio, TemplateMo One Page Layouts, etc.</p>
-                      <div class="icon-button">
-                        <a href="property-details.html"><i class="fa fa-calendar"></i> Schedule a visit</a>
-                      </div>
-                    </div>
-                  </div>
                 </div>
-                <div class="tab-pane fade" id="villa" role="tabpanel" aria-labelledby="villa-tab">
-                  <div class="row">
-                    <div class="col-lg-3">
-                      <div class="info-table">
-                        <ul>
-                          <li>Total Flat Space <span>250 m2</span></li>
-                          <li>Floor number <span>26th</span></li>
-                          <li>Number of rooms <span>5</span></li>
-                          <li>Parking Available <span>Yes</span></li>
-                          <li>Payment Process <span>Bank</span></li>
-                        </ul>
-                      </div>
+            </div>
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-text">
+                        <p>"J'apprécie particulièrement le suivi et la confirmation par email. Cela me rassure que ma demande a bien été prise en compte."</p>
                     </div>
-                    <div class="col-lg-6">
-                      <img src="assets/images/deal-02.jpg" alt="">
+                    <div class="testimonial-author">
+                        <h5>Salam O.</h5>
+                        <span>Aboisso</span>
                     </div>
-                    <div class="col-lg-3">
-                      <h4>Detail Info About Villa</h4>
-                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, do eiusmod tempor pack incididunt ut labore et dolore magna aliqua quised ipsum suspendisse. <br><br>Swag fanny pack lyft blog twee. JOMO ethical copper mug, succulents typewriter shaman DIY kitsch twee taiyaki fixie hella venmo after messenger poutine next level humblebrag swag franzen.</p>
-                      <div class="icon-button">
-                        <a href="property-details.html"><i class="fa fa-calendar"></i> Schedule a visit</a>
-                      </div>
-                    </div>
-                  </div>
                 </div>
-                <div class="tab-pane fade" id="penthouse" role="tabpanel" aria-labelledby="penthouse-tab">
-                  <div class="row">
-                    <div class="col-lg-3">
-                      <div class="info-table">
-                        <ul>
-                          <li>Total Flat Space <span>320 m2</span></li>
-                          <li>Floor number <span>34th</span></li>
-                          <li>Number of rooms <span>6</span></li>
-                          <li>Parking Available <span>Yes</span></li>
-                          <li>Payment Process <span>Bank</span></li>
-                        </ul>
-                      </div>
+            </div>
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-text">
+                        <p>"En tant que personne à mobilité réduite, ce service est une bénédiction. Je peux maintenant faire dire des messes facilement."</p>
                     </div>
-                    <div class="col-lg-6">
-                      <img src="assets/images/deal-03.jpg" alt="">
+                    <div class="testimonial-author">
+                        <h5>David D.</h5>
+                        <span>Korogho</span>
                     </div>
-                    <div class="col-lg-3">
-                      <h4>Extra Info About Penthouse</h4>
-                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, do eiusmod tempor pack incididunt ut labore et dolore magna aliqua quised ipsum suspendisse. <br><br>Swag fanny pack lyft blog twee. JOMO ethical copper mug, succulents typewriter shaman DIY kitsch twee taiyaki fixie hella venmo after messenger poutine next level humblebrag swag franzen.</p>
-                      <div class="icon-button">
-                        <a href="property-details.html"><i class="fa fa-calendar"></i> Schedule a visit</a>
-                      </div>
-                    </div>
-                  </div>
                 </div>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
     </div>
-  </div>
+</section>
 
-  <div class="properties section">
+<!-- CTA Section -->
+<section class="cta-section section-padding">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-4 offset-lg-4">
-          <div class="section-heading text-center">
-            <h6>| Properties</h6>
-            <h2>We Provide The Best Property You Like</h2>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-lg-4 col-md-6">
-          <div class="item">
-            <a href="property-details.html"><img src="assets/images/property-01.jpg" alt=""></a>
-            <span class="category">Luxury Villa</span>
-            <h6>$2.264.000</h6>
-            <h4><a href="property-details.html">18 New Street Miami, OR 97219</a></h4>
-            <ul>
-              <li>Bedrooms: <span>8</span></li>
-              <li>Bathrooms: <span>8</span></li>
-              <li>Area: <span>545m2</span></li>
-              <li>Floor: <span>3</span></li>
-              <li>Parking: <span>6 spots</span></li>
-            </ul>
-            <div class="main-button">
-              <a href="property-details.html">Schedule a visit</a>
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h2>Prêt à faire votre demande de messe?</h2>
+                <p>Rejoignez les milliers de fidèles qui utilisent notre plateforme chaque mois.</p>
             </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="item">
-            <a href="property-details.html"><img src="assets/images/property-02.jpg" alt=""></a>
-            <span class="category">Luxury Villa</span>
-            <h6>$1.180.000</h6>
-            <h4><a href="property-details.html">54 Mid Street Florida, OR 27001</a></h4>
-            <ul>
-              <li>Bedrooms: <span>6</span></li>
-              <li>Bathrooms: <span>5</span></li>
-              <li>Area: <span>450m2</span></li>
-              <li>Floor: <span>3</span></li>
-              <li>Parking: <span>8 spots</span></li>
-            </ul>
-            <div class="main-button">
-              <a href="property-details.html">Schedule a visit</a>
+            <div class="col-lg-4 text-lg-end">
+                <a href="#" class="btn btn-light">Commencer maintenant</a>
             </div>
-          </div>
         </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="item">
-            <a href="property-details.html"><img src="assets/images/property-03.jpg" alt=""></a>
-            <span class="category">Luxury Villa</span>
-            <h6>$1.460.000</h6>
-            <h4><a href="property-details.html">26 Old Street Miami, OR 38540</a></h4>
-            <ul>
-              <li>Bedrooms: <span>5</span></li>
-              <li>Bathrooms: <span>4</span></li>
-              <li>Area: <span>225m2</span></li>
-              <li>Floor: <span>3</span></li>
-              <li>Parking: <span>10 spots</span></li>
-            </ul>
-            <div class="main-button">
-              <a href="property-details.html">Schedule a visit</a>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="item">
-            <a href="property-details.html"><img src="assets/images/property-04.jpg" alt=""></a>
-            <span class="category">Apartment</span>
-            <h6>$584.500</h6>
-            <h4><a href="property-details.html">12 New Street Miami, OR 12650</a></h4>
-            <ul>
-              <li>Bedrooms: <span>4</span></li>
-              <li>Bathrooms: <span>3</span></li>
-              <li>Area: <span>125m2</span></li>
-              <li>Floor: <span>25th</span></li>
-              <li>Parking: <span>2 cars</span></li>
-            </ul>
-            <div class="main-button">
-              <a href="property-details.html">Schedule a visit</a>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="item">
-            <a href="property-details.html"><img src="assets/images/property-05.jpg" alt=""></a>
-            <span class="category">Penthouse</span>
-            <h6>$925.600</h6>
-            <h4><a href="property-details.html">34 Beach Street Miami, OR 42680</a></h4>
-            <ul>
-              <li>Bedrooms: <span>4</span></li>
-              <li>Bathrooms: <span>4</span></li>
-              <li>Area: <span>180m2</span></li>
-              <li>Floor: <span>38th</span></li>
-              <li>Parking: <span>2 cars</span></li>
-            </ul>
-            <div class="main-button">
-              <a href="property-details.html">Schedule a visit</a>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="item">
-            <a href="property-details.html"><img src="assets/images/property-06.jpg" alt=""></a>
-            <span class="category">Modern Condo</span>
-            <h6>$450.000</h6>
-            <h4><a href="property-details.html">22 New Street Portland, OR 16540</a></h4>
-            <ul>
-              <li>Bedrooms: <span>3</span></li>
-              <li>Bathrooms: <span>2</span></li>
-              <li>Area: <span>165m2</span></li>
-              <li>Floor: <span>26th</span></li>
-              <li>Parking: <span>3 cars</span></li>
-            </ul>
-            <div class="main-button">
-              <a href="property-details.html">Schedule a visit</a>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
+</section>
 
-  <div class="contact section">
+<!-- FAQ Section -->
+<section class="faq-section section-padding">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-4 offset-lg-4">
-          <div class="section-heading text-center">
-            <h6>| Contact Us</h6>
-            <h2>Get In Touch With Our Agents</h2>
-          </div>
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="section-title">Questions fréquentes</h2>
+                <p class="section-subtitle">Trouvez des réponses aux questions les plus courantes</p>
+            </div>
         </div>
-      </div>
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                Combien de temps à l'avance faut-il réserver?
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Nous recommandons de faire votre demande au moins 7 jours à l'avance pour garantir la disponibilité à la date souhaitée. Cependant, selon les créneaux disponibles, il est parfois possible d'obtenir une messe plus rapidement.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                Quels modes de paiement acceptez-vous?
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Nous acceptons les cartes bancaires (Visa, Mastercard), les virements ainsi que les portefeuilles électroniques. Tous les paiements sont sécurisés et cryptés.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                Recevrai-je une confirmation?
+                            </button>
+                        </h2>
+                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Oui, immédiatement après votre demande, vous recevrez un email de confirmation avec un numéro de suivi. Vous recevrez également un rappel avant la date de la messe.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
+</section>
 
-  <div class="contact-content">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-7">
-          <div id="map">
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12469.776493332698!2d-80.14036379941481!3d25.907788681148624!2m3!1f357.26927939317244!2f20.870722720054623!3f0!3m2!1i1024!2i768!4f35!3m3!1m2!1s0x88d9add4b4ac788f%3A0xe77469d09480fcdb!2sSunny%20Isles%20Beach!5e1!3m2!1sen!2sth!4v1642869952544!5m2!1sen!2sth" width="100%" height="500px" frameborder="0" style="border:0; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.15);" allowfullscreen=""></iframe>
-          </div>
-          <div class="row">
-            <div class="col-lg-6">
-              <div class="item phone">
-                <img src="assets/images/phone-icon.png" alt="" style="max-width: 52px;">
-                <h6>010-020-0340<br><span>Phone Number</span></h6>
-              </div>
-            </div>
-            <div class="col-lg-6">
-              <div class="item email">
-                <img src="assets/images/email-icon.png" alt="" style="max-width: 52px;">
-                <h6>info@villa.co<br><span>Business Email</span></h6>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-5">
-          <form id="contact-form" action="" method="post">
-            <div class="row">
-              <div class="col-lg-12">
-                <fieldset>
-                  <label for="name">Full Name</label>
-                  <input type="name" name="name" id="name" placeholder="Your Name..." autocomplete="on" required>
-                </fieldset>
-              </div>
-              <div class="col-lg-12">
-                <fieldset>
-                  <label for="email">Email Address</label>
-                  <input type="text" name="email" id="email" pattern="[^ @]*@[^ @]*" placeholder="Your E-mail..." required="">
-                </fieldset>
-              </div>
-              <div class="col-lg-12">
-                <fieldset>
-                  <label for="subject">Subject</label>
-                  <input type="subject" name="subject" id="subject" placeholder="Subject..." autocomplete="on" >
-                </fieldset>
-              </div>
-              <div class="col-lg-12">
-                <fieldset>
-                  <label for="message">Message</label>
-                  <textarea name="message" id="message" placeholder="Your Message"></textarea>
-                </fieldset>
-              </div>
-              <div class="col-lg-12">
-                <fieldset>
-                  <button type="submit" id="form-submit" class="orange-button">Send Message</button>
-                </fieldset>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-  @endsection
+<style>
+    /* Global Styles */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #181824;
+        background-color: #fff;
+    }
+    
+    /* Hero Section */
+    .hero-section {
+        background-color: #e04a1b;
+        color: white;
+        padding: 100px 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='1' fill='%23f35525' fill-opacity='0.1'/%3E%3C/svg%3E");
+        background-size: 100px 100px;
+    }
+    
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.25rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+        font-weight: 300;
+    }
+    
+    .hero-buttons .btn {
+        margin-right: 15px;
+        margin-bottom: 15px;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+        background-color: #f35525;
+        border-color: #f35525;
+    }
+    
+    .btn-primary:hover {
+        background-color: #e04a1b;
+        border-color: #e04a1b;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(243, 85, 37, 0.3);
+    }
+    
+    .btn-outline {
+        background-color: transparent;
+        border: 2px solid #f35525;
+        color: #f35525;
+    }
+    
+    .btn-outline:hover {
+        background-color: #f35525;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-light {
+        background-color: white;
+        color: #181824;
+        border: none;
+    }
+    
+    .btn-light:hover {
+        background-color: #f35525;
+        color: white;
+    }
+    
+    .church-illustration {
+        position: relative;
+        height: 300px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+    }
+    
+    .church-building {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .church-tower {
+        width: 60px;
+        height: 120px;
+        background: white;
+        margin: 0 auto;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        position: relative;
+    }
+    
+    .church-tower::after {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: -10px;
+        width: 80px;
+        height: 20px;
+        background: #f35525;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+    }
+    
+    .church-body {
+        width: 180px;
+        height: 150px;
+        background: white;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        margin-top: -10px;
+        position: relative;
+    }
+    
+    .church-door {
+        width: 40px;
+        height: 70px;
+        background: #f35525;
+        position: absolute;
+        bottom: 0;
+        left: 70px;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+    }
+    
+    .church-windows {
+        display: flex;
+        justify-content: space-around;
+        padding-top: 30px;
+    }
+    
+    .window {
+        width: 30px;
+        height: 30px;
+        background: #f35525;
+        opacity: 0.7;
+        border-radius: 50%;
+    }
+    
+    .sun {
+        position: absolute;
+        top: 50px;
+        right: 50px;
+        width: 60px;
+        height: 60px;
+        background: #f35525;
+        border-radius: 50%;
+        box-shadow: 0 0 30px #f35525;
+    }
+    
+    /* Section Padding */
+    .section-padding {
+        padding: 80px 0;
+    }
+    
+    /* Section Titles */
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #181824;
+        position: relative;
+    }
+    
+    .section-title::after {
+        content: '';
+        display: block;
+        width: 60px;
+        height: 4px;
+        background: #f35525;
+        margin: 15px auto 0;
+        border-radius: 2px;
+    }
+    
+    .section-subtitle {
+        font-size: 1.1rem;
+        color: #718096;
+        margin-bottom: 3rem;
+    }
+    
+    /* Features */
+    .features-section {
+        background: #f8f9fa;
+    }
+    
+    .feature-item {
+        text-align: center;
+        padding: 30px 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .feature-item:hover {
+        transform: translateY(-10px);
+    }
+    
+    .feature-icon {
+        font-size: 3rem;
+        color: #f35525;
+        margin-bottom: 1.5rem;
+    }
+    
+    .feature-item h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: #181824;
+    }
+    
+    .feature-item p {
+        color: #718096;
+    }
+    
+    /* How it Works */
+    .how-it-works {
+        background: #181824;
+        color: white;
+    }
+    
+    .how-it-works .section-title,
+    .how-it-works .section-subtitle {
+        color: white;
+    }
+    
+    .step-item {
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .step-number {
+        width: 60px;
+        height: 60px;
+        line-height: 60px;
+        border-radius: 50%;
+        background: #f35525;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0 auto 1.5rem;
+    }
+    
+    .step-item h4 {
+        margin-bottom: 1rem;
+        color: white;
+    }
+    
+    .step-item p {
+        color: #a0aec0;
+    }
+    
+    /* Mass Cards */
+    .mass-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s, box-shadow 0.3s;
+        height: 100%;
+        background: white;
+    }
+    
+    .mass-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(243, 85, 37, 0.15);
+    }
+    
+    .mass-icon {
+        font-size: 2.5rem;
+        color: #f35525;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Statistics */
+    .statistics-section {
+        background: #f8f9fa;
+    }
+    
+    .stat-item {
+        padding: 20px;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #f35525;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Testimonials */
+    .testimonial-card {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        height: 100%;
+        position: relative;
+    }
+    
+    .testimonial-card::before {
+        content: '"';
+        font-size: 5rem;
+        color: #f35525;
+        opacity: 0.1;
+        position: absolute;
+        top: 10px;
+        left: 20px;
+        line-height: 1;
+    }
+    
+    .testimonial-text {
+        margin-bottom: 1.5rem;
+        color: #4a5568;
+        font-style: italic;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .testimonial-author h5 {
+        margin-bottom: 0.25rem;
+        color: #181824;
+    }
+    
+    .testimonial-author span {
+        color: #718096;
+        font-size: 0.9rem;
+    }
+    
+    /* CTA Section */
+    .cta-section {
+        background: #f35525;
+        color: white;
+    }
+    
+    .cta-section h2 {
+        margin-bottom: 1rem;
+    }
+    
+    /* FAQ */
+    .faq-section {
+        background: #f8f9fa;
+    }
+    
+    .accordion-button:not(.collapsed) {
+        background-color: #f35525;
+        color: white;
+    }
+    
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: rgba(0,0,0,.125);
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.2rem;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+        }
+        
+        .hero-section, .section-padding {
+            padding: 60px 0;
+        }
+        
+        .church-illustration {
+            height: 200px;
+            margin-top: 40px;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animation for elements when they come into view
+        const animatedElements = document.querySelectorAll('.feature-item, .step-item, .mass-card, .testimonial-card');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        animatedElements.forEach(element => {
+            element.style.opacity = 0;
+            element.style.transform = 'translateY(20px)';
+            element.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            observer.observe(element);
+        });
+        
+        // Counter animation for statistics
+        const counters = document.querySelectorAll('.stat-number');
+        const speed = 200;
+        
+        counters.forEach(counter => {
+            const updateCount = () => {
+                const target = +counter.getAttribute('data-count');
+                const count = +counter.innerText;
+                
+                const inc = target / speed;
+                
+                if (count < target) {
+                    counter.innerText = Math.ceil(count + inc);
+                    setTimeout(updateCount, 1);
+                } else {
+                    counter.innerText = target;
+                }
+            };
+            
+            const startCounter = (entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        updateCount();
+                        observer.unobserve(entry.target);
+                    }
+                });
+            };
+            
+            const counterObserver = new IntersectionObserver(startCounter, { threshold: 0.5 });
+            counterObserver.observe(counter);
+        });
+    });
+</script>
+
+@endsection

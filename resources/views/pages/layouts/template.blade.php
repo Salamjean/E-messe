@@ -53,16 +53,6 @@ https://templatemo.com/tm-591-villa-agency
   <!--content-->
   @yield('content')
   <!--end content-->
-
-  <footer>
-    <div class="container">
-      <div class="col-lg-8">
-        <p>Copyright © 2048 Villa Agency Co., Ltd. All rights reserved. 
-        
-        Design: <a rel="nofollow" href="https://templatemo.com" target="_blank">TemplateMo</a> Distribution: <a href="https://themewagon.com">ThemeWagon</a></p>
-      </div>
-    </div>
-  </footer>
   <!-- Scripts -->
   <!-- Bootstrap core JavaScript -->
   <script src="{{asset('assets/vendor/jquery/jquery.min.js')}}"></script>

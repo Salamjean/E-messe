@@ -18,7 +18,10 @@ return new class extends Migration
             $table->string('methode'); // wave, orange_money, mtn_money, virement_bancaire, etc.
             $table->string('numero_compte'); // numéro de téléphone ou compte
             $table->string('nom_titulaire'); // nom du titulaire du compte
+            $table->string('nom_banque')->nullable(); // Nom de la banque
             $table->string('statut')->default('en_attente'); // en_attente, traite, rejete, complete
+            $table->string('preuve_virement')->nullable();
+            $table->text('raison_rejet')->nullable();
             $table->text('informations_supplementaires')->nullable();
             $table->string('reference')->unique();
             $table->timestamp('traite_le')->nullable();

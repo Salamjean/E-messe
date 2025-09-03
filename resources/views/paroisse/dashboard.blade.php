@@ -4,6 +4,8 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 <link rel="stylesheet" href="{{asset('assets/paroiStyle.css')}}">
+<!-- Ajout de SweetAlert2 CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="modern-dashboard">
@@ -97,7 +99,7 @@
                 <div class="progress" style="width: 100%; background: #FFC107;"></div>
             </div>
             <div class="mt-2">
-                <a href="#" class="btn-retrait" style="color: #FFC107; font-size: 12px;">
+                <a href="{{route('paroisse.retrait.create')}}"  style="color: #FFC107; font-size: 12px;">
                     <i class="fas fa-money-bill-wave"></i> Demander un retrait
                 </a>
             </div>
@@ -214,7 +216,7 @@
         <!-- Dernières offrandes -->
         <div class="recent-offrandes">
             <div class="card-header">
-                <h2>Dernières Offrandes</h2>
+                <h2>Dernière demande de messe</h2>
                 <a href="#" class="view-all">Voir tout</a>
             </div>
             <div class="offrande-list">
@@ -248,59 +250,8 @@
     </div>
 </div>
 
-<!-- Modal pour effectuer un retrait -->
-<!-- Modal pour effectuer un retrait -->
-<div class="modal fade" id="retraitModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Demander un retrait</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="retraitForm" action="{{ route('paroisse.retrait.request') }}" method="POST">
-                @csrf
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Solde disponible</label>
-                        <input type="text" class="form-control" value="{{ number_format($soldeDisponible, 0, ',', ' ') }} FCFA" disabled>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Montant à retirer (FCFA)</label>
-                        <input type="number" name="montant" class="form-control" required min="1000" max="{{ $soldeDisponible }}">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Méthode de retrait</label>
-                        <select name="methode" class="form-select" required>
-                            <option value="">Sélectionnez une méthode</option>
-                            <option value="wave">Wave</option>
-                            <option value="orange_money">Orange Money</option>
-                            <option value="mtn_money">MTN Money</option>
-                            <option value="virement_bancaire">Virement Bancaire</option>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Numéro de compte / Téléphone</label>
-                        <input type="text" name="numero_compte" class="form-control" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Nom du titulaire du compte</label>
-                        <input type="text" name="nom_titulaire" class="form-control" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Demander le retrait</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-<!-- Bootstrap CSS -->
-
+<!-- Ajout de SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Animation des chiffres des statistiques
@@ -484,82 +435,162 @@
             }
         });
 
-        // Gestion du modal de retrait - CODE CORRIGÉ
+        // Gestion du popup SweetAlert2 pour le retrait - CODE CORRIGÉ
         const retraitBtn = document.querySelector('.btn-retrait');
         if (retraitBtn) {
             retraitBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                console.log('Bouton retrait cliqué');
                 
-                // Vérifier si Bootstrap est chargé
-                if (typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined') {
-                    const retraitModalElement = document.getElementById('retraitModal');
-                    if (retraitModalElement) {
-                        const retraitModal = new bootstrap.Modal(retraitModalElement);
-                        retraitModal.show();
-                    } else {
-                        console.error('Element #retraitModal non trouvé');
-                    }
-                } else {
-                    console.error('Bootstrap non chargé');
-                    // Fallback manuel si Bootstrap n'est pas disponible
-                    const modal = document.getElementById('retraitModal');
-                    if (modal) {
-                        modal.style.display = 'block';
-                        modal.classList.add('show');
-                        document.body.classList.add('modal-open');
+                // Créer le formulaire HTML pour SweetAlert2
+                const formHTML = `
+                    <form id="swalRetraitForm">
+                        <div class="mb-3">
+                            <label class="form-label">Solde disponible</label>
+                            <input type="text" class="form-control" value="{{ number_format($soldeDisponible, 0, ',', ' ') }} FCFA" disabled>
+                        </div>
                         
-                        // Ajouter le backdrop manuellement
-                        const backdrop = document.createElement('div');
-                        backdrop.className = 'modal-backdrop fade show';
-                        document.body.appendChild(backdrop);
+                        <div class="mb-3">
+                            <label class="form-label">Montant à retirer (FCFA)</label>
+                            <input type="number" name="montant" id="swalMontant" class="form-control" required min="1000" max="{{ $soldeDisponible }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Méthode de retrait</label>
+                            <select name="methode" id="swalMethode" class="form-select" required>
+                                <option value="">Sélectionnez une méthode</option>
+                                <option value="wave">Wave</option>
+                                <option value="orange_money">Orange Money</option>
+                                <option value="mtn_money">MTN Money</option>
+                                <option value="virement_bancaire">Virement Bancaire</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Numéro de compte / Téléphone</label>
+                            <input type="text" name="numero_compte" id="swalNumeroCompte" class="form-control" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nom du titulaire du compte</label>
+                            <input type="text" name="nom_titulaire" id="swalNomTitulaire" class="form-control" required>
+                        </div>
+                    </form>
+                `;
+                
+                // Afficher le popup SweetAlert2 avec le formulaire
+                Swal.fire({
+                    title: 'Demander un retrait',
+                    html: formHTML,
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonColor: '#FFC107',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Demander le retrait',
+                    cancelButtonText: 'Annuler',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const montant = parseFloat(document.getElementById('swalMontant').value);
+                        const methode = document.getElementById('swalMethode').value;
+                        const numeroCompte = document.getElementById('swalNumeroCompte').value;
+                        const nomTitulaire = document.getElementById('swalNomTitulaire').value;
+                        
+                        // Validation
+                        if (!montant || montant < 1000 || montant > {{ $soldeDisponible }}) {
+                            Swal.showValidationMessage('Montant invalide. Le montant doit être entre 1000 et {{ $soldeDisponible }} FCFA');
+                            return false;
+                        }
+                        
+                        if (!methode) {
+                            Swal.showValidationMessage('Veuillez sélectionner une méthode de retrait');
+                            return false;
+                        }
+                        
+                        if (!numeroCompte) {
+                            Swal.showValidationMessage('Veuillez saisir un numéro de compte/téléphone');
+                            return false;
+                        }
+                        
+                        if (!nomTitulaire) {
+                            Swal.showValidationMessage('Veuillez saisir le nom du titulaire du compte');
+                            return false;
+                        }
+                        
+                        return {
+                            montant: montant,
+                            methode: methode,
+                            numero_compte: numeroCompte,
+                            nom_titulaire: nomTitulaire
+                        };
                     }
-                }
-            });
-        } else {
-            console.error('Bouton .btn-retrait non trouvé');
-        }
-
-        // Fermer le modal (fallback manuel)
-        const closeButtons = document.querySelectorAll('[data-bs-dismiss="modal"], .btn-close');
-        closeButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const modal = this.closest('.modal');
-                if (modal) {
-                    modal.style.display = 'none';
-                    modal.classList.remove('show');
-                    document.body.classList.remove('modal-open');
-                    
-                    // Supprimer le backdrop
-                    const backdrop = document.querySelector('.modal-backdrop');
-                    if (backdrop) {
-                        backdrop.remove();
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Afficher un indicateur de chargement
+                        Swal.fire({
+                            title: 'Traitement en cours...',
+                            text: 'Veuillez patienter',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                        
+                        // Préparer les données pour l'envoi
+                        const formData = new FormData();
+                        formData.append('_token', '{{ csrf_token() }}');
+                        formData.append('montant', result.value.montant);
+                        formData.append('methode', result.value.methode);
+                        formData.append('numero_compte', result.value.numero_compte);
+                        formData.append('nom_titulaire', result.value.nom_titulaire);
+                        
+                        // Envoyer la requête AJAX
+                        fetch('{{ route("paroisse.retrait.request") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: formData
+                        })
+                        .then(response => {
+                            // Fermer l'indicateur de chargement
+                            Swal.close();
+                            
+                            if (!response.ok) {
+                                throw new Error('Erreur réseau');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Succès!',
+                                    text: data.message || 'Votre demande de retrait a été envoyée avec succès.',
+                                    icon: 'success',
+                                    confirmButtonColor: '#FFC107'
+                                }).then(() => {
+                                    // Recharger la page pour mettre à jour les données
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Erreur!',
+                                    text: data.message || 'Une erreur s\'est produite lors de la demande de retrait.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#FFC107'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                title: 'Erreur!',
+                                text: 'Une erreur s\'est produite lors de la communication avec le serveur.',
+                                icon: 'error',
+                                confirmButtonColor: '#FFC107'
+                            });
+                            console.error('Erreur:', error);
+                        });
                     }
-                }
-            });
-        });
-
-       // Valider le formulaire de retrait
-        const retraitForm = document.getElementById('retraitForm');
-        if (retraitForm) {
-            retraitForm.addEventListener('submit', function(e) {
-                const montantInput = this.querySelector('input[name="montant"]');
-                if (montantInput) {
-                    const montant = parseFloat(montantInput.value);
-                    const solde = parseFloat({{ $soldeDisponible }});
-                    
-                    if (montant > solde) {
-                        e.preventDefault();
-                        alert('Le montant demandé dépasse votre solde disponible.');
-                        return false;
-                    }
-                    
-                    if (montant < 1000) {
-                        e.preventDefault();
-                        alert('Le montant minimum de retrait est de 1 000 FCFA.');
-                        return false;
-                    }
-                }
+                });
             });
         }
     });
