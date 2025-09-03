@@ -125,7 +125,7 @@
 
         <div class="chart-card">
             <div class="chart-header">
-                <h3>Évolution mensuelle des offrandes</h3>
+                <h3>Évolution mensuelle des demandes de messe</h3>
             </div>
             <div class="chart-container">
                 <canvas id="offrandes-chart"></canvas>

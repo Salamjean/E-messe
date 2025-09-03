@@ -101,7 +101,7 @@
             <div class="card-actions">
                 <!-- Bouton pour voir les détails -->
                 <a href="{{ route('user.messe.show', ['messe' => $messe->id]) }}" class="card-action-btn view-btn">
-                    👁️ Voir détails
+                    👁️ détails
                 </a>
                 
                 <!-- Bouton pour télécharger le reçu -->

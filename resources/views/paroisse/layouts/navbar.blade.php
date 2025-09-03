@@ -10,7 +10,7 @@
                   <span class="figure">
                     <img src="{{ optional(Auth::guard('paroisse')->user())->profile_picture 
                                                 ? asset('storage/' . Auth::guard('paroisse')->user()->profile_picture) 
-                                                : asset('assets/assets/images/logo_E-messeFORME.png') }}" alt="user" class="user">
+                                                : asset('assets/assets/images/sancta-blanc.jpg') }}" alt="user" class="user">
                   </span>
                   <span class="user-name text-white"> {{Auth::guard('paroisse')->user()->name}} </span>
                 </span>

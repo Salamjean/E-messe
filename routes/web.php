@@ -14,6 +14,7 @@ use App\Http\Controllers\Paroisse\ParoisseDashboard;
 use App\Http\Controllers\User\AuthenticateUser;
 use App\Http\Controllers\User\Messe\MesseController;
 use App\Http\Controllers\User\Messe\PaiementController;
+use App\Http\Controllers\User\Messe\PaiementStripeController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\UserDashboard;
 use Illuminate\Support\Facades\Route;
@@ -122,6 +123,11 @@ Route::middleware('auth')->prefix('user')->group(function(){
     Route::post('/messe/paiement/{reference}/initier', [PaiementController::class, 'initierPaiement'])->name('user.messe.initier-paiement');
     Route::get('/messe/paiement/{reference}/verification', [PaiementController::class, 'verifierPaiement'])->name('user.messe.verification-paiement'); 
     Route::post('/messe/paiement/{reference}/verifier', [PaiementController::class, 'verifierManuellement'])->name('user.messe.verifier-manuellement');
+
+    //Les routes de paiement par stripe
+    Route::post('/messe/paiement/stripe/{reference}', [PaiementStripeController::class, 'initierPaiementStripe'])->name('user.messe.initier-paiement-stripe');
+    Route::get('/messe/paiement/success/{reference}', [PaiementStripeController::class, 'successPaiementStripe'])->name('user.messe.paiement.success');
+    Route::get('/messe/paiement/cancel/{reference}', [PaiementStripeController::class, 'cancelPaiementStripe'])->name('user.messe.paiement.cancel');
     
 });
 
