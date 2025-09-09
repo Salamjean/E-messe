@@ -301,7 +301,7 @@
 <body>
     <form class="form-container animate__animated animate__fadeIn" method="POST" action="{{ route('paroisse.handleLogin') }}">
         <div class="form-header">
-            <img src="{{ asset('assets/assets/images/logo_E-messeFORME.png') }}" style="height: 50%; width:25%" alt="">
+            <img src="{{ asset('assets/assets/images/sancta.jpg') }}" style="height: 50%; width:25%" alt="">
             <p class="subtitle">Entrez vos identifiants pour accéder à votre espace</p>
         </div>
 

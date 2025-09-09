@@ -29,13 +29,13 @@
             
             <div class="card-content">
                 <h3 class="card-title">
-                    Messe pour 
+                     Messe   
                     @if($messe->type_intention === 'Defunt')
-                        {{ $messe->nom_defunt ?? 'Défunt' }}
+                        de Défunt
                     @elseif($messe->type_intention === 'Action graces')
-                        Action de Grâces
+                        d'action de Grâces
                     @else
-                        Intention Particulière
+                        d'ntention Particulière
                     @endif
                 </h3>
                 

@@ -360,12 +360,13 @@
                         <div class="info-item">
                             <span class="info-label">Type d'intention</span>
                             <span class="info-value">
+                               Messe   
                                 @if($messe->type_intention === 'Defunt')
-                                    Messe pour Défunt
+                                    de Défunt
                                 @elseif($messe->type_intention === 'Action graces')
-                                    Action de Grâces
+                                    d'action de Grâces
                                 @else
-                                    Intention Particulière
+                                    d'ntention Particulière
                                 @endif
                             </span>
                         </div>

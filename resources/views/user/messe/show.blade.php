@@ -38,33 +38,27 @@
                     @if($messe->type_intention === 'Defunt' && $messe->nom_defunt)
                     <div class="detail-item">
                         <span class="detail-label">Nom du défunt:</span>
-                        <span class="detail-value">{{ $messe->nom_defunt }}</span>
+                        <div class="motif-container">
+                            <p class="motif-text">{{ $messe->nom_defunt }}</p>
+                        </div>
                     </div>
                     @endif
-                    
+
                     @if($messe->type_intention === 'Action graces' && $messe->motif_action_graces)
                     <div class="detail-item">
                         <span class="detail-label">Motif action de grâces:</span>
-                        <span class="detail-value">{{ $messe->motif_action_graces }}</span>
+                        <div class="motif-container">
+                            <p class="motif-text">{{ $messe->motif_action_graces }}</p>
+                        </div>
                     </div>
                     @endif
-                    
+
                     @if($messe->type_intention === 'Intention particuliere' && $messe->motif_intention)
                     <div class="detail-item">
                         <span class="detail-label">Motif intention particulière:</span>
-                        <span class="detail-value">{{ $messe->motif_intention }}</span>
-                    </div>
-                    @endif
-                    
-                    <div class="detail-item">
-                        <span class="detail-label">Date de début:</span>
-                        <span class="detail-value">{{ \Carbon\Carbon::parse($messe->date_souhaitee)->format('d/m/Y') }}</span>
-                    </div>
-                    
-                    @if($messe->heure_souhaitee)
-                    <div class="detail-item">
-                        <span class="detail-label">Heure souhaitée:</span>
-                        <span class="detail-value">{{ $messe->heure_souhaitee }}</span>
+                        <div class="motif-container">
+                            <p class="motif-text">{{ $messe->motif_intention }}</p>
+                        </div>
                     </div>
                     @endif
                     
@@ -326,6 +320,46 @@
         background: #c82333;
     }
     
+    /* Style pour les motifs de texte longs */
+    .motif-container {
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 15px;
+        margin-top: 10px;
+        max-height: 200px;
+        overflow-y: auto;
+        font-family: inherit;
+        line-height: 1.5;
+    }
+    
+    .motif-text {
+        color: #495057;
+        font-size: 0.95rem;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        margin: 0;
+    }
+    
+    /* Style de la barre de défilement */
+    .motif-container::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .motif-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .motif-container::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+    }
+    
+    .motif-container::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+    
     @media (max-width: 768px) {
         .detail-grid {
             grid-template-columns: 1fr;
@@ -335,6 +369,10 @@
             flex-direction: column;
             gap: 10px;
             text-align: center;
+        }
+        
+        .motif-container {
+            max-height: 150px;
         }
     }
 </style>

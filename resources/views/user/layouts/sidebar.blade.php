@@ -10,7 +10,7 @@
                 <div class="profile-image">
                   <img class="img-xs rounded-circle" src="{{ optional(Auth::user())->profile_picture 
                                                 ? asset('storage/' . Auth::user()->profile_picture) 
-                                                : asset('assets/images/profiles/useriii.jpeg') }}" 
+                                                : asset('assets/assets/images/avatarAn.jpg') }}" 
                                         alt="Profile Picture">
                   <div class="dot-indicator bg-success"></div>
                 </div>

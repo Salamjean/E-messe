@@ -59,13 +59,13 @@
             
             <div class="card-content">
                 <h3 class="card-title">
-                    Messe pour 
+                    Messe   
                     @if($messe->type_intention === 'Defunt')
-                        {{ $messe->nom_defunt ?? 'Défunt' }}
+                        de Défunt
                     @elseif($messe->type_intention === 'Action graces')
-                        Action de Grâces
+                        d'action de Grâces
                     @else
-                        Intention Particulière
+                        d'ntention Particulière
                     @endif
                 </h3>
                 
@@ -473,7 +473,7 @@
     }
     
     .select-all-container {
-        width: 15%;
+        width: 30%;
         background: white;
         padding: 12px 15px;
         border-radius: 8px;

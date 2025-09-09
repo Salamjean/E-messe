@@ -12,71 +12,63 @@
     <form action="{{ route('user.messe.store') }}" method="POST" class="messe-form" id="messeForm">
         @csrf
         
-        <!-- Section: Type d'intention -->
-        <div class="form-section">
-            <div class="section-header">
-                <div class="section-icon">📝</div>
-                <h2>Type d'intention</h2>
+        <div class="radio-group">
+    <label class="radio-label">Type d'intention *</label>
+    <div class="radio-options">
+        <label class="radio-option">
+            <input type="radio" name="type_intention" value="Defunt" class="intention-radio">
+            <span class="radio-custom"></span>
+            <span class="radio-text">Défunt</span>
+        </label>
+        <label class="radio-option">
+            <input type="radio" name="type_intention" value="Action graces" class="intention-radio">
+            <span class="radio-custom"></span>
+            <span class="radio-text">Action de grâces</span>
+        </label>
+        <label class="radio-option">
+            <input type="radio" name="type_intention" value="Intention particuliere" class="intention-radio">
+            <span class="radio-custom"></span>
+            <span class="radio-text">Intention particulière</span>
+        </label>
+    </div>
+</div>
+
+<!-- Champs conditionnels selon le type d'intention -->
+<div id="defunt_fields" class="conditional-field">
+    <div class="form-group">
+        <label for="nom_defunt">Motif de demande *</label>
+        <textarea id="nom_defunt" name="nom_defunt" rows="4" placeholder="Entrez les détails concernant le défunt">{{old('nom_defunt')}}</textarea>
+        @error('nom_defunt')
+            <div class="error-message" style="color: rgb(184, 8, 8)">
+                    <i class="fas fa-exclamation-circle"></i> {{ $message }}
             </div>
-            
-            <div class="radio-group">
-                <label class="radio-label">Type d'intention *</label>
-                <div class="radio-options">
-                    <label class="radio-option">
-                        <input type="radio" name="type_intention" value="Defunt" class="intention-radio">
-                        <span class="radio-custom"></span>
-                        <span class="radio-text">Défunt</span>
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="type_intention" value="Action graces" class="intention-radio">
-                        <span class="radio-custom"></span>
-                        <span class="radio-text">Action de grâces</span>
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="type_intention" value="Intention particuliere" class="intention-radio">
-                        <span class="radio-custom"></span>
-                        <span class="radio-text">Intention particulière</span>
-                    </label>
-                </div>
+        @enderror
+    </div>
+</div>
+
+<div id="action_graces_fields" class="conditional-field">
+    <div class="form-group">
+        <label for="motif_action_graces">Motif de l'action de grâces *</label>
+        <textarea id="motif_action_graces" name="motif_action_graces" rows="4" placeholder="Décrivez les raisons de votre action de grâces">{{old('motif_action_graces')}}</textarea>
+        @error('motif_action_graces')
+            <div class="error-message" style="color: rgb(184, 8, 8)">
+                    <i class="fas fa-exclamation-circle"></i> {{ $message }}
             </div>
-            
-            <!-- Champs conditionnels selon le type d'intention -->
-            <div id="defunt_fields" class="conditional-field">
-                <div class="form-group">
-                    <label for="nom_defunt">Motif de demande *</label>
-                    <input type="text" id="nom_defunt" name="nom_defunt" value="{{old('nom_defunt')}}" style="padding: 50px">
-                    @error('nom_defunt')
-                        <div class="error-message" style="color: rgb(184, 8, 8)">
-                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                        </div>
-                    @enderror
-                </div>
+        @enderror
+    </div>
+</div>
+
+<div id="intention_particuliere_fields" class="conditional-field">
+    <div class="form-group">
+        <label for="motif_intention">Motif de l'intention particulière *</label>
+        <textarea id="motif_intention" name="motif_intention" rows="4" placeholder="Précisez votre intention particulière">{{old('motif_intention')}}</textarea>
+        @error('motif_intention')
+            <div class="error-message" style="color: rgb(184, 8, 8)">
+                    <i class="fas fa-exclamation-circle"></i> {{ $message }}
             </div>
-            
-            <div id="action_graces_fields" class="conditional-field">
-                <div class="form-group">
-                    <label for="motif_action_graces">Motif de l'action de grâces *</label>
-                    <input type="text" id="motif_action_graces" value="{{old('motif_action_graces')}}" name="motif_action_graces" style="padding: 50px">
-                    @error('motif_action_graces')
-                        <div class="error-message" style="color: rgb(184, 8, 8)">
-                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                        </div>
-                    @enderror
-                </div>
-            </div>
-            
-            <div id="intention_particuliere_fields" class="conditional-field">
-                <div class="form-group">
-                    <label for="motif_intention">Motif de l'intention particulière *</label>
-                    <input type="text" id="motif_intention" value="{{old('motif_intention')}}" name="motif_intention" style="padding: 50px">
-                    @error('motif_intention')
-                        <div class="error-message" style="color: rgb(184, 8, 8)">
-                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                        </div>
-                    @enderror
-                </div>
-            </div>
-        </div>
+        @enderror
+    </div>
+</div>
         
         <!-- Section: Détails de la messe -->
         <div class="form-section">
@@ -152,7 +144,7 @@
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label for="montant_offrande">Montant de l'offrande (FCFA)</label>
+                    <label for="montant_offrande">Montant des demandes de messes (FCFA)</label>
                     <div class="input-with-icon">
                         <input type="number" id="montant_offrande" name="montant_offrande" step="0.01" min="0" readonly>
                     </div>
@@ -306,6 +298,119 @@
     #montant-details {
         color: #f35525;
         font-weight: 500;
+    }
+
+      .jours-selection {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .jour-checkbox {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .jour-checkbox:hover {
+        background: #e9ecef;
+    }
+    
+    .jour-checkbox input[type="checkbox"] {
+        display: none;
+    }
+    
+    .jour-checkbox input[type="checkbox"]:checked + .checkmark {
+        background: #f35525;
+        border-color: #f35525;
+    }
+    
+    .jour-checkbox input[type="checkbox"]:checked + .checkmark::after {
+        content: '✓';
+        color: white;
+        font-size: 12px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+    
+    .checkmark {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #ced4da;
+        border-radius: 4px;
+        margin-right: 10px;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .date-checkbox {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .date-checkbox:hover {
+        background: #e9ecef;
+    }
+    
+    .date-checkbox input[type="checkbox"] {
+        margin-right: 8px;
+    }
+    
+    #montant-details {
+        color: #f35525;
+        font-weight: 500;
+    }
+    
+    /* Styles pour les textarea */
+    textarea {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 16px;
+        color: #2d3748;
+        background-color: #fff;
+        transition: all 0.3s ease;
+        resize: vertical;
+        min-height: 120px;
+        box-sizing: border-box;
+    }
+    
+    textarea:focus {
+        outline: none;
+        border-color: #f35525;
+        box-shadow: 0 0 0 3px rgba(243, 85, 37, 0.1);
+    }
+    
+    textarea::placeholder {
+        color: #a0aec0;
+    }
+    
+    .form-group textarea {
+        margin-top: 8px;
+    }
+    
+    /* Responsive adjustment */
+    @media (max-width: 768px) {
+        textarea {
+            font-size: 14px;
+            min-height: 100px;
+        }
     }
 </style>
 

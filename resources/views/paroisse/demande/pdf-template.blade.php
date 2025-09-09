@@ -178,13 +178,14 @@
     <div class="messe-card">
         <div class="messe-header">
             <h3 style="margin: 0;">
-                @if($messe->type_intention === 'Defunt')
-                    Messe pour Défunt: {{ $messe->nom_defunt ?? 'Non spécifié' }}
-                @elseif($messe->type_intention === 'Action graces')
-                    Action de Grâces
-                @else
-                    Intention Particulière
-                @endif
+                Messe   
+                    @if($messe->type_intention === 'Defunt')
+                        de Défunt
+                    @elseif($messe->type_intention === 'Action graces')
+                        d'action de Grâces
+                    @else
+                        d'ntention Particulière
+                    @endif
             </h3>
             <span class="badge badge-{{ str_replace(' ', '_', $messe->statut) }}">
                 {{ ucfirst($messe->statut) }}

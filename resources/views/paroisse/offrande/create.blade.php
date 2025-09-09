@@ -7,13 +7,13 @@
         <div class="max-w-3xl mx-auto">
             <!-- En-tête -->
             <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold" style="color: #181824;">Gestion des Offrandes</h1>
-                <p class="mt-2 text-lg" style="color: #6b7280;">Ajoutez le montant des offrandes collectées</p>
+                <h1 class="text-3xl font-bold" style="color: #181824;">Gestion des montants de demandes de messe</h1>
+                <p class="mt-2 text-lg" style="color: #6b7280;">Ajoutez le montant des demandes de messes à collecter</p>
             </div>
 
             <!-- Affichage du montant actuel -->
             <div class="rounded-xl shadow-lg p-6 mb-8 text-white" style="background: linear-gradient(135deg, #181824 0%, #2d2b42 100%);">
-                <h2 class="text-lg font-semibold mb-2">Montant actuel des offrandes</h2>
+                <h2 class="text-lg font-semibold mb-2">Montant actuel de demande de messe</h2>
                 <p class="text-3xl font-bold" id="currentAmount">{{ number_format($paroisse->montant_offrande ?? 0, 0, ',', ' ') }} Fcfa</p>
             </div>
 
@@ -26,25 +26,14 @@
                         <div class="space-y-6">
                             <!-- Champ Montant -->
                             <div>
-                                <label for="montant" class="block text-sm font-medium" style="color: #181824;">Montant de l'offrande (Fcfa)</label>
+                                <label for="montant" class="block text-sm font-medium" style="color: #181824;">Montant de demande (Fcfa)</label>
                                 <div class="mt-1 relative rounded-md shadow-sm">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <span class="sm:text-sm" style="color: #6b7280;">Fcfa</span>
                                     </div>
                                     <input type="number" step="0.01" name="montant" id="montant" 
                                            class="py-3 block w-full pl-16 pr-12 sm:text-sm border-gray-300 rounded-md focus:ring-2 focus:ring-offset-2 transition-colors" 
-                                           placeholder="0,00" required
-                                           style="border-color: #e5e7eb; color: #181824; focus:border-color: #f35525; focus:ring-color: #f35525;">
-                                </div>
-                            </div>
-
-                            <!-- Champ Date -->
-                            <div>
-                                <label for="date" class="block text-sm font-medium" style="color: #181824;">Date de l'offrande</label>
-                                <div class="mt-1">
-                                    <input type="date" name="date" id="date" 
-                                           class="py-3 block w-full sm:text-sm border-gray-300 rounded-md focus:ring-2 focus:ring-offset-2 transition-colors" 
-                                           value="{{ date('Y-m-d') }}" required readonly
+                                           placeholder="1 000" required
                                            style="border-color: #e5e7eb; color: #181824; focus:border-color: #f35525; focus:ring-color: #f35525;">
                                 </div>
                             </div>
@@ -54,7 +43,7 @@
                                 <button type="submit" 
                                         class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2"
                                         style="background-color: #f35525; hover:background-color: #e04e22; focus:ring-color: #f35525;">
-                                    Ajouter l'offrande
+                                    Ajouter le montant
                                 </button>
                             </div>
                         </div>

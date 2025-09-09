@@ -46,6 +46,7 @@ class OffrandeController extends Controller
         $messess = Auth::guard('paroisse')->user()->messess()
                     ->where('statut','!=','en attente')
                     ->where('statut','!=','confirmee')
+                    ->where('statut','!=','en_attente_paiement')
                     ->orderBy('created_at', 'desc')
                     ->get();
         
