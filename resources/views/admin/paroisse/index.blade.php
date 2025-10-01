@@ -35,12 +35,15 @@
     @endif
 
     <div class="filters">
+        {{-- CHANGEMENT #1 : Remplacer le filtre par localisation par un filtre par commune --}}
         <div class="filter-group">
-            <label for="localisation-filter">Filtrer par localisation:</label>
-            <select id="localisation-filter">
-                <option value="">Toutes les localisations</option>
-                @foreach($localisations as $localisation)
-                    <option value="{{ $localisation }}">{{ $localisation }}</option>
+            <label for="commune-filter">Filtrer par commune:</label>
+            <select id="commune-filter">
+                <option value="">Toutes les communes</option>
+                {{-- On boucle sur la nouvelle variable $communes --}}
+                @foreach($communes as $commune)
+                    {{-- La valeur est l'ID, le texte est le nom de la commune et de sa ville --}}
+                    <option value="{{ $commune->id }}">{{ $commune->nom_commune }} ({{ $commune->ville->nom_ville }})</option>
                 @endforeach
             </select>
         </div>
@@ -55,41 +58,50 @@
         </div>
     </div>
 
+
     @if($paroisses->count() > 0)
-        <div class="paroisses-grid" id="paroisses-grid">
-            @foreach($paroisses as $paroisse)
-                <div class="paroisse-card" data-localisation="{{ $paroisse->localisation }}" data-name="{{ strtolower($paroisse->name) }}">
-                    <div class="card-header">
-                        <div class="profile-img">
-                            <img src="{{ $paroisse->profile_picture ? asset('storage/' . $paroisse->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode($paroisse->name) . '&size=200&background=f35525&color=fff' }}" 
-                                 alt="{{ $paroisse->name }}">
-                        </div>
-                        <div class="actions">
-                            <button class="btn-icon edit-btn" data-id="{{ $paroisse->id }}" title="Modifier">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-icon delete-btn" data-id="{{ $paroisse->id }}" title="Supprimer">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
+    <div class="paroisses-grid" id="paroisses-grid">
+        @foreach($paroisses as $paroisse)
+            {{-- CHANGEMENT #2 : Mettre à jour les données de la carte --}}
+            <div class="paroisse-card" data-commune-id="{{ $paroisse->commune_id }}" data-name="{{ strtolower($paroisse->name) }}">
+                <div class="card-header">
+                    <div class="profile-img">
+                        <img src="{{ $paroisse->profile_picture ? asset('storage/' . $paroisse->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode($paroisse->name) . '&size=200&background=f35525&color=fff' }}" 
+                             alt="{{ $paroisse->name }}">
                     </div>
-                    <div class="card-body">
-                        <h3 class="paroisse-name">{{ $paroisse->name }}</h3>
-                        <div class="paroisse-info">
-                            <p><i class="fas fa-map-marker-alt"></i> {{ $paroisse->localisation }}</p>
-                            <p><i class="fas fa-phone"></i> {{ $paroisse->contact }}</p>
-                            <p><i class="fas fa-envelope"></i> {{ $paroisse->email }}</p>
-                            <p><i class="fas fa-money-bill-wave"></i> 
-                                {{ $paroisse->montant_offrande ? number_format($paroisse->montant_offrande, 0, ',', ' ') . ' FCFA' : 'Non défini' }}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <span class="badge">Créé le {{ $paroisse->created_at->format('d/m/Y') }}</span>
+                    <div class="actions">
+                        <button class="btn-icon edit-btn" data-id="{{ $paroisse->id }}" title="Modifier">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon delete-btn" data-id="{{ $paroisse->id }}" title="Supprimer">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </div>
-            @endforeach
-        </div>
+                <div class="card-body">
+                    <h3 class="paroisse-name">{{ $paroisse->name }}</h3>
+                    <div class="paroisse-info">
+                        {{-- On utilise la relation pour afficher la commune et la ville --}}
+                        <p><i class="fas fa-map-marker-alt"></i> 
+                            @if($paroisse->commune)
+                                {{ $paroisse->commune->nom_commune }}, {{ $paroisse->commune->ville->nom_ville }}
+                            @else
+                                Localisation non définie
+                            @endif
+                        </p>
+                        <p><i class="fas fa-phone"></i> {{ $paroisse->contact }}</p>
+                        <p><i class="fas fa-envelope"></i> {{ $paroisse->email }}</p>
+                        <p><i class="fas fa-money-bill-wave"></i> 
+                            {{ $paroisse->montant_offrande ? number_format($paroisse->montant_offrande, 0, ',', ' ') . ' FCFA' : 'Non défini' }}
+                        </p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="badge">Créé le {{ $paroisse->created_at->format('d/m/Y') }}</span>
+                </div>
+            </div>
+        @endforeach
+    </div>
     @else
         <div class="empty-state">
             <i class="fas fa-church"></i>
@@ -506,15 +518,15 @@
             });
         });
         
-        // Filtrage par localisation
-        const localisationFilter = document.getElementById('localisation-filter');
+        // Filtrage par COMMUNE
+        const communeFilter = document.getElementById('commune-filter');
         
-        localisationFilter.addEventListener('change', function() {
-            const selectedLocalisation = this.value;
+        communeFilter.addEventListener('change', function() {
+            const selectedCommuneId = this.value;
             
             paroisseCards.forEach(card => {
-                const cardLocalisation = card.getAttribute('data-localisation');
-                if (selectedLocalisation === '' || cardLocalisation === selectedLocalisation) {
+                const cardCommuneId = card.getAttribute('data-commune-id');
+                if (selectedCommuneId === '' || cardCommuneId === selectedCommuneId) {
                     card.style.display = 'block';
                 } else {
                     card.style.display = 'none';

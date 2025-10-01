@@ -9,6 +9,9 @@ use App\Models\Paroisse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Ville;
+use App\Models\Commune;
+
 use PDF;
 
 class MesseController extends Controller
@@ -35,11 +38,25 @@ class MesseController extends Controller
         return view('user.messe.history',compact('messess'));
     }
     
-    public function create(){
-        $paroisses = Paroisse::all();
-        return view('user.messe.create', compact('paroisses'));
+    public function create()
+    {
+        // On ne charge plus toutes les paroisses ici, mais seulement les villes
+        $villes = Ville::orderBy('nom_ville')->get();
+        // Le reste des données que vous pourriez passer à la vue...
+        return view('user.messe.create', compact('villes'));
     }
+ // NOUVELLES MÉTHODES POUR AJAX
+ public function getCommunes($ville_id)
+ {
+     $communes = Commune::where('ville_id', $ville_id)->orderBy('nom_commune')->get();
+     return response()->json($communes);
+ }
 
+ public function getParoisses($commune_id)
+ {
+     $paroisses = Paroisse::where('commune_id', $commune_id)->orderBy('name')->get(['id', 'name', 'montant_offrande']);
+     return response()->json($paroisses);
+ }
     public function store(Request $request)
     {
         // Validation des données

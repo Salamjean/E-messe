@@ -57,6 +57,7 @@ Route::middleware('admin')->prefix('admin')->group(function () {
         Route::post('/{id}/confirmer', [RetraitController::class, 'confirmer'])->name('admin.retraits.confirmer');
          Route::post('/{id}/rejeter', [RetraitController::class, 'rejeter'])->name('admin.retraits.rejeter');
     });
+    Route::get('/get-communes/{ville_id}', [ParoisseController::class, 'getCommunesByVille'])->name('admin.get.communes');
 });
 
 //Les routes des @paroisses 
@@ -130,6 +131,10 @@ Route::middleware('auth')->prefix('user')->group(function(){
     Route::get('/messe/paiement/cancel/{reference}', [PaiementStripeController::class, 'cancelPaiementStripe'])->name('user.messe.paiement.cancel');
     
 });
+// NOUVEL EMPLACEMENT CORRECT POUR LES ROUTES DE DONNÉES
+// J'ai aussi retiré /api car votre JS ne l'utilise pas.
+Route::get('/get-communes/{ville_id}', [MesseController::class, 'getCommunes'])->name('get.communes');
+Route::get('/get-paroisses/{commune_id}', [MesseController::class, 'getParoisses'])->name('get.paroisses');
 
 //Les routes definition du accès 
 Route::get('/validate-parish-account/{email}', [AuthenticateParoisse::class, 'defineAccess']);

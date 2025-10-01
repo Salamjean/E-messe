@@ -76,24 +76,45 @@
                 <div class="section-icon">⛪</div>
                 <h2>Détails de la messe</h2>
             </div>
-            <div class="form-group">
-                    <label for="paroisse_id">Paroisse *</label>
-                    <select id="paroisse_id" name="paroisse_id" required>
-                        <option value="">Sélectionnez une paroisse</option>
-                        @foreach($paroisses as $paroisse)
-                            <option value="{{ $paroisse->id }}" data-montant="{{ $paroisse->montant_offrande }}">{{ $paroisse->name }}</option>
+            
+            {{-- NOUVEAUX FILTRES (CORRECTS) --}}
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="ville_id">Ville *</label>
+                    <select id="ville_id" name="ville_id" required>
+                        <option value="">Sélectionnez une ville</option>
+                        @foreach($villes as $ville)
+                            <option value="{{ $ville->id }}">{{ $ville->nom_ville }}</option>
                         @endforeach
                     </select>
-                    @error('paroisse_id')
-                        <div class="error-message" style="color: rgb(184, 8, 8)">
-                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                        </div>
-                    @enderror
                 </div>
-
                 <div class="form-group">
+                    <label for="commune_id">Commune *</label>
+                    <select id="commune_id" name="commune_id" required disabled>
+                        <option value="">Sélectionnez d'abord une ville</option>
+                    </select>
+                </div>
+            </div>
+
+            {{-- UNIQUE LISTE DÉROULANTE POUR LA PAROISSE (CORRECTE) --}}
+            <div class="form-group">
+                <label for="paroisse_id">Paroisse *</label>
+                <select id="paroisse_id" name="paroisse_id" required disabled>
+                    <option value="">Sélectionnez d'abord une commune</option>
+                    {{-- Les options seront chargées dynamiquement par le JavaScript --}}
+                </select>
+                @error('paroisse_id')
+                    <div class="error-message" style="color: rgb(184, 8, 8)">
+                            <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                    </div>
+                @enderror
+            </div>
+            
+            {{-- LE BLOC DE CODE EN DOUBLE A ÉTÉ SUPPRIMÉ ICI --}}
+
+            <div class="form-group">
                 <label for="celebration_choisie">Type de célébration *</label>
-                <select id="celebration_choisie" name="celebration_choisie"  required>
+                <select id="celebration_choisie" name="celebration_choisie" required>
                     <option value="">Sélectionnez une option</option>
                     <option value="Messe quotidienne">Messe quotidienne</option>
                     <option value="Messe dominicale">Messe dominicale</option>
@@ -151,12 +172,25 @@
                     <small id="montant-details">Ce montant est suggéré par la paroisse sélectionnée</small>
                 </div>
                 <div class="form-group">
-                    <label for="nom_prenom_concernes">Noms et prénoms des concernés *</label>
+                    <label for="nom_prenom_concernes" id="label_nom_prenom_concernes">Noms et prénoms des concernés *</label>
                     <div id="noms-container">
-                        <div class="nom-input-group">
-                            <input type="text" name="nom_prenom_concernes[]" value="{{old('nom_prenom_concernes')}}" class="nom-input" required>
-                            <button type="button" class="add-nom-btn">+</button>
-                        </div>
+                        @if(old('nom_prenom_concernes'))
+                            @foreach(old('nom_prenom_concernes') as $index => $nom)
+                                <div class="nom-input-group">
+                                    <input type="text" name="nom_prenom_concernes[]" value="{{ $nom }}" class="nom-input" required>
+                                    @if($index > 0)
+                                        <button type="button" class="remove-nom-btn">−</button>
+                                    @else
+                                        <button type="button" class="add-nom-btn">+</button>
+                                    @endif
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="nom-input-group">
+                                <input type="text" name="nom_prenom_concernes[]" value="" class="nom-input" required>
+                                <button type="button" class="add-nom-btn">+</button>
+                            </div>
+                        @endif
                     </div>
                     <small>Cliquez sur "+" pour ajouter un autre nom</small>
                     @error('nom_prenom_concernes')
@@ -164,8 +198,12 @@
                                 <i class="fas fa-exclamation-circle"></i> {{ $message }}
                         </div>
                     @enderror
+                    @error('nom_prenom_concernes.*')
+                        <div class="error-message" style="color: rgb(184, 8, 8)">
+                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                        </div>
+                    @enderror
                 </div>
-            </div>
             
             
             <div class="form-row">
@@ -416,22 +454,101 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // ---- VARIABLES GLOBALES ET ÉLÉMENTS DU DOM ----
+        const villeSelect = document.getElementById('ville_id');
+        const communeSelect = document.getElementById('commune_id');
+        const paroisseSelect = document.getElementById('paroisse_id');
+        const intentionRadios = document.querySelectorAll('.intention-radio');
+        const labelNomConcernes = document.getElementById('label_nom_prenom_concernes');
+        const dateSouhaiteeInput = document.getElementById('date_souhaitee');
+        const celebrationSelect = document.getElementById('celebration_choisie'); // UNIQUEMENT ICI
+        
         // Variables globales
         let montantUnitaire = 0;
         let nombreJoursSelectionnes = 0;
         
-        // Gestion des champs conditionnels selon le type d'intention
-        const intentionRadios = document.querySelectorAll('.intention-radio');
-        const conditionalFields = document.querySelectorAll('.conditional-field');
-        
+        // =====================================================================
+        // ---- GESTION DES VILLES, COMMUNES ET PAROISSES ----
+        // =====================================================================
+        if (villeSelect) {
+            villeSelect.addEventListener('change', function() {
+                const villeId = this.value;
+                communeSelect.innerHTML = '<option value="">Chargement...</option>';
+                communeSelect.disabled = true;
+                if (paroisseSelect) {
+                    paroisseSelect.innerHTML = '<option value="">Sélectionnez d\'abord une commune</option>';
+                    paroisseSelect.disabled = true;
+                }
+    
+                if (!villeId) {
+                    communeSelect.innerHTML = '<option value="">Sélectionnez d\'abord une ville</option>';
+                    return;
+                }
+    
+                fetch(`/get-communes/${villeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        communeSelect.innerHTML = '<option value="">Sélectionnez une commune</option>';
+                        data.forEach(commune => {
+                            communeSelect.innerHTML += `<option value="${commune.id}">${commune.nom_commune}</option>`;
+                        });
+                        communeSelect.disabled = false;
+                    });
+            });
+        }
+    
+        if (communeSelect) {
+            communeSelect.addEventListener('change', function() {
+                const communeId = this.value;
+                if (paroisseSelect) {
+                    paroisseSelect.innerHTML = '<option value="">Chargement...</option>';
+                    paroisseSelect.disabled = true;
+    
+                    if (!communeId) {
+                        paroisseSelect.innerHTML = '<option value="">Sélectionnez d\'abord une commune</option>';
+                        return;
+                    }
+                    
+                    fetch(`/get-paroisses/${communeId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            paroisseSelect.innerHTML = '<option value="">Sélectionnez une paroisse</option>';
+                            data.forEach(paroisse => {
+                                paroisseSelect.innerHTML += `<option value="${paroisse.id}" data-montant="${paroisse.montant_offrande}">${paroisse.name}</option>`;
+                            });
+                            paroisseSelect.disabled = false;
+                        });
+                }
+            });
+        }
+    
+        // =====================================================================
+        // ---- NOUVEAUTÉ 1 : CHANGER LE LABEL POUR LES DÉFUNTS ----
+        // =====================================================================
+        function updateConcernesLabel() {
+            const selectedRadio = document.querySelector('input[name="type_intention"]:checked');
+            if (selectedRadio && selectedRadio.value === 'Defunt') {
+                labelNomConcernes.textContent = 'Noms et prénoms des défunts *';
+            } else {
+                labelNomConcernes.textContent = 'Noms et prénoms des concernés *';
+            }
+        }
+    
+        // =====================================================================
+        // ---- GESTION DES CHAMPS CONDITIONNELS SELON LE TYPE D'INTENTION ----
+        // =====================================================================
         function toggleConditionalFields() {
-            // Cacher tous les champs conditionnels
-            conditionalFields.forEach(field => {
-                field.style.display = 'none';
+            // Masquer tous les champs conditionnels
+            document.querySelectorAll('.conditional-field').forEach(field => {
+                if (field.id !== 'jours_messe_quotidienne' && field.id !== 'jours_messe_dominicale') {
+                    field.style.display = 'none';
+                }
             });
             
-            // Afficher les champs correspondant à la sélection
-            const selectedValue = document.querySelector('input[name="type_intention"]:checked').value;
+            const selectedRadio = document.querySelector('input[name="type_intention"]:checked');
+            if (!selectedRadio) return;
+            
+            const selectedValue = selectedRadio.value;
             
             if (selectedValue === 'Defunt') {
                 document.getElementById('defunt_fields').style.display = 'block';
@@ -440,118 +557,162 @@
             } else if (selectedValue === 'Intention particuliere') {
                 document.getElementById('intention_particuliere_fields').style.display = 'block';
             }
+    
+            updateConcernesLabel();
         }
-        
-        // Écouter les changements sur les radios
-        intentionRadios.forEach(radio => {
-            radio.addEventListener('change', toggleConditionalFields);
-        });
-        
-        // Sélectionner le premier radio par défaut et déclencher l'événement
+    
         if (intentionRadios.length > 0) {
+            intentionRadios.forEach(radio => radio.addEventListener('change', toggleConditionalFields));
+            // Activer le premier radio par défaut
             intentionRadios[0].checked = true;
             toggleConditionalFields();
         }
-        
-        // Gestion du type de célébration
-        const celebrationSelect = document.getElementById('celebration_choisie');
-        const joursQuotidienne = document.getElementById('jours_messe_quotidienne');
-        const joursDominicale = document.getElementById('jours_messe_dominicale');
-        
-        celebrationSelect.addEventListener('change', function() {
-            // Cacher tous les champs de jours
-            joursQuotidienne.style.display = 'none';
-            joursDominicale.style.display = 'none';
+    
+        // =====================================================================
+        // ---- NOUVEAUTÉ 2 : DÉFINIR LA DATE DE DÉBUT MINIMALE ----
+        // =====================================================================
+        if (dateSouhaiteeInput) {
+            const today = new Date().toISOString().split('T')[0];
+            dateSouhaiteeInput.setAttribute('min', today);
+        }
+    
+        // =====================================================================
+        // ---- NOUVEAUTÉ 3 : GÉNÉRATION DYNAMIQUE DES JOURS DE LA SEMAINE ----
+        // =====================================================================
+        function genererJoursSemaine() {
+            const container = document.querySelector('#jours_messe_quotidienne .jours-selection');
+            if (!container) return;
             
-            // Afficher les champs correspondants
-            if (this.value === 'Messe quotidienne') {
-                joursQuotidienne.style.display = 'block';
-            } else if (this.value === 'Messe dominicale') {
-                joursDominicale.style.display = 'block';
-                genererDimanches();
+            container.innerHTML = '';
+    
+            const jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+            const todayIndex = new Date().getDay(); // Dimanche = 0, Lundi = 1, etc.
+    
+            // Réorganiser pour commencer par le jour actuel
+            let joursReorganises = [];
+            for (let i = 0; i < 7; i++) {
+                const index = (todayIndex + i) % 7;
+                joursReorganises.push(jours[index === 0 ? 6 : index - 1]); // Ajuster pour Lundi=1
             }
-            
-            // Recalculer le montant
-            calculerMontantTotal();
-        });
-        
-        // Générer les dimanches du mois en cours
+    
+            joursReorganises.forEach(jour => {
+                const jourValue = jours.indexOf(jour) + 1; // Lundi=1, ..., Dimanche=7
+    
+                const label = document.createElement('label');
+                label.className = 'jour-checkbox';
+                label.innerHTML = `
+                    <input type="checkbox" name="jours_quotidienne[]" value="${jourValue}">
+                    <span class="checkmark"></span>
+                    ${jour}
+                `;
+                container.appendChild(label);
+            });
+        }
+    
+        // =====================================================================
+        // ---- GÉNÉRATION DES DIMANCHES POUR LA MESSE DOMINICALE ----
+        // =====================================================================
         function genererDimanches() {
             const container = document.getElementById('dimanches-container');
+            if (!container) return;
+            
             container.innerHTML = '';
-            
-            const aujourdhui = new Date();
-            const annee = aujourdhui.getFullYear();
-            const mois = aujourdhui.getMonth();
-            
-            // Premier jour du mois
-            const premierJour = new Date(annee, mois, 1);
-            
-            // Dernier jour du mois
-            const dernierJour = new Date(annee, mois + 1, 0);
-            
-            // Trouver tous les dimanches du mois
-            let dateCourante = new Date(premierJour);
-            let dimanches = [];
-            
-            while (dateCourante <= dernierJour) {
-                if (dateCourante.getDay() === 0) { // 0 = Dimanche
-                    dimanches.push(new Date(dateCourante));
-                }
+    
+            let dateCourante = new Date();
+            dateCourante.setHours(0, 0, 0, 0);
+    
+            // Trouver le prochain dimanche
+            while (dateCourante.getDay() !== 0) {
                 dateCourante.setDate(dateCourante.getDate() + 1);
             }
-            
-            // Créer les checkboxes pour chaque dimanche
-            dimanches.forEach(date => {
-                const dateStr = date.toISOString().split('T')[0];
-                const formattedDate = formatDate(date);
-                
+    
+            // Générer les 4 prochains dimanches
+            for (let i = 0; i < 4; i++) {
+                const dateStr = dateCourante.toISOString().split('T')[0];
+                const formattedDate = formatDate(dateCourante);
+    
                 const label = document.createElement('label');
                 label.className = 'date-checkbox';
-                
                 label.innerHTML = `
                     <input type="checkbox" name="jours_dominicale[]" value="${dateStr}" onchange="calculerMontantTotal()">
                     ${formattedDate}
                 `;
-                
                 container.appendChild(label);
+                
+                dateCourante.setDate(dateCourante.getDate() + 7);
+            }
+        }
+    
+        // =====================================================================
+        // ---- GESTION DU TYPE DE CÉLÉBRATION ----
+        // =====================================================================
+        if (celebrationSelect) {
+            celebrationSelect.addEventListener('change', function() {
+                // Masquer tous les champs de jours
+                const joursQuotidienne = document.getElementById('jours_messe_quotidienne');
+                const joursDominicale = document.getElementById('jours_messe_dominicale');
+                
+                if (joursQuotidienne) joursQuotidienne.style.display = 'none';
+                if (joursDominicale) joursDominicale.style.display = 'none';
+    
+                if (this.value === 'Messe quotidienne') {
+                    if (joursQuotidienne) {
+                        joursQuotidienne.style.display = 'block';
+                        genererJoursSemaine();
+                    }
+                } else if (this.value === 'Messe dominicale') {
+                    if (joursDominicale) {
+                        joursDominicale.style.display = 'block';
+                        genererDimanches();
+                    }
+                }
+                calculerMontantTotal();
             });
         }
-        
-        // Formater une date en français
+    
+        // =====================================================================
+        // ---- FONCTION FORMAT DATE ----
+        // =====================================================================
         function formatDate(date) {
             const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
             return date.toLocaleDateString('fr-FR', options);
         }
-        
-        // Gestion du montant d'offrande basé sur la paroisse sélectionnée
-        const paroisseSelect = document.getElementById('paroisse_id');
+    
+        // =====================================================================
+        // ---- GESTION DU MONTANT D'OFFRANDE ----
+        // =====================================================================
         const montantOffrandeInput = document.getElementById('montant_offrande');
         const montantDetails = document.getElementById('montant-details');
         
-        paroisseSelect.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const montant = selectedOption.getAttribute('data-montant');
-            
-            if (montant) {
-                montantUnitaire = parseFloat(montant);
-                calculerMontantTotal();
-            } else {
-                montantUnitaire = 0;
-                montantOffrandeInput.value = '';
-                montantDetails.textContent = 'Veuillez sélectionner une paroisse';
-            }
-        });
-        
-        // Calculer le montant total en fonction des jours sélectionnés
+        if (paroisseSelect) {
+            paroisseSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const montant = selectedOption ? selectedOption.getAttribute('data-montant') : null;
+                
+                if (montant) {
+                    montantUnitaire = parseFloat(montant);
+                    calculerMontantTotal();
+                } else {
+                    montantUnitaire = 0;
+                    if (montantOffrandeInput) montantOffrandeInput.value = '';
+                    if (montantDetails) montantDetails.textContent = 'Veuillez sélectionner une paroisse';
+                }
+            });
+        }
+    
+        // =====================================================================
+        // ---- CALCUL DU MONTANT TOTAL ----
+        // =====================================================================
         function calculerMontantTotal() {
+            if (!montantOffrandeInput || !montantDetails) return;
+            
             if (montantUnitaire === 0) {
                 montantOffrandeInput.value = '';
                 return;
             }
             
             let total = 0;
-            const celebrationType = celebrationSelect.value;
+            const celebrationType = celebrationSelect ? celebrationSelect.value : '';
             
             if (celebrationType === 'Messe quotidienne') {
                 const joursSelectionnes = document.querySelectorAll('input[name="jours_quotidienne[]"]:checked');
@@ -574,30 +735,28 @@
             
             montantOffrandeInput.value = total.toFixed(2);
             
-            // Mettre à jour les détails du montant
             if (nombreJoursSelectionnes > 0) {
                 montantDetails.textContent = `${montantUnitaire.toFixed(2)} FCFA × ${nombreJoursSelectionnes} = ${total.toFixed(2)} FCFA`;
             } else {
                 montantDetails.textContent = 'Sélectionnez au moins un jour';
             }
         }
-        
+    
         // Écouter les changements sur les checkboxes de jours
         document.addEventListener('change', function(e) {
             if (e.target.name === 'jours_quotidienne[]' || e.target.name === 'jours_dominicale[]') {
                 calculerMontantTotal();
             }
         });
-        
-        // Déclencher l'événement au chargement si une paroisse est déjà sélectionnée
-        if (paroisseSelect.value) {
-            paroisseSelect.dispatchEvent(new Event('change'));
-        }
-        
-        // Gestion de l'ajout de noms supplémentaires
+    
+        // =====================================================================
+        // ---- GESTION DE L'AJOUT DE NOMS SUPPLÉMENTAIRES ----
+        // =====================================================================
         const nomsContainer = document.getElementById('noms-container');
         
         function addNomField(value = '') {
+            if (!nomsContainer) return;
+            
             const nomGroup = document.createElement('div');
             nomGroup.className = 'nom-input-group';
             
@@ -627,80 +786,99 @@
                 addNomField();
             }
         });
+        document.addEventListener('click', function(e) {
+    if (e.target && e.target.classList.contains('remove-nom-btn')) {
+        e.target.closest('.nom-input-group').remove();
         
-        // Validation avant soumission du formulaire
-        document.getElementById('messeForm').addEventListener('submit', function(e) {
-            // Vérifier qu'au moins un nom est rempli
-            const nomInputs = document.querySelectorAll('.nom-input');
-            let auMoinsUnNomRempli = false;
-            
-            nomInputs.forEach(input => {
-                if (input.value.trim() !== '') {
-                    auMoinsUnNomRempli = true;
-                }
-            });
-            
-            if (!auMoinsUnNomRempli) {
-                e.preventDefault();
-                alert('Veuillez saisir au moins un nom concerné.');
-                return false;
+        // S'il ne reste qu'un seul champ, s'assurer qu'il a le bouton +
+        const remainingGroups = document.querySelectorAll('.nom-input-group');
+        if (remainingGroups.length === 1) {
+            const btn = remainingGroups[0].querySelector('button');
+            if (btn) {
+                btn.className = 'add-nom-btn';
+                btn.innerHTML = '+';
             }
-            
-            // Vérifier la sélection des jours selon le type de célébration
-            const celebrationType = celebrationSelect.value;
-            let joursSelectionnes = 0;
-            
-            if (celebrationType === 'Messe quotidienne') {
-                joursSelectionnes = document.querySelectorAll('input[name="jours_quotidienne[]"]:checked').length;
-            } 
-            else if (celebrationType === 'Messe dominicale') {
-                joursSelectionnes = document.querySelectorAll('input[name="jours_dominicale[]"]:checked').length;
-            }
-            else if (celebrationType === 'Messe solennelle') {
-                joursSelectionnes = 1; // Pas de sélection de jours pour les messes solennelles
-            }
-            
-            if (celebrationType !== 'Messe solennelle' && joursSelectionnes === 0) {
-                e.preventDefault();
-                alert('Veuillez sélectionner au moins un jour pour la célébration.');
-                return false;
-            }
-            
-            // S'assurer que tous les champs requis sont remplis
-            const requiredFields = document.querySelectorAll('[required]');
-            let isValid = true;
-            let firstInvalidField = null;
-            
-            requiredFields.forEach(field => {
-                if (!field.value.trim()) {
-                    isValid = false;
-                    field.style.borderColor = 'red';
-                    
-                    if (!firstInvalidField) {
-                        firstInvalidField = field;
+        }
+    }
+});
+        // =====================================================================
+        // ---- VALIDATION DU FORMULAIRE ----
+        // =====================================================================
+        const messeForm = document.getElementById('messeForm');
+        if (messeForm) {
+            messeForm.addEventListener('submit', function(e) {
+                // Vérifier qu'au moins un nom est rempli
+                const nomInputs = document.querySelectorAll('.nom-input');
+                let auMoinsUnNomRempli = false;
+                
+                nomInputs.forEach(input => {
+                    if (input.value.trim() !== '') {
+                        auMoinsUnNomRempli = true;
                     }
-                    
-                    field.addEventListener('input', function() {
-                        if (this.value.trim()) {
-                            this.style.borderColor = '';
+                });
+                
+                if (!auMoinsUnNomRempli) {
+                    e.preventDefault();
+                    alert('Veuillez saisir au moins un nom concerné.');
+                    return false;
+                }
+                
+                // Vérifier la sélection des jours selon le type de célébration
+                const celebrationType = celebrationSelect ? celebrationSelect.value : '';
+                let joursSelectionnes = 0;
+                
+                if (celebrationType === 'Messe quotidienne') {
+                    joursSelectionnes = document.querySelectorAll('input[name="jours_quotidienne[]"]:checked').length;
+                } 
+                else if (celebrationType === 'Messe dominicale') {
+                    joursSelectionnes = document.querySelectorAll('input[name="jours_dominicale[]"]:checked').length;
+                }
+                else if (celebrationType === 'Messe solennelle') {
+                    joursSelectionnes = 1;
+                }
+                
+                if (celebrationType !== 'Messe solennelle' && joursSelectionnes === 0) {
+                    e.preventDefault();
+                    alert('Veuillez sélectionner au moins un jour pour la célébration.');
+                    return false;
+                }
+                
+                // Validation des champs requis
+                const requiredFields = document.querySelectorAll('[required]');
+                let isValid = true;
+                let firstInvalidField = null;
+                
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        isValid = false;
+                        field.style.borderColor = 'red';
+                        
+                        if (!firstInvalidField) {
+                            firstInvalidField = field;
                         }
-                    });
+                        
+                        field.addEventListener('input', function() {
+                            if (this.value.trim()) {
+                                this.style.borderColor = '';
+                            }
+                        });
+                    }
+                });
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    if (firstInvalidField) {
+                        firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstInvalidField.focus();
+                    }
+                    alert('Veuillez remplir tous les champs obligatoires.');
+                    return false;
                 }
             });
-            
-            if (!isValid) {
-                e.preventDefault();
-                if (firstInvalidField) {
-                    firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    firstInvalidField.focus();
-                }
-                alert('Veuillez remplir tous les champs obligatoires.');
-                return false;
-            }
-        });
+        }
         
-        // Exposer la fonction au scope global pour les checkboxes
+        // Exposer la fonction au scope global
         window.calculerMontantTotal = calculerMontantTotal;
     });
-</script>
+    </script>
 @endsection

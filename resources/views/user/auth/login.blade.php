@@ -628,7 +628,8 @@
             
             <form method="POST" action="{{route('handleLogin')}}" enctype="multipart/form-data">
                 @csrf
-                <div class="form-group">
+                <div class="form-group"> 
+
                     <label for="text">Nom d'utilisateur</label>
                     <div class="input-with-icon">
                         <i class="input-icon fas fa-at"></i>

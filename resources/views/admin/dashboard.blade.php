@@ -516,7 +516,13 @@
                alt="{{ $paroisse->name }}">
           <div class="recent-item-info">
             <h4>{{ $paroisse->name }}</h4>
-            <p>{{ $paroisse->localisation }}</p>
+            <p>
+              @if($paroisse->commune)
+                  {{ $paroisse->commune->nom_commune }}, {{ $paroisse->commune->ville->nom_ville }}
+              @else
+                  Localisation non définie
+              @endif
+          </p>
           </div>
           <div class="recent-item-date">
             {{ $paroisse->created_at->diffForHumans() }}

@@ -16,8 +16,13 @@ class Paroisse extends Authenticatable
         'contact',
         'password',
         'profile_picture',
-        'localisation',
+       'commune_id', 
     ];
+     // NOUVELLE RELATION
+     public function commune()
+     {
+         return $this->belongsTo(Commune::class);
+     }
 
     public function messess()
     {

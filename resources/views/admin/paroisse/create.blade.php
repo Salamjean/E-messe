@@ -275,19 +275,34 @@
                   @enderror
                 </div>
 
-                <div class="mb-3">
-                  <label for="validationCustom005" class="form-label">
-                    <i class="fas fa-map-marker-alt"></i> Localisation
-                  </label>
-                  <input type="text" class="form-control" name="localisation" id="validationCustom005" placeholder="Lieu de résidence" required>
-                  @error('localisation')
-                  <div class="invalid-feedback d-block">
-                    {{ $message }}
-                  </div>
-                  @enderror
-                </div>
-              </div>
-            </div>
+                {{-- NOUVEAUX CHAMPS VILLE ET COMMUNE --}}
+    <div class="mb-3">
+      <label for="ville_id" class="form-label">
+          <i class="fas fa-city"></i> Ville
+      </label>
+      <select class="form-control" id="ville_id" name="ville_id" required>
+          <option value="">Sélectionnez une ville</option>
+          @foreach($villes as $ville)
+              <option value="{{ $ville->id }}">{{ $ville->nom_ville }}</option>
+          @endforeach
+      </select>
+  </div>
+
+  <div class="mb-3">
+      <label for="commune_id" class="form-label">
+          <i class="fas fa-map-marker-alt"></i> Commune
+      </label>
+      <select class="form-control" id="commune_id" name="commune_id" required disabled>
+          <option value="">Sélectionnez d'abord une ville</option>
+      </select>
+      @error('commune_id')
+      <div class="invalid-feedback d-block">
+          {{ $message }}
+      </div>
+      @enderror
+  </div>
+</div>
+</div>
 
             <div class="wave-decoration"></div>
 
@@ -341,6 +356,37 @@
       background: '#ffffff'
     });
   @endif
+  
 </script>
-
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+      const villeSelect = document.getElementById('ville_id');
+      const communeSelect = document.getElementById('commune_id');
+  
+      villeSelect.addEventListener('change', function() {
+          const villeId = this.value;
+          communeSelect.innerHTML = '<option value="">Chargement...</option>';
+          communeSelect.disabled = true;
+  
+          if (!villeId) {
+              communeSelect.innerHTML = '<option value="">Sélectionnez d\'abord une ville</option>';
+              return;
+          }
+  
+          fetch(`/admin/get-communes/${villeId}`)
+              .then(response => response.json())
+              .then(data => {
+                  communeSelect.innerHTML = '<option value="">Sélectionnez une commune</option>';
+                  data.forEach(commune => {
+                      communeSelect.innerHTML += `<option value="${commune.id}">${commune.nom_commune}</option>`;
+                  });
+                  communeSelect.disabled = false;
+              })
+              .catch(error => {
+                  console.error('Erreur:', error);
+                  communeSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+              });
+      });
+  });
+  </script>
 @endsection

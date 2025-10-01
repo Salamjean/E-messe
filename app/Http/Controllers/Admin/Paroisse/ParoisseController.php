@@ -11,15 +11,20 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
-
+use App\Models\Ville;
+use App\Models\Commune;
 class ParoisseController extends Controller
 {
     public function index()
     {
-        $paroisses = Paroisse::all();
-        $localisations = Paroisse::distinct()->pluck('localisation');
+        // On charge les paroisses avec leur commune et la ville de la commune
+        $paroisses = Paroisse::with('commune.ville')->get();
+    
+        // On récupère les communes qui ont au moins une paroisse
+        $communeIds = Paroisse::distinct()->pluck('commune_id');
+        $communes = Commune::whereIn('id', $communeIds)->with('ville')->orderBy('nom_commune')->get();
         
-        // Gestion du tri
+        // Gestion du tri (reste inchangée)
         $sort = request()->get('sort');
         if ($sort) {
             switch ($sort) {
@@ -38,21 +43,31 @@ class ParoisseController extends Controller
             }
         }
         
-        return view('admin.paroisse.index', compact('paroisses', 'localisations'));
+        // On passe la nouvelle variable 'communes' à la vue
+        return view('admin.paroisse.index', compact('paroisses', 'communes'));
     }
 
     public function create()
     {
-        return view('admin.paroisse.create');
+        // Récupérer toutes les villes pour la liste déroulante
+        $villes = Ville::orderBy('nom_ville')->get();
+        return view('admin.paroisse.create', compact('villes'));
     }
 
+    // NOUVELLE MÉTHODE POUR L'APPEL AJAX
+    public function getCommunesByVille($ville_id)
+    {
+        $communes = Commune::where('ville_id', $ville_id)->orderBy('nom_commune')->get();
+        return response()->json($communes);
+    }
+    
     public function store(Request $request){
         // Validation des données
         $request->validate([
            'name' => 'required|string|max:255|unique:paroisses,name',
            'email' => 'required|email|unique:paroisses,email',
            'contact' => 'required|string|min:10',
-           'localisation' => 'required|string|max:255',
+           'commune_id' => 'required|exists:communes,id', // Mise à jour de la validation
            'profile_picture' => 'nullable|image|max:2048',
 
         ],[
@@ -63,11 +78,10 @@ class ParoisseController extends Controller
             'email.unique' => 'Cette adresse e-mail est déjà associée à un compte.',
             'contact.required' => 'Le contact est obligatoire.',
             'contact.min' => 'Le contact doit avoir au moins 10 chiffres.',
-            'localisation.required' => 'La localisation est obligatoire.',
             'profile_picture.image' => 'Le fichier doit être une image.',
             'profile_picture.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou svg.',
             'profile_picture.max' => 'L\'image ne doit pas dépasser 2048 KB.',
-       
+       'commune_id.required' => 'La commune est obligatoire.',
        ]);
    
        try {
@@ -83,7 +97,7 @@ class ParoisseController extends Controller
            $paroisse->name = $request->name;
            $paroisse->email = $request->email;
            $paroisse->contact = $request->contact;
-           $paroisse->localisation = $request->localisation;
+           $paroisse->commune_id = $request->commune_id; // Mise à jour
            $paroisse->password = Hash::make('default');
            if ($request->hasFile('profile_picture')) {
                $paroisse->profile_picture = $request->file('profile_picture')->store('profile_pictures', 'public');
@@ -128,14 +142,14 @@ class ParoisseController extends Controller
             // Validation des données
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:paroisses,name,' . $paroisse->id,
-                'localisation' => 'required|string|max:255',
+                'commune_id' => 'required|exists:communes,id',
                 'contact' => 'required|string|max:255',
                 'email' => 'required|email|unique:paroisses,email,' . $paroisse->id,
                 'profile_picture' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
             ], [
                 'name.required' => 'Le nom de la paroisse est obligatoire.',
                 'name.unique' => 'Ce nom de paroisse est déjà utilisé.',
-                'localisation.required' => 'La localisation est obligatoire.',
+                'commune_id.required' => 'La commune est obligatoire.',
                 'contact.required' => 'Le contact est obligatoire.',
                 'email.required' => 'L\'email est obligatoire.',
                 'email.email' => 'L\'email doit être une adresse valide.',
@@ -161,7 +175,7 @@ class ParoisseController extends Controller
 
             // Mise à jour des données
             $paroisse->name = $validated['name'];
-            $paroisse->localisation = $validated['localisation'];
+            $paroisse->commune_id = $validated['commune_id'];
             $paroisse->contact = $validated['contact'];
             $paroisse->email = $validated['email'];
             

@@ -18,7 +18,7 @@ class OffrandeController extends Controller
     {
         $request->validate([
             'montant' => 'required|numeric|min:0',
-            'date' => 'required|date',
+        
         ]);
 
         try {
