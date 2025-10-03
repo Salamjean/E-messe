@@ -14,7 +14,7 @@
         <div class="header-content">
             <div class="welcome-section">
                 <h1>Tableau de Bord Paroissial</h1>
-                <p>Bienvenue, {{ Auth::guard('paroisse')->user()->nom }}!</p>
+                <p>Bienvenue, à la paroisse {{ Auth::guard('paroisse')->user()->name }}!</p>
             </div>
             <div class="header-actions">
                 <div class="user-profile">
@@ -78,7 +78,7 @@
                 </div>
             </div>
             <div class="card-content">
-                <h3>Montant de l'offrande</h3>
+                <h3>Montant de demande de messe</h3>
                 <span class="stat-number">{{ number_format($totalOffrandes, 0, ',', ' ') }} FCFA</span>
                 <div class="progress-bar">
                     <div class="progress" style="width: 100%; background: #9C27B0;"></div>

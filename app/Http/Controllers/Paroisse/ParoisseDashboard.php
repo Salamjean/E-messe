@@ -43,7 +43,7 @@ class ParoisseDashboard extends Controller
             ->where('montant_offrande', '>', 0)
             ->orderBy('created_at', 'desc')
             ->take(2)
-            ->get(['montant_offrande', 'created_at', 'type_intention', 'nom_demandeur']);
+            ->get(['montant_offrande', 'created_at', 'nom_demandeur']);
         
         // Récupérer les offrandes des 6 derniers mois
         $monthlyOffrandes = $paroisse->messess()

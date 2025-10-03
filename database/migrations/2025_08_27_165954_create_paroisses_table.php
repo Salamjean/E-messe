@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('paroisses', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('localisation');
             $table->string('contact');
             $table->string('email');
             $table->string('password');
             $table->string('profile_picture')->nullable();
             $table->decimal('montant_offrande', 8, 2)->nullable();
+            $table->foreignId('commune_id')->nullable()->constrained('communes');
             $table->timestamps();
         });
     }

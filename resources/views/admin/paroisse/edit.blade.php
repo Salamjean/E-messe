@@ -2,6 +2,7 @@
 @section('content')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
 <style>
   :root {
@@ -59,6 +60,7 @@
   .card-body {
     padding: 30px;
     background-color: #fff;
+    text-align: center;
   }
 
   .form-label {
@@ -66,19 +68,19 @@
     color: var(--secondary-color);
     margin-bottom: 8px;
     display: flex;
+    justify-content: center;
     align-items: center;
   }
 
   .form-label i {
     margin-right: 8px;
-    text-align: center;
     color: var(--primary-dark);
   }
 
   .form-control {
     border: 2px solid #e0e0e0;
     border-radius: var(--border-radius);
-    padding: 12px 15px;
+    padding: 12px 0;
     transition: all 0.3s;
     font-size: 0.95rem;
     width: 100%;
@@ -141,32 +143,86 @@
     font-weight: 500;
   }
 
+  /* Section photo de profil */
   .profile-picture-section {
+    grid-column: 1 / -1;
+    margin: 20px 0;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    background-color: #f9f9f9;
+    border: 2px dashed #e0e0e0;
+    transition: all 0.3s ease;
     text-align: center;
-    margin-bottom: 20px;
+  }
+
+  .profile-picture-section:hover {
+    border-color: var(--primary-dark);
+    background-color: #fef7f5;
+  }
+
+  .profile-picture-label {
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin-bottom: 15px;
+    display: block;
+    font-size: 1.1rem;
+  }
+
+  .profile-upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
   }
 
   .profile-preview {
     width: 150px;
     height: 150px;
     border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--primary-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  .profile-preview img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    border: 4px solid #e0e0e0;
-    margin-bottom: 15px;
+  }
+
+  .profile-preview .placeholder {
+    color: #999;
+    font-size: 3rem;
   }
 
   .profile-upload-btn {
-    background: var(--primary-dark);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-dark));
     color: white;
-    padding: 8px 15px;
+    border: none;
     border-radius: var(--border-radius);
+    padding: 12px 25px;
+    font-weight: 600;
     cursor: pointer;
-    display: inline-block;
     transition: all 0.3s;
+    box-shadow: 0 4px 8px rgba(243,85,37, 0.3);
   }
 
   .profile-upload-btn:hover {
-    background: #e04a1f;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(243,85,37, 0.4);
+  }
+
+  .profile-info {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 10px;
   }
 
   /* Animation pour les messages flash */
@@ -237,6 +293,10 @@
     .two-columns {
       grid-template-columns: 1fr;
     }
+
+    .profile-upload-container {
+      flex-direction: column;
+    }
   }
 </style>
 
@@ -263,24 +323,9 @@
 
           <div class="wave-decoration"></div>
 
-          <form class="needs-validation" method="POST" enctype="multipart/form-data" action="{{ route('admin.paroisses.update', $paroisse->id) }}" novalidate>
+          <form class="needs-validation" method="POST" enctype="multipart/form-data" action="{{ route('paroisse.update', $paroisse->id) }}" novalidate>
             @csrf
             @method('PUT')
-
-            <div class="profile-picture-section">
-              <img src="{{ $paroisse->profile_picture ? asset('storage/' . $paroisse->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode($paroisse->name) . '&size=200&background=f35525&color=fff' }}" 
-                   alt="Photo de profil" class="profile-preview" id="profile-preview">
-              <br>
-              <label for="profile_picture" class="profile-upload-btn">
-                <i class="fas fa-camera"></i> Changer la photo
-              </label>
-              <input type="file" id="profile_picture" name="profile_picture" class="d-none" accept="image/*">
-              @error('profile_picture')
-                <div class="invalid-feedback d-block">
-                  {{ $message }}
-                </div>
-              @enderror
-            </div>
 
             <div class="two-columns">
               <!-- Première colonne -->
@@ -328,15 +373,74 @@
                 </div>
 
                 <div class="mb-3">
-                  <label for="localisation" class="form-label">
-                    <i class="fas fa-map-marker-alt"></i> Localisation
+                  <label for="ville_id" class="form-label">
+                    <i class="fas fa-city"></i> Ville
                   </label>
-                  <input type="text" class="form-control" name="localisation" id="localisation" 
-                         value="{{ old('localisation', $paroisse->localisation) }}" placeholder="Lieu de résidence" required>
-                  @error('localisation')
+                  <select class="form-control" id="ville_id" name="ville_id" required>
+                    <option value="">Sélectionnez une ville</option>
+                    @foreach($villes as $ville)
+                      <option value="{{ $ville->id }}" {{ old('ville_id', $paroisse->ville_id) == $ville->id ? 'selected' : '' }}>
+                        {{ $ville->nom_ville }}
+                      </option>
+                    @endforeach
+                  </select>
+                  @error('ville_id')
                   <div class="invalid-feedback d-block">
                     {{ $message }}
                   </div>
+                  @enderror
+                </div>
+
+                <div class="mb-3">
+                  <label for="commune_id" class="form-label">
+                    <i class="fas fa-map-marker-alt"></i> Commune
+                  </label>
+                  <select class="form-control" id="commune_id" name="commune_id" required>
+                    <option value="">Sélectionnez d'abord une ville</option>
+                    @if($paroisse->commune_id && $paroisse->commune)
+                      <option value="{{ $paroisse->commune_id }}" selected>
+                        {{ $paroisse->commune->nom_commune }}
+                      </option>
+                    @endif
+                  </select>
+                  @error('commune_id')
+                  <div class="invalid-feedback d-block">
+                    {{ $message }}
+                  </div>
+                  @enderror
+                </div>
+              </div>
+            </div>
+
+            <!-- Section Photo de Profil -->
+            <div class="profile-picture-section">
+              <label class="profile-picture-label">
+                <i class="fas fa-camera me-2"></i> Photo de la paroisse
+              </label>
+              
+              <div class="profile-upload-container">
+                <div class="profile-preview" id="profile-preview-container">
+                  @if($paroisse->profile_picture)
+                    <img src="{{ asset('storage/' . $paroisse->profile_picture) }}" alt="Photo de la paroisse" id="profile-preview">
+                  @else
+                    <div class="placeholder">
+                      <i class="fas fa-church"></i>
+                    </div>
+                  @endif
+                </div>
+                
+                <div>
+                  <label for="profile_picture" class="profile-upload-btn">
+                    <i class="fas fa-upload"></i> Changer l'image
+                  </label>
+                  <input type="file" id="profile_picture" name="profile_picture" class="d-none" accept="image/*">
+                  <div class="profile-info">
+                    Formats acceptés: JPG, PNG, GIF • Taille max: 2MB
+                  </div>
+                  @error('profile_picture')
+                    <div class="invalid-feedback d-block">
+                      {{ $message }}
+                    </div>
                   @enderror
                 </div>
               </div>
@@ -376,18 +480,6 @@
     });
   })();
 
-  // Prévisualisation de l'image
-  document.getElementById('profile_picture').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        document.getElementById('profile-preview').src = e.target.result;
-      }
-      reader.readAsDataURL(file);
-    }
-  });
-
   // Gestion des messages flash avec SweetAlert
   @if(Session::has('success'))
     Swal.fire({
@@ -409,6 +501,62 @@
       background: '#ffffff'
     });
   @endif
-</script>
 
+  // Gestion de l'aperçu de l'image de profil
+  document.getElementById('profile_picture').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const previewContainer = document.getElementById('profile-preview-container');
+        previewContainer.innerHTML = `<img src="${e.target.result}" alt="Aperçu de la photo" id="profile-preview">`;
+      }
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Gestion de la sélection des communes en fonction de la ville
+  document.addEventListener('DOMContentLoaded', function () {
+    const villeSelect = document.getElementById('ville_id');
+    const communeSelect = document.getElementById('commune_id');
+
+    // Charger les communes si une ville est déjà sélectionnée
+    const selectedVilleId = villeSelect.value;
+    if (selectedVilleId) {
+      loadCommunes(selectedVilleId, '{{ $paroisse->commune_id }}');
+    }
+
+    villeSelect.addEventListener('change', function() {
+      const villeId = this.value;
+      loadCommunes(villeId);
+    });
+
+    function loadCommunes(villeId, selectedCommuneId = null) {
+      communeSelect.innerHTML = '<option value="">Chargement...</option>';
+      communeSelect.disabled = true;
+
+      if (!villeId) {
+        communeSelect.innerHTML = '<option value="">Sélectionnez d\'abord une ville</option>';
+        communeSelect.disabled = true;
+        return;
+      }
+
+      fetch(`/admin/get-communes/${villeId}`)
+        .then(response => response.json())
+        .then(data => {
+          communeSelect.innerHTML = '<option value="">Sélectionnez une commune</option>';
+          data.forEach(commune => {
+            const selected = selectedCommuneId == commune.id ? 'selected' : '';
+            communeSelect.innerHTML += `<option value="${commune.id}" ${selected}>${commune.nom_commune}</option>`;
+          });
+          communeSelect.disabled = false;
+        })
+        .catch(error => {
+          console.error('Erreur:', error);
+          communeSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+          communeSelect.disabled = true;
+        });
+    }
+  });
+</script>
 @endsection

@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AuthenticateAdmin;
-use App\Http\Controllers\Admin\Paroisse\ParoisseController;
+use App\Http\Controllers\Paroisse\ParoisseController;
 use App\Http\Controllers\Admin\Paroisse\RetraitController;
 use App\Http\Controllers\Admin\User\AdminUserController;
 use App\Http\Controllers\Home\HomeController;
@@ -46,7 +46,7 @@ Route::middleware('admin')->prefix('admin')->group(function () {
         Route::get('/createed', [ParoisseController::class, 'create'])->name('paroisse.create');
         Route::post('/createed', [ParoisseController::class, 'store'])->name('paroisse.store');
         Route::get('/{paroisse}/edit', [ParoisseController::class, 'edit'])->name('admin.paroisses.edit');
-        Route::put('/{paroisse}', [ParoisseController::class, 'update'])->name('admin.paroisses.update');
+         Route::put('/{paroisse}', [ParoisseController::class, 'update'])->name('paroisse.update'); 
         Route::delete('/{paroisse}', [ParoisseController::class, 'destroy'])->name('admin.paroisses.destroy');
     });
 
@@ -126,9 +126,17 @@ Route::middleware('auth')->prefix('user')->group(function(){
     Route::post('/messe/paiement/{reference}/verifier', [PaiementController::class, 'verifierManuellement'])->name('user.messe.verifier-manuellement');
 
     //Les routes de paiement par stripe
-    Route::post('/messe/paiement/stripe/{reference}', [PaiementStripeController::class, 'initierPaiementStripe'])->name('user.messe.initier-paiement-stripe');
-    Route::get('/messe/paiement/success/{reference}', [PaiementStripeController::class, 'successPaiementStripe'])->name('user.messe.paiement.success');
-    Route::get('/messe/paiement/cancel/{reference}', [PaiementStripeController::class, 'cancelPaiementStripe'])->name('user.messe.paiement.cancel');
+    Route::post('/paiement/{reference}/stripe', [PaiementStripeController::class, 'initierPaiementStripe'])
+        ->name('user.messe.initier-paiement-stripe');
+    
+    Route::get('/paiement/{reference}/stripe/success', [PaiementStripeController::class, 'successPaiementStripe'])
+        ->name('user.messe.paiement-stripe.success');
+    
+    Route::get('/paiement/{reference}/stripe/cancel', [PaiementStripeController::class, 'cancelPaiementStripe'])
+        ->name('user.messe.paiement-stripe.cancel');
+    
+    Route::post('/paiement/{reference}/stripe/verifier', [PaiementStripeController::class, 'verifierPaiementStripe'])
+        ->name('user.messe.paiement-stripe.verifier');
     
 });
 // NOUVEL EMPLACEMENT CORRECT POUR LES ROUTES DE DONNÉES

@@ -3,7 +3,7 @@
         <a href="{{route('paroisse.dashboard')}}" class="brand-logo">
           <img src="{{ optional(Auth::guard('paroisse')->user())->profile_picture 
                                                 ? asset('storage/' . Auth::guard('paroisse')->user()->profile_picture) 
-                                                : asset('assets/assets/images/sancta.jpg') }}" style="width: 50%" alt="logo">
+                                                : asset('assets/assets/images/sancta.jpg') }}" style="width: 50%; margin-left:50px" alt="logo">
         </a>
       </div>
       <div class="mdc-drawer__content">
@@ -33,8 +33,8 @@
             </div>
             <div class="mdc-list-item mdc-drawer-item">
               <a class="mdc-drawer-link" href="{{route('paroisse.offrande')}}">
-                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">save</i>
-                Ajout de l'offrande
+                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">attach_money</i>
+                Montant de demande
               </a>
             </div>
             <div class="mdc-list-item mdc-drawer-item">

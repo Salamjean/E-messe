@@ -15,11 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('paroisse_id')->nullable()->constrained('paroisses')->onDelete('set null');
-            $table->enum('type_intention', ['Defunt', 'Action graces', 'Intention particuliere']);
-            $table->string('nom_defunt')->nullable();
-            $table->string('motif_action_graces')->nullable();
+            $table->string('interception_par')->nullable();
             $table->string('motif_intention')->nullable();
-            $table->string('nom_prenom_concernes');
             $table->date('date_souhaitee');
             $table->time('heure_souhaitee')->nullable();
             $table->string('celebration_choisie')->nullable();

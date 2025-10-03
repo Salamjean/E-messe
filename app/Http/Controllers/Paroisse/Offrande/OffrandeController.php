@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Paroisse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class OffrandeController extends Controller
 {
@@ -18,27 +19,36 @@ class OffrandeController extends Controller
     {
         $request->validate([
             'montant' => 'required|numeric|min:0',
-        
         ]);
 
         try {
-            // Récupérer la paroisse (vous devrez peut-être adapter cette partie)
-            $paroisse = Paroisse::find(Auth::guard('paroisse')->user()->id); // ou autre logique
+            // Récupérer l'utilisateur paroisse connecté
+            $user = Auth::guard('paroisse')->user();
             
-            // Ajouter le montant
-            $paroisse->montant_offrande = $request->montant;
-            $paroisse->save();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non authentifié'
+                ], 401);
+            }
+
+            // Mettre à jour le montant
+            $user->montant_offrande = $request->montant;
+            $user->save();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Offrande ajoutée avec succès!',
-                'new_amount' => $paroisse->montant_offrande
+                'message' => 'Montant de demande de messe mis à jour avec succès!',
+                'new_amount' => $user->montant_offrande
             ]);
+
         } catch (\Exception $e) {
+            Log::error('Erreur storeOffrande: ' . $e->getMessage());
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
-            ]);
+                'message' => 'Une erreur est survenue lors de la mise à jour'
+            ], 500);
         }
     }
     

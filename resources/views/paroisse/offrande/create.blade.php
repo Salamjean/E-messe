@@ -59,92 +59,78 @@
 
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('offrandeForm');
+   document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('offrandeForm');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
         
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Récupérer les données du formulaire
-            const formData = new FormData(form);
-            
-            // Afficher l'indicateur de chargement
-            const submitButton = form.querySelector('button[type="submit"]');
-            const originalText = submitButton.textContent;
-            submitButton.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Traitement...';
-            submitButton.disabled = true;
-            
-            // Envoyer la requête AJAX
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Mettre à jour le montant affiché
-                    document.getElementById('currentAmount').textContent = 
-                        parseFloat(data.new_amount).toLocaleString('fr-FR', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }) + ' Fcfa';
-                    
-                    // Animation de mise à jour du montant
-                    const amountElement = document.getElementById('currentAmount');
-                    amountElement.classList.add('animate-pulse');
-                    setTimeout(() => {
-                        amountElement.classList.remove('animate-pulse');
-                    }, 1000);
-                    
-                    // Afficher le message de succès avec SweetAlert
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Succès!',
-                        text: data.message,
-                        confirmButtonColor: '#f35525',
-                        confirmButtonText: 'OK',
-                        background: '#ffffff',
-                        color: '#181824'
-                    });
-                    
-                    // Réinitialiser le formulaire
-                    form.reset();
-                    document.getElementById('date').value = '{{ date('Y-m-d') }}';
-                } else {
-                    // Afficher une erreur
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Erreur',
-                        text: data.message || 'Une erreur est survenue',
-                        confirmButtonColor: '#f35525',
-                        confirmButtonText: 'OK',
-                        background: '#ffffff',
-                        color: '#181824'
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
+        const formData = new FormData(form);
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalText = submitButton.textContent;
+        
+        submitButton.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Traitement...';
+        submitButton.disabled = true;
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('currentAmount').textContent = 
+                    parseFloat(data.new_amount).toLocaleString('fr-FR', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    }) + ' Fcfa';
+                
+                const amountElement = document.getElementById('currentAmount');
+                amountElement.classList.add('animate-pulse');
+                setTimeout(() => {
+                    amountElement.classList.remove('animate-pulse');
+                }, 1000);
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Succès!',
+                    text: data.message,
+                    confirmButtonColor: '#f35525',
+                    confirmButtonText: 'OK'
+                });
+                
+                // Réinitialiser seulement le formulaire (sans le champ date)
+                form.reset();
+                
+            } else {
                 Swal.fire({
                     icon: 'error',
                     title: 'Erreur',
-                    text: 'Une erreur est survenue lors de l\'envoi',
+                    text: data.message || 'Une erreur est survenue',
                     confirmButtonColor: '#f35525',
-                    confirmButtonText: 'OK',
-                    background: '#ffffff',
-                    color: '#181824'
+                    confirmButtonText: 'OK'
                 });
-            })
-            .finally(() => {
-                // Restaurer le bouton
-                submitButton.textContent = originalText;
-                submitButton.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur',
+                text: 'Une erreur est survenue lors de l\'envoi',
+                confirmButtonColor: '#f35525',
+                confirmButtonText: 'OK'
             });
+        })
+        .finally(() => {
+            submitButton.textContent = originalText;
+            submitButton.disabled = false;
         });
+    });
 
         // Ajouter des styles pour les éléments de formulaire
         const style = document.createElement('style');

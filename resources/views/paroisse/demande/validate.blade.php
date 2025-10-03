@@ -1,6 +1,8 @@
 @extends('paroisse.layouts.template')
 @section('content')
 <link rel="stylesheet" href="{{ asset('assets/styles.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <div class="messe-container">
     <div class="messe-header">
@@ -86,20 +88,20 @@
                     👁️ Voir 
                 </a>
                 @if($messe->statut === 'en attente')
-                <form action="{{ route('paroisse.messe.confirmed', ['messe' => $messe->id]) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('POST')
-                    <button type="submit" class="card-action-btn cancel-btn" style="background-color: green; padding:10px" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ? Cette action est irréversible.')">
-                        🗑️ Confirmer
-                    </button>
-                </form>
-                <form action="{{ route('paroisse.messe.cancel', ['messe' => $messe->id]) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('POST')
-                    <button type="submit" class="card-action-btn cancel-btn" style="background-color: rgb(199, 12, 12); padding:10px" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ? Cette action est irréversible.')">
-                        🗑️ Annulée
-                    </button>
-                </form>
+                    <form action="{{ route('paroisse.messe.confirmed', ['messe' => $messe->id]) }}" method="POST" class="d-inline" onsubmit="return confirmAction(event, 'confirmer');">
+                        @csrf
+                        @method('POST')
+                        <button type="submit" class="card-action-btn cancel-btn" style="background-color: green; padding:10px">
+                            🗑️ Confirmer
+                        </button>
+                    </form>
+                    <form action="{{ route('paroisse.messe.cancel', ['messe' => $messe->id]) }}" method="POST" class="d-inline" onsubmit="return confirmAction(event, 'annuler');">
+                        @csrf
+                        @method('POST')
+                        <button type="submit" class="card-action-btn cancel-btn" style="background-color: rgb(199, 12, 12); padding:10px">
+                            🗑️ Annuler
+                        </button>
+                    </form>
                 @endif
             </div>
         </div>
@@ -512,5 +514,42 @@ document.addEventListener('DOMContentLoaded', function() {
         checkbox.addEventListener('change', updateBulkActions);
     });
 });
+
+function confirmAction(event, action) {
+    event.preventDefault(); // Empêche le formulaire de se soumettre immédiatement
+    const form = event.target.closest('form'); // Récupère le formulaire
+
+    if (action === 'confirmer') {
+        Swal.fire({
+            title: 'Êtes-vous sûr?',
+            text: "Vous allez confirmer cette demande de messe!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Oui, confirmer!',
+            cancelButtonText: 'Non, annuler'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit(); // Soumet le formulaire si l'utilisateur confirme
+            }
+        });
+    } else if (action === 'annuler') {
+        Swal.fire({
+            title: 'Êtes-vous sûr?',
+            text: "Vous allez annuler cette demande de messe!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Oui, annuler!',
+            cancelButtonText: 'Non, garder'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit(); // Soumet le formulaire si l'utilisateur confirme
+            }
+        });
+    }
+}
 </script>
 @endsection

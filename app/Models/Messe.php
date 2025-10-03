@@ -12,11 +12,7 @@ class Messe extends Model
     protected $fillable = [
         'user_id',
         'paroisse_id',
-        'type_intention',
-        'nom_defunt',
-        'motif_action_graces',
         'motif_intention',
-        'nom_prenom_concernes',
         'date_souhaitee',
         'heure_souhaitee',
         'celebration_choisie',
@@ -28,6 +24,7 @@ class Messe extends Model
         'dates_selectionnees',
         'download_count', 
         'last_downloaded_at', 
+        'interception_par', 
     ];
 
     public function paroisse()
