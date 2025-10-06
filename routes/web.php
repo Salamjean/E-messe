@@ -89,6 +89,8 @@ Route::middleware('paroisse')->prefix('parish')->group(function(){
     Route::post('/mes-messes/{messe}/cancel', [DemandeController::class, 'cancel'])->name('paroisse.messe.cancel');
     Route::post('/mes-messes/{messe}/confirmed', [DemandeController::class, 'confirmed'])->name('paroisse.messe.confirmed');
     Route::post('/messe/update-status', [DemandeController::class, 'updateStatusToCelebrated'])->name('paroisse.messe.update-status');
+    Route::post('/messess/bulk-confirm', [DemandeController::class, 'bulkConfirm'])->name('paroisse.messe.bulk-confirm');
+    Route::post('/messess/bulk-cancel', [DemandeController::class, 'bulkCancel'])->name('paroisse.messe.bulk-cancel');
 
     //Routes de gestion des offrandes 
     Route::get('/offerings',[OffrandeController::class,'create'])->name('paroisse.offrande');

@@ -31,9 +31,9 @@
                                 <p><strong><i class="fas fa-money-bill-wave me-2 text-muted"></i>Montant total à payer:</strong></p>
                             </div>
                             <div class="col-md-6 text-end">
-                                <p class="fw-bold text-primary">{{ number_format($paiement->montant, 0, ',', ' ') }} FCFA</p>
+                                <p class="fw-bold text-primary">{{ number_format($paiement->montant / 1.02, 0, ',', ' ') }} FCFA</p>
                                 <p>{{ number_format($fraisService, 0, ',', ' ') }} FCFA</p>
-                                <p class="fw-bold text-success fs-5">{{ number_format($montantTotal, 0, ',', ' ') }} FCFA</p>
+                                <p class="fw-bold text-success fs-5">{{ number_format($montantTotal /1.02, 0, ',', ' ') }} FCFA</p>
                             </div>
                         </div>
                         <div class="mt-3">
@@ -56,7 +56,7 @@
                                     <form action="{{ route('user.messe.initier-paiement', $paiement->reference) }}" method="POST" class="mt-3">
                                         @csrf
                                         <button type="submit" class="btn btn-primary w-100 rounded-2 py-2">
-                                            <i class="fas fa-mobile-alt me-2"></i>Payer {{ number_format($montantTotal, 0, ',', ' ') }} FCFA
+                                            <i class="fas fa-mobile-alt me-2"></i>Payer {{ number_format($montantTotal / 1.02, 0, ',', ' ') }} FCFA
                                         </button>
                                     </form>
                                 </div>
@@ -73,7 +73,7 @@
                                     <form action="{{ route('user.messe.initier-paiement-stripe', $paiement->reference) }}" method="POST" class="mt-3">
                                         @csrf
                                         <button type="submit" class="btn btn-success w-100 rounded-2 py-2">
-                                            <i class="fas fa-credit-card me-2"></i>Payer {{ number_format($montantTotal, 0, ',', ' ') }} FCFA
+                                            <i class="fas fa-credit-card me-2"></i>Payer {{ number_format($montantTotal / 1.02, 0, ',', ' ') }} FCFA
                                         </button>
                                     </form>
                                 </div>

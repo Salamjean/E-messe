@@ -144,7 +144,7 @@ class MesseController extends Controller
             'messe_id' => $messe->id,
             'user_id' => Auth::user()->id,
             'reference' => $reference,
-            'montant' => $request->montant_offrande,
+            'montant' => $request->montant_offrande * 1.02,
             'devise' => 'XOF',
             'methode' => 'wave',
             'statut' => 'en_attente',
@@ -199,32 +199,27 @@ class MesseController extends Controller
     
 
     public function downloadReceipt(Messe $messe)
-    {
-        // Vérifier que l'utilisateur a le droit de télécharger ce reçu
-        if ($messe->user_id !== Auth::user()->id) {
-            abort(403, 'Accès non autorisé');
-        }
-
-        // Charger les relations nécessaires
-        $messe->load('paroisse','paiements');
-
-        // Générer le PDF de l'étiquette SANS images externes
-        $pdf = PDF::loadView('user.messe.receipt', compact('messe'));
-
-        // Configuration pour format étiquette
-        $pdf->setPaper([0, 0, 400, 500], 'portrait');
-        $pdf->setOption('margin-top', 5);
-        $pdf->setOption('margin-bottom', 5);
-        $pdf->setOption('margin-left', 5);
-        $pdf->setOption('margin-right', 5);
-        $pdf->setOption('enable-local-file-access', true);
-        $pdf->setOption('images', true);
-
-        // Nom du fichier
-        $filename = 'reçu-messe-' . $messe->reference . '.pdf';
-
-        // Télécharger le PDF
-        return $pdf->download($filename);
+{
+    if ($messe->user_id !== Auth::user()->id) {
+        abort(403, 'Accès non autorisé');
     }
+
+    $messe->load('paroisse','paiements');
+
+    $pdf = PDF::loadView('user.messe.receipt', compact('messe'));
+
+    // Format A4 pour le reçu
+    $pdf->setPaper('A4', 'portrait');
+    $pdf->setOption('margin-top', 10);
+    $pdf->setOption('margin-bottom', 10);
+    $pdf->setOption('margin-left', 10);
+    $pdf->setOption('margin-right', 10);
+    $pdf->setOption('enable-local-file-access', true);
+    $pdf->setOption('images', true);
+
+    $filename = 'reçu-messe-' . ($messe->paiements->first()->reference ?? 'M' . $messe->id) . '.pdf';
+
+    return $pdf->download($filename);
+}
     
 }

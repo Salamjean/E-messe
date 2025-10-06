@@ -1,7 +1,5 @@
 @extends('paroisse.layouts.template')
 @section('content')
-<link rel="stylesheet" href="{{ asset('assets/styles.css') }}">
-
 <div class="messe-container">
     <div class="messe-header">
         <h1>Toutes les demandes de messe</h1>
@@ -164,6 +162,36 @@
 </div>
 
 <style>
+
+    .messe-container {
+        width: 90%;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .messe-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 30px 20px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+    
+    .messe-header h1 {
+        color: #f35525;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+    
+    .messe-header p {
+        color: #666;
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
     .messe-cards {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
