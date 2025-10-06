@@ -16,7 +16,7 @@
         <div class="form-section">
             <div class="section-header">
                 <div class="section-icon">🙏</div>
-                <h2>Intention de la messe</h2>
+                <h2>Intention de messe</h2>
             </div>
             
             <div class="form-group">
