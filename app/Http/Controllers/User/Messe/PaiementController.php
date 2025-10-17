@@ -35,6 +35,7 @@ class PaiementController extends Controller
         $fraisService = $paiement->montant * 0.02;
         $montantTotal = $paiement->montant + $fraisService;
         
+        dd( $fraisService, $montantTotal);
         return view('user.messe.paiement', compact('paiement', 'messe', 'fraisService', 'montantTotal'));
     }
 
