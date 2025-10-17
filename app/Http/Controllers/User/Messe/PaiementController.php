@@ -32,10 +32,12 @@ class PaiementController extends Controller
         $messe = $paiement->messe;
         
         // Calculer les frais de 2% et le montant total
-        $fraisService = $paiement->montant * 0.02;
-        $montantTotal = $paiement->montant + $fraisService;
         
-        return view('user.messe.paiement', compact('paiement', 'messe', 'fraisService', 'montantTotal'));
+        $montantTotal = $paiement->montant ;
+
+        // dd($montantTotal, $paiement);
+        
+        return view('user.messe.paiement', compact('paiement', 'messe', 'montantTotal'));
     }
 
     /**
@@ -58,13 +60,11 @@ class PaiementController extends Controller
             }
             
             // Calculer le montant avec frais de 2%
-            $fraisService = $paiement->montant * 0.02;
-            $montantAvecFrais = $paiement->montant + $fraisService;
+            $montantAvecFrais = $paiement->montant;
             
             // Stocker les frais dans les données de transaction
             $donneesAvecFrais = [
                 'montant_initial' => $paiement->montant,
-                'frais_service' => $fraisService,
                 'montant_total' => $montantAvecFrais,
                 'taux_frais' => '2%'
             ];
