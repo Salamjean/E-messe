@@ -224,7 +224,7 @@ class MesseController extends Controller
         $filename = 'reçu-messe-' . $messe->reference . '.pdf';
 
         // Télécharger le PDF
-        return $pdf->download($filename);
+        return $pclsdf->download($filename);
     }
     
 }
