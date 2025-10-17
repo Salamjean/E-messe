@@ -236,7 +236,7 @@
     <div class="retrait-header">
         <div>
             <h1><i class="fas fa-money-bill-wave me-2"></i>Demande de Retrait</h1>
-            <p>Gérez vos retraits de fonds, {{ Auth::guard('paroisse')->user()->nom }}!</p>
+            <p>Gérez vos retraits de fonds, {{ Auth::guard('paroisse')->user()->name }}!</p>
         </div>
         <div class="user-profile">
             <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('paroisse')->user()->name) }}&background=f35525&color=fff" alt="Profile">

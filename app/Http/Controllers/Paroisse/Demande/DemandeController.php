@@ -288,4 +288,59 @@ class DemandeController extends Controller
         return redirect()->back()
             ->with('success', 'Demande annulée avec succès');
     }
+
+    // Méthodes pour les actions groupées
+public function bulkConfirm(Request $request)
+{
+    try {
+        $selectedIds = $request->selected_ids;
+        
+        if (is_string($selectedIds)) {
+            $selectedIds = json_decode($selectedIds, true);
+        }
+        
+        if (!is_array($selectedIds) || empty($selectedIds)) {
+            return redirect()->back()->with('error', 'Aucune demande sélectionnée.');
+        }
+
+        // Mettre à jour le statut de toutes les demandes sélectionnées
+        Messe::whereIn('id', $selectedIds)
+            ->where('paroisse_id', Auth::guard('paroisse')->user()->id)
+            ->where('statut', 'en attente')
+            ->update(['statut' => 'confirmee']);
+
+        return redirect()->back()->with('success', count($selectedIds) . ' demande(s) confirmée(s) avec succès.');
+        
+    } catch (\Exception $e) {
+        Log::error('Erreur lors de la confirmation groupée: ' . $e->getMessage());
+        return redirect()->back()->with('error', 'Une erreur est survenue lors de la confirmation.');
+    }
+}
+
+public function bulkCancel(Request $request)
+{
+    try {
+        $selectedIds = $request->selected_ids;
+        
+        if (is_string($selectedIds)) {
+            $selectedIds = json_decode($selectedIds, true);
+        }
+        
+        if (!is_array($selectedIds) || empty($selectedIds)) {
+            return redirect()->back()->with('error', 'Aucune demande sélectionnée.');
+        }
+
+        // Mettre à jour le statut de toutes les demandes sélectionnées
+        Messe::whereIn('id', $selectedIds)
+            ->where('paroisse_id', Auth::guard('paroisse')->user()->id)
+            ->where('statut', 'en attente')
+            ->update(['statut' => 'annulee']);
+
+        return redirect()->back()->with('success', count($selectedIds) . ' demande(s) annulée(s) avec succès.');
+        
+    } catch (\Exception $e) {
+        Log::error('Erreur lors de l\'annulation groupée: ' . $e->getMessage());
+        return redirect()->back()->with('error', 'Une erreur est survenue lors de l\'annulation.');
+    }
+}
 }

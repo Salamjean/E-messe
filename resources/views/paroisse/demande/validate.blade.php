@@ -1,6 +1,5 @@
 @extends('paroisse.layouts.template')
 @section('content')
-<link rel="stylesheet" href="{{ asset('assets/styles.css') }}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -17,9 +16,40 @@
     </div>
     @else
 
+    <!-- Section de sélection globale -->
+    <div class="select-all-container">
+        <label class="checkbox-label">
+            <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+            <span class="checkmark"></span>
+            <span style="margin-left: 5px;">Tout sélectionner</span>
+        </label>
+    </div>
+
+    <!-- Actions groupées -->
+    <div id="bulkActions" class="bulk-actions" style="display: none; margin-bottom: 20px;">
+        <span id="selectedCount" style="font-weight: 500; color: #333;"></span>
+        <button type="button" class="btn btn-success" onclick="bulkConfirm()">
+            ✅ Confirmer la sélection
+        </button>
+        <button type="button" class="btn btn-danger" onclick="bulkCancel()">
+            ❌ Annuler la sélection
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="deselectAll()">
+            🔄 Tout désélectionner
+        </button>
+    </div>
+
     <div class="messe-cards">
         @foreach($filteredMessess as $messe)
         <div class="messe-card" data-status="{{ $messe->statut }}">
+            
+            <!-- Checkbox pour sélection individuelle -->
+            <div class="card-checkbox">
+                <label class="checkbox-label">
+                    <input type="checkbox" class="messe-checkbox" value="{{ $messe->id }}" onchange="updateBulkActions()">
+                    <span class="checkmark"></span>
+                </label>
+            </div>
             
             <div class="card-header">
                 <div class="card-badge {{ str_replace(' ', '_', $messe->statut) }}">
@@ -91,15 +121,15 @@
                     <form action="{{ route('paroisse.messe.confirmed', ['messe' => $messe->id]) }}" method="POST" class="d-inline" onsubmit="return confirmAction(event, 'confirmer');">
                         @csrf
                         @method('POST')
-                        <button type="submit" class="card-action-btn cancel-btn" style="background-color: green; padding:10px">
-                            🗑️ Confirmer
+                        <button type="submit" class="card-action-btn confirm-btn">
+                            ✅ Confirmer
                         </button>
                     </form>
                     <form action="{{ route('paroisse.messe.cancel', ['messe' => $messe->id]) }}" method="POST" class="d-inline" onsubmit="return confirmAction(event, 'annuler');">
                         @csrf
                         @method('POST')
-                        <button type="submit" class="card-action-btn cancel-btn" style="background-color: rgb(199, 12, 12); padding:10px">
-                            🗑️ Annuler
+                        <button type="submit" class="card-action-btn cancel-btn">
+                            ❌ Annuler
                         </button>
                     </form>
                 @endif
@@ -110,13 +140,43 @@
     @endif
 </div>
 
-<!-- Formulaire caché pour générer le PDF -->
-<form id="pdfForm" action="{{ route('paroisse.messe.export-pdf') }}" method="POST" target="_blank">
+<!-- Formulaire caché pour les actions groupées -->
+<form id="bulkActionForm" action="" method="POST" style="display: none;">
     @csrf
-    <input type="hidden" name="selected_ids" id="selectedIds">
+    @method('POST')
+    <input type="hidden" name="selected_ids" id="bulkSelectedIds">
 </form>
 
 <style>
+    .messe-container {
+        width: 90%;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .messe-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 30px 20px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+    
+    .messe-header h1 {
+        color: #f35525;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+    
+    .messe-header p {
+        color: #666;
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
     .messe-cards {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -277,13 +337,23 @@
         color: white;
     }
     
+    .confirm-btn {
+        background: #28a745;
+        color: white;
+    }
+    
+    .confirm-btn:hover {
+        background: #218838;
+        color: white;
+    }
+    
     .cancel-btn {
-        background: #6c757d;
+        background: #dc3545;
         color: white;
     }
     
     .cancel-btn:hover {
-        background: #495057;
+        background: #c82333;
         color: white;
     }
     
@@ -384,24 +454,36 @@
         display: flex;
         gap: 10px;
         align-items: center;
+        margin-top: 15px;
+        flex-wrap: wrap;
     }
     
     .bulk-actions .btn {
-        padding: 8px 15px;
+        padding: 10px 15px;
         border-radius: 6px;
         font-weight: 500;
         border: none;
         cursor: pointer;
         transition: all 0.3s ease;
+        font-size: 0.9rem;
     }
     
-    .bulk-actions .btn-primary {
-        background: #007bff;
+    .bulk-actions .btn-success {
+        background: #28a745;
         color: white;
     }
     
-    .bulk-actions .btn-primary:hover {
-        background: #0056b3;
+    .bulk-actions .btn-success:hover {
+        background: #218838;
+    }
+    
+    .bulk-actions .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .bulk-actions .btn-danger:hover {
+        background: #c82333;
     }
     
     .bulk-actions .btn-secondary {
@@ -414,11 +496,12 @@
     }
     
     .select-all-container {
-        width: 15%;
         background: white;
         padding: 12px 15px;
         border-radius: 8px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+        display: inline-block;
     }
     
     @media (max-width: 768px) {
@@ -438,6 +521,10 @@
             flex-direction: column;
             align-items: stretch;
         }
+        
+        .select-all-container {
+            width: 100%;
+        }
     }
 </style>
 
@@ -455,12 +542,20 @@ function toggleSelectAll(checkbox) {
 function updateBulkActions() {
     const selectedCount = document.querySelectorAll('.messe-checkbox:checked').length;
     const bulkActions = document.getElementById('bulkActions');
+    const selectedCountSpan = document.getElementById('selectedCount');
+    const selectAllCheckbox = document.getElementById('selectAll');
     
     if (selectedCount > 0) {
         bulkActions.style.display = 'flex';
+        selectedCountSpan.textContent = `${selectedCount} demande(s) sélectionnée(s)`;
     } else {
         bulkActions.style.display = 'none';
     }
+    
+    // Mettre à jour la case "Tout sélectionner"
+    const totalCheckboxes = document.querySelectorAll('.messe-checkbox').length;
+    selectAllCheckbox.checked = selectedCount === totalCheckboxes && totalCheckboxes > 0;
+    selectAllCheckbox.indeterminate = selectedCount > 0 && selectedCount < totalCheckboxes;
 }
 
 // Fonction pour tout désélectionner
@@ -473,35 +568,72 @@ function deselectAll() {
     updateBulkActions();
 }
 
-// Fonction pour générer le PDF
-function generatePDF() {
+// Fonction pour confirmer plusieurs demandes
+function bulkConfirm() {
     const selectedCheckboxes = document.querySelectorAll('.messe-checkbox:checked');
     const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
     
     if (selectedIds.length === 0) {
-        alert('Veuillez sélectionner au moins une demande.');
+        Swal.fire({
+            title: 'Aucune sélection',
+            text: 'Veuillez sélectionner au moins une demande.',
+            icon: 'warning',
+            confirmButtonColor: '#f35525'
+        });
         return;
     }
+
+    Swal.fire({
+        title: 'Confirmer les demandes',
+        html: `Vous allez confirmer <strong>${selectedIds.length} demande(s)</strong>. Cette action est irréversible.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Oui, confirmer',
+        cancelButtonText: 'Annuler'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Mettre à jour le formulaire et soumettre
+            document.getElementById('bulkSelectedIds').value = JSON.stringify(selectedIds);
+            document.getElementById('bulkActionForm').action = "{{ route('paroisse.messe.bulk-confirm') }}";
+            document.getElementById('bulkActionForm').submit();
+        }
+    });
+}
+
+// Fonction pour annuler plusieurs demandes
+function bulkCancel() {
+    const selectedCheckboxes = document.querySelectorAll('.messe-checkbox:checked');
+    const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
     
-    // Mettre à jour le champ caché avec les IDs sélectionnés
-    document.getElementById('selectedIds').value = JSON.stringify(selectedIds);
-    
-    // Afficher un message de chargement
-    const downloadBtn = document.querySelector('.bulk-actions .btn-primary');
-    const originalText = downloadBtn.innerHTML;
-    downloadBtn.innerHTML = '⏳ Génération en cours...';
-    downloadBtn.disabled = true;
-    
-    // Soumettre le formulaire
-    setTimeout(() => {
-        document.getElementById('pdfForm').submit();
-        
-        // Réactiver le bouton après 3 secondes
-        setTimeout(() => {
-            downloadBtn.innerHTML = originalText;
-            downloadBtn.disabled = false;
-        }, 3000);
-    }, 500);
+    if (selectedIds.length === 0) {
+        Swal.fire({
+            title: 'Aucune sélection',
+            text: 'Veuillez sélectionner au moins une demande.',
+            icon: 'warning',
+            confirmButtonColor: '#f35525'
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Annuler les demandes',
+        html: `Vous allez annuler <strong>${selectedIds.length} demande(s)</strong>. Cette action est irréversible.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Oui, annuler',
+        cancelButtonText: 'Annuler'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Mettre à jour le formulaire et soumettre
+            document.getElementById('bulkSelectedIds').value = JSON.stringify(selectedIds);
+            document.getElementById('bulkActionForm').action = "{{ route('paroisse.messe.bulk-cancel') }}";
+            document.getElementById('bulkActionForm').submit();
+        }
+    });
 }
 
 // Initialiser les actions groupées au chargement
@@ -516,8 +648,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function confirmAction(event, action) {
-    event.preventDefault(); // Empêche le formulaire de se soumettre immédiatement
-    const form = event.target.closest('form'); // Récupère le formulaire
+    event.preventDefault();
+    const form = event.target.closest('form');
 
     if (action === 'confirmer') {
         Swal.fire({
@@ -531,7 +663,7 @@ function confirmAction(event, action) {
             cancelButtonText: 'Non, annuler'
         }).then((result) => {
             if (result.isConfirmed) {
-                form.submit(); // Soumet le formulaire si l'utilisateur confirme
+                form.submit();
             }
         });
     } else if (action === 'annuler') {
@@ -546,7 +678,7 @@ function confirmAction(event, action) {
             cancelButtonText: 'Non, garder'
         }).then((result) => {
             if (result.isConfirmed) {
-                form.submit(); // Soumet le formulaire si l'utilisateur confirme
+                form.submit();
             }
         });
     }

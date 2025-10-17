@@ -388,7 +388,7 @@
                             <i class="${iconClass}" style="color: ${iconColor};"></i>
                         </div>
                         <div class="activity-details">
-                            <p>${messe.type_intention} - ${messe.celebration_choisie}</p>
+                            <p>Le ${messe.date_souhaitee} - ${messe.celebration_choisie} à ${messe.heure_souhaitee}</p>
                             <span class="activity-time">${timeText} à ${messe.heure_souhaitee}</span>
                         </div>
                     `;
