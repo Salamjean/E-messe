@@ -2,37 +2,37 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
 
     /**
-     * The attributes that are mass assignable.
+     * Les attributs pouvant être remplis en masse.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'name',
+        'user_name',
         'email',
         'password',
+        'indicatif',
+        'contact',
+        'commune',
+        'CMU',
+        'profile_picture',
         'actif',
-        'archived_at',
     ];
 
-    public function messess()
-    {
-        return $this->hasMany(Messe::class);
-    }
     /**
-     * The attributes that should be hidden for serialization.
+     * Les attributs à masquer lors de la sérialisation.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -40,7 +40,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Les attributs qui doivent être typés (cast).
      *
      * @return array<string, string>
      */
@@ -48,36 +48,54 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password' => 'hashed', // Laravel 12 : hash auto lors de la sauvegarde
         ];
     }
 
-    // Scope pour les utilisateurs archivés
+    /**
+     * Relation : un utilisateur peut avoir plusieurs messes.
+     */
+    public function messes()
+    {
+        return $this->hasMany(Messe::class);
+    }
+
+    /**
+     * Scope : récupérer uniquement les utilisateurs archivés.
+     */
     public function scopeArchived($query)
     {
         return $query->whereNotNull('archived_at');
     }
 
-    // Scope pour les utilisateurs non archivés
+    /**
+     * Scope : récupérer uniquement les utilisateurs actifs (non archivés).
+     */
     public function scopeActive($query)
     {
         return $query->whereNull('archived_at');
     }
 
-    // Méthode pour archiver un utilisateur
+    /**
+     * Archiver un utilisateur.
+     */
     public function archive()
     {
         $this->update(['archived_at' => now()]);
     }
 
-    // Méthode pour désarchiver un utilisateur
+    /**
+     * Désarchiver un utilisateur.
+     */
     public function unarchive()
     {
         $this->update(['archived_at' => null]);
     }
 
-    // Vérifier si l'utilisateur est archivé
-    public function isArchived()
+    /**
+     * Vérifie si l'utilisateur est archivé.
+     */
+    public function isArchived(): bool
     {
         return !is_null($this->archived_at);
     }

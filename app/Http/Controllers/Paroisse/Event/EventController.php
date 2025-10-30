@@ -1,0 +1,176 @@
+<?php
+
+namespace App\Http\Controllers\Paroisse\Event;
+
+use App\Http\Controllers\Controller;
+use App\Models\Event;
+use Illuminate\Http\Request;
+use Carbon\Carbon;
+use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+
+class EventController extends Controller
+{
+    public function index()
+    {
+        $types = Event::distinct()->pluck('type_event');
+
+        return view('paroisse.event.index', compact('types'));
+    }
+
+    public function data()
+    {
+        $events = Event::select(['id', 'titre', 'type_event', 'date_debut', 'date_fin', 'lieu', 'celebrant', 'statut'])
+            ->orderByRaw("
+                CASE
+                    WHEN statut = 'En cours' THEN 1
+                    WHEN statut = 'Prévu' THEN 2
+                    WHEN statut = 'Terminé' THEN 3
+                    ELSE 4
+                END ASC
+            ")
+            ->orderBy('date_debut', 'asc');
+
+        return DataTables::of($events)
+            ->editColumn('date_debut', function ($event) {
+                return $event->date_debut
+                    ? Carbon::parse($event->date_debut)->format('d/m/Y H:i')
+                    : 'N/A';
+            })
+            ->editColumn('date_fin', function ($event) {
+                return $event->date_fin
+                    ? Carbon::parse($event->date_fin)->format('d/m/Y H:i')
+                    : 'N/A';
+            })
+            ->addColumn('actions', function($event){
+                return '
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-sm btn-outline-warning editBtn" data-id="'.$event->id.'" title="Modifier">
+                            <i class="material-icons">edit</i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="'.$event->id.'" title="Supprimer">
+                            <i class="material-icons">delete</i>
+                        </button>
+                    </div>';
+            })
+            ->rawColumns(['actions', 'statut'])
+            ->make(true);
+    }
+
+    public function show(Event $event)
+    {
+        return response()->json($event);
+    }
+    
+    private function validateEvent(Request $request)
+    {
+        return $request->validate([
+            'titre' => 'required|string|max:255',
+            'type_event' => 'required|string|max:255',
+            'date_debut' => 'required|date',
+            'date_fin' => 'nullable|date|after_or_equal:date_debut',
+            'lieu' => 'nullable|string|max:255',
+            'celebrant' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'participation_frais' => 'nullable|numeric|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'titre.required' => 'Le titre est obligatoire',
+            'type_event.required' => 'Le type d\'événement est obligatoire',
+            'date_debut.required' => 'La date de début est obligatoire',
+            'date_fin.after_or_equal' => 'La date de fin doit être postérieure ou égale à la date de début',
+            'image.image' => 'Le fichier doit être une image',
+            'image.max' => 'L\'image ne doit pas dépasser 2MB',
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        try {
+            $validatedData = $this->validateEvent($request);
+
+            $paroisse = Auth::guard('paroisse')->user();
+
+            if ($request->hasFile('image')) {
+                $path = $request->file('image')->store('events_images', 'public');
+                $validatedData['image'] = $path;
+            }
+
+            $validatedData['statut'] = 'Prévu';
+            $validatedData['created_by'] = $paroisse->id;
+
+            Event::create($validatedData);
+
+            return response()->json([
+                'message' => 'Événement ajouté avec succès !'
+            ], 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Erreur de validation',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Erreur création événement: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Erreur lors de la création de l\'événement: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function update(Request $request, Event $event)
+    {
+        try {
+            $validatedData = $this->validateEvent($request);
+
+            if ($request->hasFile('image')) {
+                // Supprimer l'ancienne image si elle existe
+                if ($event->image && Storage::disk('public')->exists($event->image)) {
+                    Storage::disk('public')->delete($event->image);
+                }
+                $path = $request->file('image')->store('events_images', 'public');
+                $validatedData['image'] = $path;
+            }
+
+            $event->update($validatedData);
+
+            return response()->json([
+                'message' => 'Événement mis à jour avec succès !'
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Erreur de validation',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Erreur mise à jour événement: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Erreur lors de la mise à jour de l\'événement: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroy(Event $event)
+    {
+        try {
+            // Supprimer l'image associée si elle existe
+            if ($event->image && Storage::disk('public')->exists($event->image)) {
+                Storage::disk('public')->delete($event->image);
+            }
+            
+            $event->delete();
+            
+            return response()->json([
+                'message' => 'Événement supprimé avec succès !'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Erreur suppression événement: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Erreur lors de la suppression de l\'événement: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+}

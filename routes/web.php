@@ -18,6 +18,8 @@ use App\Http\Controllers\User\Messe\PaiementStripeController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\UserDashboard;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Paroisse\Event\EventController;
+use App\Http\Controllers\User\Event\EventController as UserEventController;
 
 
 Route::get('/',[HomeController::class, 'home'])->name('home');
@@ -96,6 +98,17 @@ Route::middleware('paroisse')->prefix('parish')->group(function(){
     Route::get('/offerings',[OffrandeController::class,'create'])->name('paroisse.offrande');
     Route::post('/parish/offrande', [OffrandeController::class, 'storeOffrande'])->name('paroisse.offrande.store');
     Route::get('/request/historys',[OffrandeController::class,'history'])->name('demandes.messes.history');
+
+    Route::prefix('event')->name('event.')->group(function () {
+        Route::get('/', [EventController::class, 'index'])->name('index');
+        Route::get('/data', [EventController::class, 'data'])->name('data');
+        Route::post('/', [EventController::class, 'store'])->name('store');
+        Route::get('/{event}', [EventController::class, 'show'])->name('show');
+        Route::put('/{event}', [EventController::class, 'update'])->name('update');
+        Route::delete('/{event}', [EventController::class, 'destroy'])->name('destroy');
+    });
+
+
 });
 //Les routes des @utilisateurs (@fideles)
 Route::prefix('user')->group(function(){
@@ -139,6 +152,15 @@ Route::middleware('auth')->prefix('user')->group(function(){
     
     Route::post('/paiement/{reference}/stripe/verifier', [PaiementStripeController::class, 'verifierPaiementStripe'])
         ->name('user.messe.paiement-stripe.verifier');
+
+    Route::prefix('user_event')->name('user_event.')->group(function () {
+        Route::get('/', [UserEventController::class, 'index'])->name('index');
+        Route::get('/data', [UserEventController::class, 'data'])->name('data');
+        Route::post('/', [UserEventController::class, 'store'])->name('store');
+        Route::get('/{event}', [UserEventController::class, 'show'])->name('show');
+        Route::put('/{event}', [UserEventController::class, 'update'])->name('update');
+        Route::delete('/{event}', [UserEventController::class, 'destroy'])->name('destroy');
+    });
     
 });
 // NOUVEL EMPLACEMENT CORRECT POUR LES ROUTES DE DONNÉES

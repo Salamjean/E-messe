@@ -8,111 +8,85 @@
       </div>
       <div class="mdc-drawer__content">
         <div class="user-info">
-          <p class="name text-center"> {{Auth::guard('paroisse')->user()->name}} </p>
-          <p class="email text-center">{{Auth::guard('paroisse')->user()->email}}</p>
+          <p class="name text-center">{{ Auth::guard('paroisse')->user()->name }}</p>
+          <p class="email text-center">{{ Auth::guard('paroisse')->user()->email }}</p>
         </div>
+
         <div class="mdc-list-group">
           <nav class="mdc-list mdc-drawer-menu">
+
+            <!-- Tableau de bord -->
             <div class="mdc-list-item mdc-drawer-item">
-              <a class="mdc-drawer-link" href="{{route('paroisse.dashboard')}}">
-                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">home</i>
+              <a class="mdc-drawer-link" href="{{ route('paroisse.dashboard') }}">
+                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon">dashboard</i>
                 Tableau de bord
               </a>
             </div>
+
+            <!-- Ajouter un évènement -->
             <div class="mdc-list-item mdc-drawer-item">
-              <a class="mdc-drawer-link" href="{{route('demandes.messes.validate')}}">
-                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">grid_on</i>
-                Valider Demandes
+              <a class="mdc-drawer-link" href="{{ route('event.index') }}">
+                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon">event</i>
+                Ajouter un évènement
               </a>
             </div>
+
+            <!-- Valider les demandes -->
+            <div class="mdc-list-item mdc-drawer-item">
+              <a class="mdc-drawer-link" href="{{ route('demandes.messes.validate') }}">
+                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon">check_circle</i>
+                Valider les demandes
+              </a>
+            </div>
+
+            <!-- Demandes de messes -->
             <div class="mdc-list-item mdc-drawer-item">
               <a class="mdc-drawer-link" href="{{route('demandes.messes.index')}}">
                 <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">grid_on</i>
                 Demandes de messes
               </a>
             </div>
+
+            <!-- Montant de demande -->
             <div class="mdc-list-item mdc-drawer-item">
-              <a class="mdc-drawer-link" href="{{route('paroisse.offrande')}}">
-                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">attach_money</i>
+              <a class="mdc-drawer-link" href="{{ route('paroisse.offrande') }}">
+                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon">attach_money</i>
                 Montant de demande
               </a>
             </div>
+
+            <!-- Historique -->
             <div class="mdc-list-item mdc-drawer-item">
-              <a class="mdc-drawer-link" href="{{route('demandes.messes.history')}}">
-                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">dashboard</i>
-                Historiques 
+              <a class="mdc-drawer-link" href="{{ route('demandes.messes.history') }}">
+                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon">history</i>
+                Historique
               </a>
             </div>
+
+            <!-- Retraits -->
             <div class="mdc-list-item mdc-drawer-item">
               <a class="mdc-expansion-panel-link" href="#" data-toggle="expansionPanel" data-target="ui-sub-menu">
-                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">dashboard</i>
+                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon">account_balance_wallet</i>
                 Retrait
                 <i class="mdc-drawer-arrow material-icons">chevron_right</i>
               </a>
               <div class="mdc-expansion-panel" id="ui-sub-menu">
                 <nav class="mdc-list mdc-drawer-submenu">
                   <div class="mdc-list-item mdc-drawer-item">
-                    <a class="mdc-drawer-link" href="{{route('paroisse.retrait.create')}}">
-                      Demander 
-                    </a>
+                    <a class="mdc-drawer-link" href="{{ route('paroisse.retrait.create') }}">Demander</a>
                   </div>
                   <div class="mdc-list-item mdc-drawer-item">
-                    <a class="mdc-drawer-link" href="{{route('paroisse.retraits')}}">
-                     En attente
-                    </a>
+                    <a class="mdc-drawer-link" href="{{ route('paroisse.retraits') }}">En attente</a>
                   </div>
                   <div class="mdc-list-item mdc-drawer-item">
-                    <a class="mdc-drawer-link" href="{{route('paroisse.history')}}">
-                      Historiques
-                    </a>
+                    <a class="mdc-drawer-link" href="{{ route('paroisse.history') }}">Historiques</a>
                   </div>
                 </nav>
               </div>
             </div>
-            {{-- <div class="mdc-list-item mdc-drawer-item">
-              <a class="mdc-expansion-panel-link" href="#" data-toggle="expansionPanel" data-target="sample-page-submenu">
-                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">pages</i>
-                Sample Pages
-                <i class="mdc-drawer-arrow material-icons">chevron_right</i>
-              </a>
-              <div class="mdc-expansion-panel" id="sample-page-submenu">
-                <nav class="mdc-list mdc-drawer-submenu">
-                  <div class="mdc-list-item mdc-drawer-item">
-                    <a class="mdc-drawer-link" href="pages/samples/blank-page.html">
-                      Blank Page
-                    </a>
-                  </div>
-                  <div class="mdc-list-item mdc-drawer-item">
-                    <a class="mdc-drawer-link" href="pages/samples/403.html">
-                      403
-                    </a>
-                  </div>
-                  <div class="mdc-list-item mdc-drawer-item">
-                    <a class="mdc-drawer-link" href="pages/samples/404.html">
-                      404
-                    </a>
-                  </div>
-                  <div class="mdc-list-item mdc-drawer-item">
-                    <a class="mdc-drawer-link" href="pages/samples/500.html">
-                      500
-                    </a>
-                  </div>
-                  <div class="mdc-list-item mdc-drawer-item">
-                    <a class="mdc-drawer-link" href="pages/samples/505.html">
-                      505
-                    </a>
-                  </div>
-                  <div class="mdc-list-item mdc-drawer-item">
-                    <a class="mdc-drawer-link" href="pages/samples/login.html">
-                      Login
-                    </a>
-                  </div>
-                  <div class="mdc-list-item mdc-drawer-item">
-                    <a class="mdc-drawer-link" href="pages/samples/register.html">
-                      Register
-                    </a>
-                  </div>
-                </nav>
-              </div> --}}
-            </div>
+
+          </nav>
+        </div>
+      </div>
+
     </aside>

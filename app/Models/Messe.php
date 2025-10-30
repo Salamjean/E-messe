@@ -7,8 +7,41 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @OA\Schema(
+ *     schema="Messe",
+ *     title="Messe",
+ *     description="Représente une demande de messe",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="user_id", type="integer", example=10),
+ *     @OA\Property(property="paroisse_id", type="integer", example=5),
+ *     @OA\Property(property="motif_intention", type="string", example="Pour la santé de ma famille"),
+ *     @OA\Property(property="date_souhaitee", type="string", format="date", example="2025-11-15"),
+ *     @OA\Property(property="heure_souhaitee", type="string", format="time", example="09:30"),
+ *     @OA\Property(property="celebration_choisie", type="string", example="Messe dominicale"),
+ *     @OA\Property(property="nom_demandeur", type="string", example="Jean Dupont"),
+ *     @OA\Property(property="email_demandeur", type="string", example="jean@example.com"),
+ *     @OA\Property(property="telephone_demandeur", type="string", example="+2250700000000"),
+ *     @OA\Property(property="montant_offrande", type="number", format="float", example=5000),
+ *     @OA\Property(property="statut", type="string", example="en_attente_paiement"),
+ *     @OA\Property(
+ *         property="dates_selectionnees",
+ *         type="array",
+ *         @OA\Items(type="string", example="Lundi")
+ *     ),
+ *     @OA\Property(property="download_count", type="integer", example=0),
+ *     @OA\Property(property="last_downloaded_at", type="string", format="date-time", example="2025-11-01T08:00:00Z"),
+ *     @OA\Property(property="interception_par", type="string", example="Père Martin"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
+
 class Messe extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'paroisse_id',

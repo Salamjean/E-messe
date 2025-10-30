@@ -14,23 +14,23 @@ class ParoisseDashboard extends Controller
     {
         $paroisse = Auth::guard('paroisse')->user();
         
-        $pendingDemandes = $paroisse->messess()
+        $pendingDemandes = $paroisse->messes()
             ->where('statut', 'en attente')
             ->count();
             
-        $confirmedDemandes = $paroisse->messess()
+        $confirmedDemandes = $paroisse->messes()
             ->where('statut', 'confirmee')
             ->count();
             
-        $celebratedDemandes = $paroisse->messess()
+        $celebratedDemandes = $paroisse->messes()
             ->where('statut', 'celebre')
             ->count();
             
-        $totalDemandes = $paroisse->messess()->count();
+        $totalDemandes = $paroisse->messes()->count();
         
         $totalOffrandes = $paroisse->montant_offrande ?? 0;
         
-        $upcomingMessess = $paroisse->messess()
+        $upcomingMessess = $paroisse->messes()
             ->where('statut', 'confirmee')
             ->where('date_souhaitee', '>=', now())
             ->orderBy('date_souhaitee')
@@ -38,7 +38,7 @@ class ParoisseDashboard extends Controller
             ->get();
         
         // Récupérer les dernières offrandes depuis la table messes
-        $latestOffrandes = $paroisse->messess()
+        $latestOffrandes = $paroisse->messes()
             ->whereNotNull('montant_offrande')
             ->where('montant_offrande', '>', 0)
             ->orderBy('created_at', 'desc')
@@ -46,7 +46,7 @@ class ParoisseDashboard extends Controller
             ->get(['montant_offrande', 'created_at', 'nom_demandeur']);
         
         // Récupérer les offrandes des 6 derniers mois
-        $monthlyOffrandes = $paroisse->messess()
+        $monthlyOffrandes = $paroisse->messes()
             ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, SUM(montant_offrande) as total')
             ->whereNotNull('montant_offrande')
             ->where('montant_offrande', '>', 0)

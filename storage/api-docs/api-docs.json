@@ -1,0 +1,2357 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "E_Messe API",
+        "description": "API pour l'application E_Messe - Gestion des messes",
+        "contact": {
+            "email": "leprodev03@gmail.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8081/api",
+            "description": "Serveur Local"
+        },
+        {
+            "url": "https://votre-domaine.com/api",
+            "description": "Serveur de Production"
+        }
+    ],
+    "paths": {
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Connexion utilisateur",
+                "description": "Authentifie un utilisateur avec email/nom d'utilisateur et mot de passe",
+                "operationId": "222b2625838e3c57e017987f73598fda",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "login",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "login": {
+                                        "type": "string",
+                                        "example": "john@example.com ou johndoe"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Connexion réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Connexion réussie."
+                                        },
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "1|abc123..."
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "John Doe"
+                                                },
+                                                "user_name": {
+                                                    "type": "string",
+                                                    "example": "johndoe"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "john@example.com"
+                                                },
+                                                "contact": {
+                                                    "type": "string",
+                                                    "example": "+22501234567"
+                                                },
+                                                "commune": {
+                                                    "type": "string",
+                                                    "example": "Abobo"
+                                                },
+                                                "profile_picture": {
+                                                    "type": "string",
+                                                    "example": null,
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Identifiants incorrects",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Identifiants incorrects."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Compte inactif",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte inactif. Contactez l'administration."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Inscription utilisateur",
+                "description": "Crée un nouveau compte utilisateur",
+                "operationId": "8e4e3cb7b46126f4696379d3c7eeb4ad",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "user_name",
+                                    "email",
+                                    "indicatif",
+                                    "contact",
+                                    "commune",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 191,
+                                        "example": "John Doe"
+                                    },
+                                    "user_name": {
+                                        "type": "string",
+                                        "maxLength": 191,
+                                        "example": "johndoe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "maxLength": 191,
+                                        "example": "john@example.com"
+                                    },
+                                    "indicatif": {
+                                        "type": "string",
+                                        "maxLength": 10,
+                                        "example": "+225"
+                                    },
+                                    "contact": {
+                                        "type": "string",
+                                        "maxLength": 191,
+                                        "example": "01234567"
+                                    },
+                                    "commune": {
+                                        "type": "string",
+                                        "maxLength": 191,
+                                        "example": "Abobo"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "minLength": 6,
+                                        "example": "password123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "CMU": {
+                                        "type": "string",
+                                        "maxLength": 191,
+                                        "example": "CMU12345",
+                                        "nullable": true
+                                    },
+                                    "profile_picture": {
+                                        "type": "string",
+                                        "maxLength": 191,
+                                        "example": null,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Inscription réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Inscription réussie ✅"
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "John Doe"
+                                                },
+                                                "user_name": {
+                                                    "type": "string",
+                                                    "example": "johndoe"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "john@example.com"
+                                                },
+                                                "indicatif": {
+                                                    "type": "string",
+                                                    "example": "+225"
+                                                },
+                                                "contact": {
+                                                    "type": "string",
+                                                    "example": "01234567"
+                                                },
+                                                "commune": {
+                                                    "type": "string",
+                                                    "example": "Abobo"
+                                                },
+                                                "CMU": {
+                                                    "type": "string",
+                                                    "example": "CMU12345",
+                                                    "nullable": true
+                                                },
+                                                "profile_picture": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "actif": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|abc123..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Déconnexion",
+                "description": "Déconnecte l'utilisateur et supprime ses tokens",
+                "operationId": "ad65cbbd4e9f201619eae184a5961a98",
+                "responses": {
+                    "200": {
+                        "description": "Déconnexion réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Déconnexion réussie"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Utilisateur non authentifié"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/forgot-password": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Mot de passe oublié",
+                "description": "Envoie un lien de réinitialisation par email",
+                "operationId": "20d78161b19ac6afb56924e74974ec46",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Email envoyé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Un lien de réinitialisation a été envoyé à votre e-mail."
+                                        },
+                                        "token_demo": {
+                                            "description": "À supprimer en production",
+                                            "type": "string",
+                                            "example": "abc123..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Email non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Aucun utilisateur trouvé avec cet e-mail."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/reset-password": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Réinitialisation du mot de passe",
+                "description": "Réinitialise le mot de passe avec le token reçu par email",
+                "operationId": "0a6624b616e4ba5a310a61d9f7418c35",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "token",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "token": {
+                                        "type": "string",
+                                        "example": "abc123..."
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "minLength": 6,
+                                        "example": "newpassword123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "newpassword123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Mot de passe réinitialisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Mot de passe réinitialisé avec succès ✅"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Token invalide",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Token invalide."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Email ou utilisateur non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Aucune demande trouvée."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/events": {
+            "get": {
+                "tags": [
+                    "Événements"
+                ],
+                "summary": "Récupérer la liste des événements disponibles pour l'utilisateur connecté",
+                "description": "Retourne tous les événements actifs avec leurs détails principaux et la paroisse qui a créé l'événement.",
+                "operationId": "getAllEvents",
+                "responses": {
+                    "200": {
+                        "description": "Liste des événements récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "titre": {
+                                                "type": "string",
+                                                "example": "Concert de louange"
+                                            },
+                                            "date_debut": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2025-12-05T18:00:00"
+                                            },
+                                            "date_fin": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2025-12-05T21:00:00"
+                                            },
+                                            "lieu": {
+                                                "type": "string",
+                                                "example": "Cathédrale Saint-Paul"
+                                            },
+                                            "celebrant": {
+                                                "type": "string",
+                                                "example": "Père Jean Kouassi"
+                                            },
+                                            "participation_frais": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 2000
+                                            },
+                                            "image_url": {
+                                                "type": "string",
+                                                "example": "https://tonsite.com/storage/events_images/photo1.jpg"
+                                            },
+                                            "paroisse": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "nom": {
+                                                        "type": "string",
+                                                        "example": "Paroisse Saint-Paul"
+                                                    },
+                                                    "email": {
+                                                        "type": "string",
+                                                        "example": "paroisse@exemple.com"
+                                                    },
+                                                    "telephone": {
+                                                        "type": "string",
+                                                        "example": "+2250700000000"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/messes": {
+            "get": {
+                "tags": [
+                    "Messes"
+                ],
+                "summary": "Liste des messes actives de l'utilisateur connecté",
+                "operationId": "dae7d67a90e96b3fc7af175acf4b5809",
+                "responses": {
+                    "200": {
+                        "description": "Liste des messes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "messes": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Messe"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Messes"
+                ],
+                "summary": "Créer une nouvelle demande de messe",
+                "operationId": "04d8e5af8aa792cc73f25397a7421f54",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "motif_intention",
+                                    "celebration_choisie",
+                                    "montant_offrande",
+                                    "date_souhaitee",
+                                    "paroisse_id"
+                                ],
+                                "properties": {
+                                    "motif_intention": {
+                                        "type": "string"
+                                    },
+                                    "interception_par": {
+                                        "type": "string"
+                                    },
+                                    "celebration_choisie": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Messe quotidienne",
+                                            "Messe dominicale",
+                                            "Messe solennelle"
+                                        ]
+                                    },
+                                    "jours_quotidienne": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "jours_dominicale": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "montant_offrande": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "date_souhaitee": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "heure_souhaitee": {
+                                        "type": "string",
+                                        "format": "time"
+                                    },
+                                    "paroisse_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Messe créée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "messe": {
+                                            "$ref": "#/components/schemas/Messe"
+                                        },
+                                        "paiement": {
+                                            "$ref": "#/components/schemas/Paiement"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreurs de validation"
+                    },
+                    "500": {
+                        "description": "Erreur serveur"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/messes/specifiques": {
+            "get": {
+                "tags": [
+                    "Messes"
+                ],
+                "summary": "Liste des messes selon un type spécifique",
+                "operationId": "104f45cf9787bb2daa18b61950ad3cbe",
+                "parameters": [
+                    {
+                        "name": "celebration_choisie",
+                        "in": "query",
+                        "description": "Type de messe à filtrer",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "Messe quotidienne",
+                                "Messe dominicale",
+                                "Messe solennelle"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste filtrée des messes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "celebration_choisie": {
+                                            "type": "string"
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Messe"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Paramètre manquant"
+                    },
+                    "422": {
+                        "description": "Type de célébration invalide"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/messes/history": {
+            "get": {
+                "tags": [
+                    "Messes"
+                ],
+                "summary": "Historique des messes (annulées ou célébrées)",
+                "operationId": "a3d3c6c6271302cd574a3f2c526cddb5",
+                "responses": {
+                    "200": {
+                        "description": "Historique des messes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "history": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Messe"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/messes/{messeId}": {
+            "get": {
+                "tags": [
+                    "Messes"
+                ],
+                "summary": "Afficher les détails d’une messe spécifique",
+                "operationId": "3461b99931889c28ef23587e42adfad3",
+                "parameters": [
+                    {
+                        "name": "messeId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Détails de la messe",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Messe"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès non autorisé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Messes"
+                ],
+                "summary": "Mettre à jour une demande de messe",
+                "operationId": "34fbc5876e6496e11f8981d1fbe61ada",
+                "parameters": [
+                    {
+                        "name": "messeId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "motif_intention": {
+                                        "type": "string"
+                                    },
+                                    "date_souhaitee": {
+                                        "type": "string",
+                                        "format": "date"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Mise à jour réussie"
+                    },
+                    "403": {
+                        "description": "Accès non autorisé"
+                    },
+                    "409": {
+                        "description": "Cette demande ne peut plus être modifiée"
+                    },
+                    "422": {
+                        "description": "Erreurs de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Messes"
+                ],
+                "summary": "Supprime une messe si non célébrée",
+                "operationId": "e607900e03f0457363501d89754916eb",
+                "parameters": [
+                    {
+                        "name": "messeId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Messe supprimée"
+                    },
+                    "403": {
+                        "description": "Accès non autorisé"
+                    },
+                    "409": {
+                        "description": "Seules les messes en attente peuvent être supprimées"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/favoris": {
+            "get": {
+                "tags": [
+                    "Favoris"
+                ],
+                "summary": "Liste des favoris de l'utilisateur connecté",
+                "description": "Récupère la liste complète des paroisses que l'utilisateur a ajoutées à ses favoris.",
+                "operationId": "1445c8b652df3c8c49aee1bd1a896298",
+                "responses": {
+                    "200": {
+                        "description": "Liste des favoris récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "user_id": {
+                                                        "type": "integer",
+                                                        "example": 3
+                                                    },
+                                                    "paroisse_id": {
+                                                        "type": "integer",
+                                                        "example": 5
+                                                    },
+                                                    "paroisse": {
+                                                        "properties": {
+                                                            "nom": {
+                                                                "type": "string",
+                                                                "example": "Paroisse Saint Michel"
+                                                            },
+                                                            "commune": {
+                                                                "properties": {
+                                                                    "nom": {
+                                                                        "type": "string",
+                                                                        "example": "Yopougon"
+                                                                    },
+                                                                    "ville": {
+                                                                        "properties": {
+                                                                            "nom": {
+                                                                                "type": "string",
+                                                                                "example": "Abidjan"
+                                                                            }
+                                                                        },
+                                                                        "type": "object"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Favoris"
+                ],
+                "summary": "Ajouter une paroisse aux favoris",
+                "description": "Permet d'ajouter une paroisse à la liste des favoris de l'utilisateur connecté.",
+                "operationId": "67a41e7b4a7468dfa0f366c958e2b38f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "paroisse_id"
+                                ],
+                                "properties": {
+                                    "paroisse_id": {
+                                        "description": "ID de la paroisse à ajouter",
+                                        "type": "integer",
+                                        "example": 5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Paroisse ajoutée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Paroisse ajoutée aux favoris"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "paroisse_id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié"
+                    },
+                    "422": {
+                        "description": "Validation échouée (paroisse inexistante)"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/favoris/{id}": {
+            "delete": {
+                "tags": [
+                    "Favoris"
+                ],
+                "summary": "Supprimer un favori",
+                "description": "Supprime une paroisse des favoris de l'utilisateur connecté.",
+                "operationId": "160a3a22b01929f8288447de43f9e3a9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du favori à supprimer",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Favori supprimé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Favori supprimé avec succès"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Favori introuvable"
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/paroisses": {
+            "get": {
+                "tags": [
+                    "Paroisses"
+                ],
+                "summary": "Lister les paroisses avec filtres et pagination",
+                "description": "Permet de récupérer une liste paginée des paroisses avec des filtres optionnels (recherche, ville, commune) et indique les favoris de l’utilisateur connecté.",
+                "operationId": "584ea767055412ffdb64bd3655ffd0f2",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Recherche par nom de paroisse",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Saint Michel"
+                        }
+                    },
+                    {
+                        "name": "ville",
+                        "in": "query",
+                        "description": "Nom partiel ou complet de la ville",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Abidjan"
+                        }
+                    },
+                    {
+                        "name": "commune",
+                        "in": "query",
+                        "description": "Nom partiel ou complet de la commune",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Yopougon"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Nombre d’éléments par page (par défaut 10)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste paginée des paroisses récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des paroisses récupérée avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Paroisse Saint Michel"
+                                                            },
+                                                            "email": {
+                                                                "type": "string",
+                                                                "example": "saintmichel@eglise.ci"
+                                                            },
+                                                            "contact": {
+                                                                "type": "string",
+                                                                "example": "+2250700000000"
+                                                            },
+                                                            "commune": {
+                                                                "type": "string",
+                                                                "example": "Yopougon"
+                                                            },
+                                                            "ville": {
+                                                                "type": "string",
+                                                                "example": "Abidjan"
+                                                            },
+                                                            "montant_total_messes": {
+                                                                "type": "number",
+                                                                "example": 25000
+                                                            },
+                                                            "montant_moyen_messes": {
+                                                                "type": "number",
+                                                                "example": 5000
+                                                            },
+                                                            "is_favori": {
+                                                                "type": "boolean",
+                                                                "example": true
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/paroisses/{id}": {
+            "get": {
+                "tags": [
+                    "Paroisses"
+                ],
+                "summary": "Afficher les détails d’une paroisse",
+                "operationId": "ccdf83f31c6f6e997e656cb225f870e2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Identifiant unique de la paroisse",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Détails de la paroisse",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Paroisse Saint Michel"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "paroisse@eglise.ci"
+                                                },
+                                                "contact": {
+                                                    "type": "string",
+                                                    "example": "+2250700000000"
+                                                },
+                                                "commune": {
+                                                    "type": "string",
+                                                    "example": "Yopougon"
+                                                },
+                                                "ville": {
+                                                    "type": "string",
+                                                    "example": "Abidjan"
+                                                },
+                                                "montant_total_messes": {
+                                                    "type": "number",
+                                                    "example": 50000
+                                                },
+                                                "montant_moyen_messes": {
+                                                    "type": "number",
+                                                    "example": 10000
+                                                },
+                                                "is_favori": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Paroisse introuvable"
+                    }
+                }
+            }
+        },
+        "/api/paroisses/recommandations": {
+            "get": {
+                "tags": [
+                    "Paroisses"
+                ],
+                "summary": "Obtenir les paroisses recommandées",
+                "description": "Retourne les 5 paroisses les plus actives basées sur le nombre de messes et le montant total.",
+                "operationId": "a69782f953005883bc00f8e09dfdad35",
+                "responses": {
+                    "200": {
+                        "description": "Liste des paroisses recommandées",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des paroisses recommandées"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Paroisse"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/paroisses/{paroisse_id}/favori": {
+            "get": {
+                "tags": [
+                    "Paroisses"
+                ],
+                "summary": "Vérifier si une paroisse est dans les favoris",
+                "operationId": "2170ef633d6e51d7b7740345e298f6d3",
+                "parameters": [
+                    {
+                        "name": "paroisse_id",
+                        "in": "path",
+                        "description": "ID de la paroisse",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Statut du favori renvoyé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "paroisse_id": {
+                                            "type": "integer",
+                                            "example": 2
+                                        },
+                                        "is_favori": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/paroisses/favori/toggle": {
+            "post": {
+                "tags": [
+                    "Paroisses"
+                ],
+                "summary": "Ajouter ou retirer une paroisse des favoris",
+                "operationId": "f6350f79aa6f4945ac11d93889e7634a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "paroisse_id"
+                                ],
+                                "properties": {
+                                    "paroisse_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Action sur le favori effectuée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Paroisse ajoutée aux favoris"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Favori"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/user/profile": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Profil utilisateur",
+                "description": "Récupère les informations du profil de l'utilisateur connecté",
+                "operationId": "643f3fba69c3b90788166059a9db5094",
+                "responses": {
+                    "200": {
+                        "description": "Profil récupéré avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "John Doe"
+                                                },
+                                                "user_name": {
+                                                    "type": "string",
+                                                    "example": "johndoe"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "john@example.com"
+                                                },
+                                                "indicatif": {
+                                                    "type": "string",
+                                                    "example": "+225"
+                                                },
+                                                "contact": {
+                                                    "type": "string",
+                                                    "example": "01234567"
+                                                },
+                                                "commune": {
+                                                    "type": "string",
+                                                    "example": "Abobo"
+                                                },
+                                                "CMU": {
+                                                    "type": "string",
+                                                    "example": "CMU12345",
+                                                    "nullable": true
+                                                },
+                                                "profile_picture": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "actif": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Mettre à jour le profil",
+                "description": "Met à jour les informations du profil utilisateur",
+                "operationId": "788178f3bf26d10d78a92a30e51734ef",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 191,
+                                        "example": "John Doe Updated"
+                                    },
+                                    "user_name": {
+                                        "type": "string",
+                                        "maxLength": 191,
+                                        "example": "johndoe_updated"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "maxLength": 191,
+                                        "example": "john.updated@example.com"
+                                    },
+                                    "indicatif": {
+                                        "type": "string",
+                                        "maxLength": 10,
+                                        "example": "+225"
+                                    },
+                                    "contact": {
+                                        "type": "string",
+                                        "maxLength": 191,
+                                        "example": "07654321"
+                                    },
+                                    "commune": {
+                                        "type": "string",
+                                        "maxLength": 191,
+                                        "example": "Cocody"
+                                    },
+                                    "CMU": {
+                                        "type": "string",
+                                        "maxLength": 191,
+                                        "example": "CMU67890",
+                                        "nullable": true
+                                    },
+                                    "profile_picture": {
+                                        "type": "string",
+                                        "maxLength": 191,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profil mis à jour avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/user/change-password": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Changer le mot de passe",
+                "description": "Change le mot de passe de l'utilisateur connecté",
+                "operationId": "51ca9b37aa2f939aff779e61958697bc",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "current_password",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "current_password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "oldpassword123"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "minLength": 6,
+                                        "example": "newpassword123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "newpassword123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Mot de passe changé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Mot de passe changé"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Mot de passe actuel incorrect",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Le mot de passe actuel est incorrect."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/user/notifications": {
+            "put": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Préférences de notifications",
+                "description": "Met à jour les préférences de notifications de l'utilisateur",
+                "operationId": "f95d1285bb419bae7867db50fd5ab2bf",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "notifications"
+                                ],
+                                "properties": {
+                                    "notifications": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Préférences mises à jour",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Préférences de notifications mises à jour"
+                                        },
+                                        "notifications": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "User": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "user_name": {
+                        "type": "string",
+                        "example": "johndoe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "john@example.com"
+                    },
+                    "indicatif": {
+                        "type": "string",
+                        "example": "+225"
+                    },
+                    "contact": {
+                        "type": "string",
+                        "example": "01234567"
+                    },
+                    "commune": {
+                        "type": "string",
+                        "example": "Abobo"
+                    },
+                    "CMU": {
+                        "type": "string",
+                        "example": "CMU12345",
+                        "nullable": true
+                    },
+                    "profile_picture": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "actif": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "LoginRequest": {
+                "required": [
+                    "login",
+                    "password"
+                ],
+                "properties": {
+                    "login": {
+                        "description": "Email ou nom d'utilisateur",
+                        "type": "string",
+                        "example": "john@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "password123"
+                    }
+                },
+                "type": "object"
+            },
+            "RegisterRequest": {
+                "required": [
+                    "name",
+                    "user_name",
+                    "email",
+                    "indicatif",
+                    "contact",
+                    "commune",
+                    "password",
+                    "password_confirmation"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 191,
+                        "example": "John Doe"
+                    },
+                    "user_name": {
+                        "type": "string",
+                        "maxLength": 191,
+                        "example": "johndoe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 191,
+                        "example": "john@example.com"
+                    },
+                    "indicatif": {
+                        "type": "string",
+                        "maxLength": 10,
+                        "example": "+225"
+                    },
+                    "contact": {
+                        "type": "string",
+                        "maxLength": 191,
+                        "example": "01234567"
+                    },
+                    "commune": {
+                        "type": "string",
+                        "maxLength": 191,
+                        "example": "Abobo"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "minLength": 6,
+                        "example": "password123"
+                    },
+                    "password_confirmation": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "password123"
+                    },
+                    "CMU": {
+                        "type": "string",
+                        "maxLength": 191,
+                        "example": "CMU12345",
+                        "nullable": true
+                    },
+                    "profile_picture": {
+                        "type": "string",
+                        "maxLength": 191,
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "LoginResponse": {
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "example": "success"
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Connexion réussie."
+                    },
+                    "access_token": {
+                        "type": "string",
+                        "example": "1|abc123..."
+                    },
+                    "token_type": {
+                        "type": "string",
+                        "example": "Bearer"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/User"
+                    }
+                },
+                "type": "object"
+            },
+            "ErrorResponse": {
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "example": "error"
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Message d'erreur"
+                    }
+                },
+                "type": "object"
+            },
+            "Favori": {
+                "title": "Favori",
+                "description": "Modèle Favori représentant une paroisse enregistrée comme favori par un utilisateur",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "paroisse_id": {
+                        "type": "integer",
+                        "example": 5
+                    }
+                },
+                "type": "object"
+            },
+            "Messe": {
+                "title": "Messe",
+                "description": "Représente une demande de messe",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "paroisse_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "motif_intention": {
+                        "type": "string",
+                        "example": "Pour la santé de ma famille"
+                    },
+                    "date_souhaitee": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-11-15"
+                    },
+                    "heure_souhaitee": {
+                        "type": "string",
+                        "format": "time",
+                        "example": "09:30"
+                    },
+                    "celebration_choisie": {
+                        "type": "string",
+                        "example": "Messe dominicale"
+                    },
+                    "nom_demandeur": {
+                        "type": "string",
+                        "example": "Jean Dupont"
+                    },
+                    "email_demandeur": {
+                        "type": "string",
+                        "example": "jean@example.com"
+                    },
+                    "telephone_demandeur": {
+                        "type": "string",
+                        "example": "+2250700000000"
+                    },
+                    "montant_offrande": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 5000
+                    },
+                    "statut": {
+                        "type": "string",
+                        "example": "en_attente_paiement"
+                    },
+                    "dates_selectionnees": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "Lundi"
+                        }
+                    },
+                    "download_count": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "last_downloaded_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-01T08:00:00Z"
+                    },
+                    "interception_par": {
+                        "type": "string",
+                        "example": "Père Martin"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Paiement": {
+                "title": "Paiement",
+                "description": "Représente un paiement pour une messe",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "messe_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "reference": {
+                        "type": "string",
+                        "example": "MESSE_API_1698741234_1"
+                    },
+                    "montant": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 5100
+                    },
+                    "devise": {
+                        "type": "string",
+                        "example": "XOF"
+                    },
+                    "methode": {
+                        "type": "string",
+                        "example": "wave"
+                    },
+                    "statut": {
+                        "type": "string",
+                        "example": "paye"
+                    },
+                    "transaction_id": {
+                        "type": "string",
+                        "example": "TX_5f3d2a1b8c"
+                    },
+                    "donnees_transaction": {
+                        "type": "object",
+                        "example": {
+                            "message": "Paiement réussi"
+                        }
+                    },
+                    "date_paiement": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-30T10:00:00Z"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Paroisse": {
+                "title": "Paroisse",
+                "description": "Informations de base d'une paroisse",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Paroisse Saint Michel"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "saintmichel@eglise.ci"
+                    },
+                    "contact": {
+                        "type": "string",
+                        "example": "+2250700000000"
+                    },
+                    "commune": {
+                        "type": "string",
+                        "example": "Yopougon"
+                    },
+                    "ville": {
+                        "type": "string",
+                        "example": "Abidjan"
+                    },
+                    "montant_total_messes": {
+                        "type": "number",
+                        "example": 45000
+                    },
+                    "montant_moyen_messes": {
+                        "type": "number",
+                        "example": 9000
+                    },
+                    "is_favori": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "Sanctum",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Événements",
+            "description": "Endpoints pour la gestion et l'affichage des événements disponibles"
+        },
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "Messes",
+            "description": "Messes"
+        },
+        {
+            "name": "Favoris",
+            "description": "Favoris"
+        },
+        {
+            "name": "Paroisses",
+            "description": "Paroisses"
+        },
+        {
+            "name": "User",
+            "description": "User"
+        }
+    ]
+}

@@ -27,13 +27,13 @@ class PaiementStripeController extends Controller
             }
             
             // Calculer les frais de 2% et le montant total
-            $fraisService = $paiement->montant * 0.02;
-            $montantAvecFrais = $paiement->montant + $fraisService;
+            $montantAvecFrais = (int) round($paiement->montant);
+
             
+            // dd($montantAvecFrais);
             // Stocker les frais dans les données de transaction
             $donneesAvecFrais = [
                 'montant_initial' => $paiement->montant,
-                'frais_service' => $fraisService,
                 'montant_total' => $montantAvecFrais,
                 'taux_frais' => '2%'
             ];
@@ -64,7 +64,6 @@ class PaiementStripeController extends Controller
                     'paiement_id' => $paiement->id,
                     'reference' => $reference,
                     'montant_initial' => $paiement->montant,
-                    'frais_service' => $fraisService,
                     'montant_total' => $montantAvecFrais,
                 ],
             ]);

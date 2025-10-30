@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{{asset('userAssets/assets/vendors/simple-line-icons/css/simple-line-icons.css')}} ">
     <link rel="stylesheet" href="{{asset('userAssets/assets/vendors/flag-icon-css/css/flag-icons.min.css')}}">
     <link rel="stylesheet" href="{{asset('userAssets/assets/vendors/css/vendor.bundle.base.css')}}">
+    <link rel="stylesheet" href="{{asset('css/event.css')}}">
 
     <!-- endinject -->
     <!-- Plugin css for this page -->

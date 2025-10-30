@@ -184,7 +184,7 @@
                     @elseif($messe->type_intention === 'Action graces')
                         d'action de Grâces
                     @else
-                        d'ntention Particulière
+                        d'intention Particulière
                     @endif
             </h3>
             <span class="badge badge-{{ str_replace(' ', '_', $messe->statut) }}">
@@ -192,7 +192,16 @@
             </span>
         </div>
 
-        <div class="messe-details">
+        <h4>
+            
+            Messe demandé à l'intention de 
+            <strong style="color: green;">"{{ $messe->motif_intention }}"</strong> 
+            par l'intercession de 
+            <strong style="color: red;">"{{ $messe->interception_par }}"</strong>
+                par 
+            <strong style="color: blue;">"{{ $messe->nom_demandeur }}"</strong> 
+        </h4>
+        {{-- <div class="messe-details">
             <div class="detail-item">
                 <span class="detail-label">Référence:</span> 
                 <span class="accent-color">#{{ str_pad($messe->id, 6, '0', STR_PAD_LEFT) }}</span>
@@ -254,7 +263,7 @@
                 <span class="detail-label">Motif intention particulière:</span> {{ $messe->motif_intention }}
             </div>
             @endif
-        </div>
+        </div> --}}
     </div>
 
     @if(($index + 1) % 3 === 0 && ($index + 1) < count($messess))
