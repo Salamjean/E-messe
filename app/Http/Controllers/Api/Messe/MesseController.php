@@ -18,7 +18,7 @@ class MesseController extends Controller
 
         /**
      * @OA\Get(
-     *     path="/messes",
+     *     path="/api/messes",
      *     summary="Liste des messes actives de l'utilisateur connecté",
      *     tags={"Messes"},
      *     security={{"bearerAuth":{}}},
@@ -54,7 +54,7 @@ class MesseController extends Controller
 
         /**
      * @OA\Get(
-     *     path="/messes/specifiques",
+     *     path="/api/messes/specifiques",
      *     summary="Liste des messes selon un type spécifique",
      *     tags={"Messes"},
      *     security={{"bearerAuth":{}}},
@@ -126,7 +126,7 @@ class MesseController extends Controller
 
         /**
      * @OA\Get(
-     *     path="/messes/history",
+     *     path="/api/messes/history",
      *     summary="Historique des messes (annulées ou célébrées)",
      *     tags={"Messes"},
      *     security={{"bearerAuth":{}}},
@@ -163,7 +163,7 @@ class MesseController extends Controller
 
         /**
      * @OA\Post(
-     *     path="/messes",
+     *     path="/api/messes",
      *     summary="Créer une nouvelle demande de messe",
      *     tags={"Messes"},
      *     security={{"bearerAuth":{}}},
@@ -307,7 +307,7 @@ class MesseController extends Controller
 
         /**
      * @OA\Get(
-     *     path="/messes/{messeId}",
+     *     path="/api/messes/{messeId}",
      *     summary="Afficher les détails d’une messe spécifique",
      *     tags={"Messes"},
      *     security={{"bearerAuth":{}}},
@@ -338,7 +338,7 @@ class MesseController extends Controller
 
         /**
      * @OA\Put(
-     *     path="/messes/{messeId}",
+     *     path="/api/messes/{messeId}",
      *     summary="Mettre à jour une demande de messe",
      *     tags={"Messes"},
      *     security={{"bearerAuth":{}}},
@@ -388,7 +388,7 @@ class MesseController extends Controller
 
         /**
      * @OA\Delete(
-     *     path="/messes/{messeId}",
+     *     path="/api/messes/{messeId}",
      *     summary="Supprime une messe si non célébrée",
      *     tags={"Messes"},
      *     security={{"bearerAuth":{}}},

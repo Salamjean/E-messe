@@ -86,6 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //Route pour les évènements
     Route::prefix('event')->group(function () {
         Route::get('/', [EventController::class, 'index']); 
+        Route::get('/{id}', [EventController::class, 'show']);
 
     });
     

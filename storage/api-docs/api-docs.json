@@ -646,13 +646,13 @@
                 ]
             }
         },
-        "/messes": {
+        "/api/messes": {
             "get": {
                 "tags": [
                     "Messes"
                 ],
                 "summary": "Liste des messes actives de l'utilisateur connecté",
-                "operationId": "dae7d67a90e96b3fc7af175acf4b5809",
+                "operationId": "ed744c3c45abe19497046d00ef1668e5",
                 "responses": {
                     "200": {
                         "description": "Liste des messes",
@@ -687,7 +687,7 @@
                     "Messes"
                 ],
                 "summary": "Créer une nouvelle demande de messe",
-                "operationId": "04d8e5af8aa792cc73f25397a7421f54",
+                "operationId": "f451a8e657f3e2ca57de379cecace2e9",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -787,13 +787,13 @@
                 ]
             }
         },
-        "/messes/specifiques": {
+        "/api/messes/specifiques": {
             "get": {
                 "tags": [
                     "Messes"
                 ],
                 "summary": "Liste des messes selon un type spécifique",
-                "operationId": "104f45cf9787bb2daa18b61950ad3cbe",
+                "operationId": "5be36e532439ca27fc70ed68dd0ce059",
                 "parameters": [
                     {
                         "name": "celebration_choisie",
@@ -852,13 +852,13 @@
                 ]
             }
         },
-        "/messes/history": {
+        "/api/messes/history": {
             "get": {
                 "tags": [
                     "Messes"
                 ],
                 "summary": "Historique des messes (annulées ou célébrées)",
-                "operationId": "a3d3c6c6271302cd574a3f2c526cddb5",
+                "operationId": "f603b9cc4c3a9f605ea1b8b4f241c8d7",
                 "responses": {
                     "200": {
                         "description": "Historique des messes",
@@ -889,13 +889,13 @@
                 ]
             }
         },
-        "/messes/{messeId}": {
+        "/api/messes/{messeId}": {
             "get": {
                 "tags": [
                     "Messes"
                 ],
                 "summary": "Afficher les détails d’une messe spécifique",
-                "operationId": "3461b99931889c28ef23587e42adfad3",
+                "operationId": "37df78426c5314a8d7a735c5691097fa",
                 "parameters": [
                     {
                         "name": "messeId",
@@ -932,7 +932,7 @@
                     "Messes"
                 ],
                 "summary": "Mettre à jour une demande de messe",
-                "operationId": "34fbc5876e6496e11f8981d1fbe61ada",
+                "operationId": "ff8f867c0e56c114c846de69eee83457",
                 "parameters": [
                     {
                         "name": "messeId",
@@ -987,7 +987,7 @@
                     "Messes"
                 ],
                 "summary": "Supprime une messe si non célébrée",
-                "operationId": "e607900e03f0457363501d89754916eb",
+                "operationId": "9c1c2e0240f92370854ea74c2f2ece15",
                 "parameters": [
                     {
                         "name": "messeId",
