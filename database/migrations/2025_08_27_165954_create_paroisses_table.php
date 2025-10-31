@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('profile_picture')->nullable();
             $table->decimal('montant_offrande', 8, 2)->nullable();
-            $table->foreignId('commune_id')->nullable()->constrained('communes');
+            $table->unsignedBigInteger('commune_id')->nullable()->constrained('communes');
             $table->timestamps();
         });
     }
