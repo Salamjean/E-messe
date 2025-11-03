@@ -230,4 +230,64 @@ class UserController extends Controller
             'notifications' => $user->notifications
         ]);
     }
+
+        /**
+     * @OA\Patch(
+     *     path="/api/users/{id}/pref/toggle",
+     *     tags={"Utilisateurs"},
+     *     summary="Basculer la préférence d'un utilisateur",
+     *     description="Inverse la valeur du champ 'pref' (true <-> false) pour un utilisateur.",
+     *     operationId="toggleUserPref",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID de l'utilisateur",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Préférence basculée avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Préférence basculée"),
+     *             @OA\Property(
+     *                 property="user",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Jean Dupont"),
+     *                 @OA\Property(property="email", type="string", example="jean@example.com"),
+     *                 @OA\Property(property="pref", type="boolean", example=false)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Utilisateur non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Utilisateur non trouvé")
+     *         )
+     *     ),
+     *     security={{"sanctum": {}}}
+     * )
+     */
+    public function togglePref($id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Utilisateur non trouvé'
+            ], 404);
+        }
+
+        // Basculer la valeur
+        $user->pref = !$user->pref;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Préférence basculée',
+            'user' => $user
+        ]);
+    }
+
 }

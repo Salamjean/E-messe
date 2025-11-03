@@ -8,9 +8,11 @@ use App\Http\Controllers\Api\Paroisse\ParoisseController;
 use App\Http\Controllers\Api\Paroisse\FavoriController;
 use App\Http\Controllers\Api\Paiement\PaiementController;
 use App\Http\Controllers\Api\Event\EventController;
+use App\Http\Controllers\Api\User\UserNotificationController;
 
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
+Route::post('/auth/google', [AuthController::class, 'loginWithGoogle']);
 
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
@@ -89,6 +91,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     });
     
+
+    Route::patch('/users/{id}/notifications', [UserNotificationController::class, 'updateAll']);
+
+
 
 });
 

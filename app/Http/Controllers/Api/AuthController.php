@@ -47,9 +47,8 @@ use App\Models\User;
  *     @OA\Property(property="name", type="string", example="John Doe"),
  *     @OA\Property(property="user_name", type="string", example="johndoe"),
  *     @OA\Property(property="email", type="string", example="john@example.com"),
- *     @OA\Property(property="indicatif", type="string", example="+225"),
  *     @OA\Property(property="contact", type="string", example="01234567"),
- *     @OA\Property(property="commune", type="string", example="Abobo"),
+ *     @OA\Property(property="civilite", type="string", example="Homme"),
  *     @OA\Property(property="CMU", type="string", nullable=true, example="CMU12345"),
  *     @OA\Property(property="profile_picture", type="string", nullable=true),
  *     @OA\Property(property="actif", type="integer", example=1),
@@ -68,13 +67,12 @@ use App\Models\User;
  * @OA\Schema(
  *     schema="RegisterRequest",
  *     type="object",
- *     required={"name","user_name","email","indicatif","contact","commune","password","password_confirmation"},
+ *     required={"name","user_name","email","contact","civilite","password","password_confirmation"},
  *     @OA\Property(property="name", type="string", maxLength=191, example="John Doe"),
  *     @OA\Property(property="user_name", type="string", maxLength=191, example="johndoe"),
  *     @OA\Property(property="email", type="string", format="email", maxLength=191, example="john@example.com"),
- *     @OA\Property(property="indicatif", type="string", maxLength=10, example="+225"),
  *     @OA\Property(property="contact", type="string", maxLength=191, example="01234567"),
- *     @OA\Property(property="commune", type="string", maxLength=191, example="Abobo"),
+ *     @OA\Property(property="civilite", type="string", maxLength=191, example="homme"),
  *     @OA\Property(property="password", type="string", format="password", minLength=6, example="password123"),
  *     @OA\Property(property="password_confirmation", type="string", format="password", example="password123"),
  *     @OA\Property(property="CMU", type="string", maxLength=191, nullable=true, example="CMU12345"),
@@ -135,7 +133,7 @@ class AuthController extends Controller
      *                 @OA\Property(property="user_name", type="string", example="johndoe"),
      *                 @OA\Property(property="email", type="string", example="john@example.com"),
      *                 @OA\Property(property="contact", type="string", example="+22501234567"),
-     *                 @OA\Property(property="commune", type="string", example="Abobo"),
+     *                 @OA\Property(property="civilite", type="string", example="homme"),
      *                 @OA\Property(property="profile_picture", type="string", nullable=true, example=null)
      *             )
      *         )
@@ -197,11 +195,93 @@ class AuthController extends Controller
                 'user_name' => $user->user_name,
                 'email' => $user->email,
                 'contact' => $user->contact,
-                'commune' => $user->commune,
+                'civilite' => $user->civilite,
                 'profile_picture' => $user->profile_picture,
             ]
         ], 200);
     }
+
+
+
+    /**
+ * @OA\Post(
+ *     path="/api/auth/google",
+ *     summary="Connexion ou inscription via Google",
+ *     description="Connecte ou crée un utilisateur à partir des informations Google déjà vérifiées côté client.",
+ *     tags={"Authentication"},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             required={"email","googleId"},
+ *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+ *             @OA\Property(property="googleId", type="string", example="1029384756abcd"),
+ *             @OA\Property(property="fullName", type="string", example="John Doe"),
+ *             @OA\Property(property="photoUrl", type="string", nullable=true, example="https://lh3.googleusercontent.com/..."),
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Connexion réussie ou compte créé",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="string", example="success"),
+ *             @OA\Property(property="message", type="string", example="Connexion réussie avec Google ✅"),
+ *             @OA\Property(property="access_token", type="string", example="1|xyz123..."),
+ *             @OA\Property(property="token_type", type="string", example="Bearer"),
+ *             @OA\Property(property="user", ref="#/components/schemas/User")
+ *         )
+ *     )
+ * )
+ */
+public function loginWithGoogle(Request $request)
+{
+    $validated = $request->validate([
+        'email' => 'required|email',
+        'googleId' => 'required|string',
+        'fullName' => 'nullable|string|max:191',
+        'photoUrl' => 'nullable|string|max:500',
+    ]);
+
+    // Vérifie si un utilisateur existe déjà avec ce Google ID ou cet email
+    $user = User::where('google_id', $validated['googleId'])
+                ->orWhere('email', $validated['email'])
+                ->first();
+
+    if (!$user) {
+        // Crée un nouvel utilisateur minimal
+        $user = User::create([
+            'name' => $validated['fullName'] ?? 'Utilisateur Google',
+            'user_name' => Str::slug(explode('@', $validated['email'])[0]) . rand(100, 999),
+            'email' => $validated['email'],
+            'google_id' => $validated['googleId'],
+            'password' => bcrypt(Str::random(16)), // mot de passe aléatoire
+            'actif' => 1,
+            'profile_picture' => $validated['photoUrl'] ?? null,
+            'contact' => '00000000',
+        ]);
+    } else {
+        // Si le compte existait, on met à jour la photo et le Google ID
+        $user->update([
+            'google_id' => $validated['googleId'],
+            'profile_picture' => $validated['photoUrl'] ?? $user->profile_picture,
+        ]);
+    }
+
+    // Supprime les anciens tokens
+    $user->tokens()->delete();
+
+    // Génère un nouveau token
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Connexion réussie avec Google ✅',
+        'access_token' => $token,
+        'token_type' => 'Bearer',
+        'user' => $user
+    ]);
+}
+
+
 
     /**
      * Enregistrement d'un utilisateur
@@ -217,13 +297,12 @@ class AuthController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"name","user_name","email","indicatif","contact","commune","password","password_confirmation"},
+     *             required={"name","user_name","email","contact","civilite","password","password_confirmation"},
      *             @OA\Property(property="name", type="string", maxLength=191, example="John Doe"),
      *             @OA\Property(property="user_name", type="string", maxLength=191, example="johndoe"),
      *             @OA\Property(property="email", type="string", format="email", maxLength=191, example="john@example.com"),
-     *             @OA\Property(property="indicatif", type="string", maxLength=10, example="+225"),
      *             @OA\Property(property="contact", type="string", maxLength=191, example="01234567"),
-     *             @OA\Property(property="commune", type="string", maxLength=191, example="Abobo"),
+     *             @OA\Property(property="civilite", type="string", maxLength=191, example="homme"),
      *             @OA\Property(property="password", type="string", format="password", minLength=6, example="password123"),
      *             @OA\Property(property="password_confirmation", type="string", format="password", example="password123"),
      *             @OA\Property(property="CMU", type="string", maxLength=191, nullable=true, example="CMU12345"),
@@ -240,9 +319,8 @@ class AuthController extends Controller
      *                 @OA\Property(property="name", type="string", example="John Doe"),
      *                 @OA\Property(property="user_name", type="string", example="johndoe"),
      *                 @OA\Property(property="email", type="string", example="john@example.com"),
-     *                 @OA\Property(property="indicatif", type="string", example="+225"),
      *                 @OA\Property(property="contact", type="string", example="01234567"),
-     *                 @OA\Property(property="commune", type="string", example="Abobo"),
+     *                 @OA\Property(property="civilite", type="string", example="homme"),
      *                 @OA\Property(property="CMU", type="string", nullable=true, example="CMU12345"),
      *                 @OA\Property(property="profile_picture", type="string", nullable=true),
      *                 @OA\Property(property="actif", type="integer", example=1)
@@ -267,11 +345,9 @@ class AuthController extends Controller
             'name'            => 'required|string|max:191',
             'user_name'       => 'required|string|max:191|unique:users,user_name',
             'email'           => 'required|email|max:191|unique:users,email',
-            'indicatif'       => 'required|string|max:10',
             'contact'         => 'required|string|max:191|unique:users,contact',
-            'commune'         => 'required|string|max:191',
+            'civilite'         => 'required|string|max:10',
             'password'        => 'required|min:8|confirmed',
-            'CMU'             => 'nullable|string|max:191',
             'profile_picture' => 'nullable|string|max:191',
         ]);
 
@@ -279,11 +355,9 @@ class AuthController extends Controller
             'name'            => $validated['name'],
             'user_name'       => $validated['user_name'],
             'email'           => $validated['email'],
-            'indicatif'       => $validated['indicatif'],
             'contact'         => $validated['contact'],
-            'CMU'             => $validated['CMU'] ?? null,
             'profile_picture' => $validated['profile_picture'] ?? null,
-            'commune'         => $validated['commune'],
+            'civilite'         => $validated['civilite'],
             'password'        => bcrypt($validated['password']),
             'actif'           => 1,
         ]);
@@ -534,9 +608,8 @@ public function logout(Request $request)
  *     @OA\Property(property="name", type="string", example="John Doe"),
  *     @OA\Property(property="user_name", type="string", example="johndoe"),
  *     @OA\Property(property="email", type="string", example="john@example.com"),
- *     @OA\Property(property="indicatif", type="string", example="+225"),
  *     @OA\Property(property="contact", type="string", example="01234567"),
- *     @OA\Property(property="commune", type="string", example="Abobo"),
+ *     @OA\Property(property="civilite", type="string", example="homme"),
  *     @OA\Property(property="CMU", type="string", nullable=true, example="CMU12345"),
  *     @OA\Property(property="profile_picture", type="string", nullable=true),
  *     @OA\Property(property="actif", type="integer", example=1),

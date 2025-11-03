@@ -23,10 +23,14 @@ class User extends Authenticatable
         'password',
         'indicatif',
         'contact',
-        'commune',
-        'CMU',
+        // 'commune',
+        // 'CMU',
         'profile_picture',
         'actif',
+        'emailNotif',
+        'civilite',
+        'smsNotif',
+        'pushNotif'
     ];
 
     /**
