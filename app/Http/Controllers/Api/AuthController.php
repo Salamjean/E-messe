@@ -339,37 +339,60 @@ public function loginWithGoogle(Request $request)
      * )
      */
 
-    public function register(Request $request)
-    {
-        $validated = $request->validate([
-            'name'            => 'required|string|max:191',
-            'user_name'       => 'required|string|max:191|unique:users,user_name',
-            'email'           => 'required|email|max:191|unique:users,email',
-            'contact'         => 'required|string|max:191|unique:users,contact',
-            'civilite'         => 'required|string|max:10',
-            'password'        => 'required|min:8|confirmed',
-            'profile_picture' => 'nullable|string|max:191',
-        ]);
+public function register(Request $request)
+{
+    $validated = $request->validate([
+        'name'            => 'required|string|max:191',
+        'user_name'       => 'required|string|max:191|unique:users,user_name',
+        'email'           => 'required|email|max:191|unique:users,email',
+        'contact'         => 'required|string|max:191|unique:users,contact',
+        'civilite'        => 'required|string|max:10',
+        'password'        => 'required|min:8|confirmed',
+        'profile_picture' => 'nullable', // plus strict validation supprimée
+    ]);
 
-        $user = User::create([
-            'name'            => $validated['name'],
-            'user_name'       => $validated['user_name'],
-            'email'           => $validated['email'],
-            'contact'         => $validated['contact'],
-            'profile_picture' => $validated['profile_picture'] ?? null,
-            'civilite'         => $validated['civilite'],
-            'password'        => bcrypt($validated['password']),
-            'actif'           => 1,
-        ]);
+    $profilePath = null;
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'message' => 'Inscription réussie ✅',
-            'user'    => $user,
-            'token'   => $token
-        ], 201);
+    // Cas 1 : fichier uploadé via multipart/form-data
+    if ($request->hasFile('profile_picture')) {
+        $file = $request->file('profile_picture');
+        $profilePath = $file->store('profiles', 'public');
     }
+    // Cas 2 : image envoyée en base64
+    elseif (!empty($validated['profile_picture']) && is_string($validated['profile_picture'])) {
+        if (preg_match('/^data:image\/(\w+);base64,/', $validated['profile_picture'], $type)) {
+            $imageData = substr($validated['profile_picture'], strpos($validated['profile_picture'], ',') + 1);
+            $imageData = base64_decode($imageData);
+            $extension = strtolower($type[1]);
+            if (!in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
+                return response()->json(['message' => 'Type d\'image non supporté.'], 422);
+            }
+            $fileName = uniqid() . '.' . $extension;
+            $profilePath = 'profiles/' . $fileName;
+            \Storage::disk('public')->put($profilePath, $imageData);
+        }
+    }
+
+    $user = User::create([
+        'name'            => $validated['name'],
+        'user_name'       => $validated['user_name'],
+        'email'           => $validated['email'],
+        'contact'         => $validated['contact'],
+        'profile_picture' => $profilePath,
+        'civilite'        => $validated['civilite'],
+        'password'        => bcrypt($validated['password']),
+        'actif'           => 1,
+    ]);
+
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'message' => 'Inscription réussie ✅',
+        'user'    => $user,
+        'token'   => $token
+    ], 201);
+}
+
 
     /**
      * Profil utilisateur connecté
