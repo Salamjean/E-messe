@@ -9,18 +9,17 @@ use App\Http\Controllers\Api\Paroisse\FavoriController;
 use App\Http\Controllers\Api\Paiement\PaiementController;
 use App\Http\Controllers\Api\Event\EventController;
 
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/auth/register', [AuthController::class, 'register']);
 
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
-
+        Route::post('/auth/logout', [AuthController::class, 'logout']);
     //Le groupe de route user/profil
     Route::prefix('user')->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout']);
 
         Route::get('/', [UserController::class, 'profile']);
         // Utilisez PATCH pour les mises à jour partielles
