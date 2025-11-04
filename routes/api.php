@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Paroisse\FavoriController;
 use App\Http\Controllers\Api\Paiement\PaiementController;
 use App\Http\Controllers\Api\Event\EventController;
 use App\Http\Controllers\Api\User\UserNotificationController;
+use App\Http\Controllers\Api\Divers\VersetController;
 
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
@@ -71,6 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //Route pour les favoris
     Route::prefix('favoris')->group(function () {
         Route::get('/', [FavoriController::class, 'index']);       // Liste favoris
+        Route::get('/check/{id}', [FavoriController::class, 'check']);
         Route::post('/', [FavoriController::class, 'store']);      // Ajouter un favori
         Route::delete('/{id}', [FavoriController::class, 'destroy']); // Supprimer un favori
         
@@ -90,9 +92,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [EventController::class, 'show']);
 
     });
-    
 
+    //route pour les notification
     Route::patch('/users/{id}/notifications', [UserNotificationController::class, 'updateAll']);
+
+    //route pour les versets
+    Route::get('/verset-du-jour', [VersetController::class, 'verset_du_jour']); 
+
 
 
 

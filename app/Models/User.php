@@ -103,4 +103,10 @@ class User extends Authenticatable
     {
         return !is_null($this->archived_at);
     }
+
+    public function versets()
+    {
+        return $this->belongsToMany(Verset::class, 'user_verset');
+    }
+
 }

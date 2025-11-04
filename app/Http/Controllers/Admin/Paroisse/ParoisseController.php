@@ -61,15 +61,15 @@ class ParoisseController extends Controller
         return response()->json($communes);
     }
     
-    public function store(Request $request){
+    public function store(Request $request)
+    {
         // Validation des données
         $request->validate([
-           'name' => 'required|string|max:255|unique:paroisses,name',
-           'email' => 'required|email|unique:paroisses,email',
-           'contact' => 'required|string|min:10',
-           'commune_id' => 'required|exists:communes,id', // Mise à jour de la validation
-           'profile_picture' => 'nullable|image|max:2048',
-
+        'name' => 'required|string|max:255|unique:paroisses,name',
+        'email' => 'required|email|unique:paroisses,email',
+        'contact' => 'required|string|min:10',
+        'commune_id' => 'required|exists:communes,id',
+        'profile_picture' => 'nullable|image|max:2048',
         ],[
             'name.required' => 'Le nom est obligatoire.',
             'name.unique' => 'Cette paroisse est déjà inscrite.',
@@ -81,47 +81,49 @@ class ParoisseController extends Controller
             'profile_picture.image' => 'Le fichier doit être une image.',
             'profile_picture.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou svg.',
             'profile_picture.max' => 'L\'image ne doit pas dépasser 2048 KB.',
-       'commune_id.required' => 'La commune est obligatoire.',
-       ]);
-   
-       try {
-           // Récupérer le mairie connecté
-           $admin = Auth::guard('admin')->user();
-   
-           if (!$admin || !$admin->name) {
-               return redirect()->back()->withErrors(['error' => 'Impossible de récupérer les informations du admin.']);
-           }
-   
-           // Création du docteur
-           $paroisse = new Paroisse();
-           $paroisse->name = $request->name;
-           $paroisse->email = $request->email;
-           $paroisse->contact = $request->contact;
-           $paroisse->commune_id = $request->commune_id; // Mise à jour
-           $paroisse->password = Hash::make('default');
-           if ($request->hasFile('profile_picture')) {
-               $paroisse->profile_picture = $request->file('profile_picture')->store('profile_pictures', 'public');
-           }
-           $paroisse->save();
-   
-           // Envoi de l'e-mail de vérification
-           ResetCodePasswordParoisse::where('email', $paroisse->email)->delete();
-           $code1 = rand(1000, 4000);
-           $code = $code1.''.$paroisse->id;
-   
-           ResetCodePasswordParoisse::create([
-               'code' => $code,
-               'email' => $paroisse->email,
-           ]);
-   
-           Notification::route('mail', $paroisse->email)
-               ->notify(new SendEmailToParoisseAfterRegistrationNotification($code, $paroisse->email));
-   
-           return redirect()->route('paroisse.index')->with('success', 'Le livreur a bien été enregistré avec succès.');
-       } catch (\Exception $e) {
-           return redirect()->back()->withErrors(['error' => 'Une erreur est survenue : ' . $e->getMessage()]);
-       }
+            'commune_id.required' => 'La commune est obligatoire.',
+        ]);
+
+        try {
+            $admin = Auth::guard('admin')->user();
+
+            if (!$admin || !$admin->name) {
+                return redirect()->back()->withErrors(['error' => 'Impossible de récupérer les informations du admin.']);
+            }
+
+            $paroisse = new Paroisse();
+            $paroisse->name = $request->name;
+            $paroisse->email = $request->email;
+            $paroisse->contact = $request->contact;
+            $paroisse->commune_id = $request->commune_id;
+            $paroisse->password = Hash::make('default');
+
+            // Stockage de l'image dans storage/app/public/paroisses
+            if ($request->hasFile('profile_picture')) {
+                $paroisse->profile_picture = $request->file('profile_picture')->store('profile_picture', 'public');
+            }
+
+            $paroisse->save();
+
+            // Envoi de l'e-mail de vérification
+            ResetCodePasswordParoisse::where('email', $paroisse->email)->delete();
+            $code1 = rand(1000, 4000);
+            $code = $code1 . $paroisse->id;
+
+            ResetCodePasswordParoisse::create([
+                'code' => $code,
+                'email' => $paroisse->email,
+            ]);
+
+            Notification::route('mail', $paroisse->email)
+                ->notify(new SendEmailToParoisseAfterRegistrationNotification($code, $paroisse->email));
+
+            return redirect()->route('paroisse.index')->with('success', 'La paroisse a bien été enregistrée avec succès.');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'Une erreur est survenue : ' . $e->getMessage()]);
+        }
     }
+
 
     public function edit($id)
     {

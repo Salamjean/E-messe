@@ -16,7 +16,7 @@ class DemandeController extends Controller
     {
         $today = now()->startOfDay();
 
-        $filteredMessess = Auth::guard('paroisse')->user()->messess()
+        $filteredMessess = Auth::guard('paroisse')->user()->messes()
             ->where('statut', 'confirmee')
             ->whereDate('date_souhaitee', '<=', $today)
             ->orderBy('created_at', 'desc')
@@ -243,7 +243,7 @@ class DemandeController extends Controller
 
     public function validate()
     {
-        $messess = Auth::guard('paroisse')->user()->messess()
+        $messess = Auth::guard('paroisse')->user()->messes()
                     ->orderBy('created_at', 'desc')
                     ->where('statut','en attente')
                     ->get();
