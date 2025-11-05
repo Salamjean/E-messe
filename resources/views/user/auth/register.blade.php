@@ -568,7 +568,7 @@
 
                 <!-- Troisième ligne: Commune et Contact -->
                 <div class="form-row">
-                    <div class="form-col">
+                    {{-- <div class="form-col">
                         <div class="form-group">
                             <label for="commune">Commune</label>
                             <div class="input-with-icon">
@@ -581,7 +581,7 @@
                                 @enderror
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                     <div class="form-col">
                         <div class="form-group">
                             <label for="contact">Contact</label>

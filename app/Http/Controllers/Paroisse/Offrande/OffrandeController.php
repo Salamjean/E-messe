@@ -53,7 +53,7 @@ class OffrandeController extends Controller
     }
     
     public function history(){
-        $messess = Auth::guard('paroisse')->user()->messess()
+        $messess = Auth::guard('paroisse')->user()->messes()
                     ->where('statut','!=','en attente')
                     ->where('statut','!=','confirmee')
                     ->where('statut','!=','en_attente_paiement')

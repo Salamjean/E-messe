@@ -38,7 +38,7 @@ class EventController extends Controller
         $events = Event::with('paroisse')
             ->whereIn('statut', ['Prévu', 'En cours'])
             ->orderBy('date_debut', 'asc')
-            ->get(['id', 'titre', 'date_debut', 'date_fin', 'lieu', 'celebrant', 'participation_frais', 'image', 'created_by']);
+            ->get();
 
         $events = $events->map(function ($event) {
             $event->image_url = $event->image

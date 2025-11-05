@@ -25,8 +25,6 @@ class AuthenticateUser extends Controller
             'user_name' => 'required|unique:users,user_name',
             'email' => 'required|email|unique:users,email',
             'contact' => 'required',
-            'commune' => 'required',
-            'CMU' => 'nullable',
             'password' => [
                 'required',
                 'min:8',
@@ -48,9 +46,7 @@ class AuthenticateUser extends Controller
             'password.min' => 'Le mot de passe doit avoir au moins 8 caractères.',
             'password.confirmed' => 'Les mots de passe ne correspondent pas.',
             'contact.required' => 'contact est obligatoire.',
-            'commune.required' => 'commune est obligatoire.',
             'password.regex' => 'Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial.', // Message d'erreur personnalisé pour regex
-            'CMU.required' => 'Le numéro CMU est obligatoire.',
             'profile_picture.image' => 'Le fichier doit être une image.',
             'profile_picture.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou svg.',
             'profile_picture.max' => 'L\'image ne doit pas dépasser 2048 KB.',
@@ -67,10 +63,7 @@ class AuthenticateUser extends Controller
             $users->name = $request->name;
             $users->user_name = $request->user_name;
             $users->email = $request->email;
-            $users->commune = $request->commune;
-            $users->indicatif = '+225';
             $users->contact = $request->contact;
-            $users->CMU = $request->CMU;
             $users->password = Hash::make($request->password);
             $users->profile_picture = $profilePicturePath;
             $users->save();

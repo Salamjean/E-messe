@@ -163,32 +163,45 @@ class ParoisseController extends Controller
      */
     public function show($id): JsonResponse
     {
-        $paroisse = Paroisse::with('commune.ville', 'messes')->findOrFail($id);
+        $paroisse = Paroisse::with(['commune.ville', 'messes'])->findOrFail($id);
 
+        // Récupération des favoris de l'utilisateur connecté (si connecté)
+        $favoris = Auth::check()
+            ? Favori::where('user_id', Auth::id())->pluck('paroisse_id')->toArray()
+            : [];
+
+        // Calcul des montants
         $montantTotal = $paroisse->messes->sum('montant_offrande');
         $montantMoyen = $paroisse->messes->count() > 0
             ? round($paroisse->messes->avg('montant_offrande'), 2)
             : 0;
 
-        $isFavori = Auth::check() && Favori::where('user_id', Auth::id())
-            ->where('paroisse_id', $paroisse->id)
-            ->exists();
+        // Génération de l'URL complète de la photo de profil (si elle existe)
+        $profilePictureUrl = $paroisse->profile_picture
+            ? asset('storage/paroisses/' . $paroisse->profile_picture)
+            : null;
+
+        // Structuration de la réponse
+        $data = [
+            'id' => $paroisse->id,
+            'name' => $paroisse->name,
+            'email' => $paroisse->email,
+            'contact' => $paroisse->contact,
+            'profile_picture' => $profilePictureUrl,
+            'commune' => $paroisse->commune->nom_commune ?? null,
+            'ville' => $paroisse->commune->ville->nom_ville ?? null,
+            'montant_total_messes' => $montantTotal,
+            'montant_moyen_messes' => $montantMoyen,
+            'is_favori' => in_array($paroisse->id, $favoris),
+        ];
 
         return response()->json([
             'status' => 'success',
-            'data' => [
-                'id' => $paroisse->id,
-                'name' => $paroisse->name,
-                'email' => $paroisse->email,
-                'contact' => $paroisse->contact,
-                'commune' => $paroisse->commune->nom_commune ?? null,
-                'ville' => $paroisse->commune->ville->nom_ville ?? null,
-                'montant_total_messes' => $montantTotal,
-                'montant_moyen_messes' => $montantMoyen,
-                'is_favori' => $isFavori,
-            ],
+            'message' => 'Détails de la paroisse récupérés avec succès',
+            'data' => $data,
         ]);
     }
+
 
     /**
      * @OA\Get(

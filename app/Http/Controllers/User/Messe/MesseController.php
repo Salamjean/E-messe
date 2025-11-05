@@ -18,7 +18,7 @@ class MesseController extends Controller
 {
     public function index()
     {
-        $messess = Auth::user()->messess()
+        $messess = Auth::user()->messes()
                     ->orderBy('created_at', 'desc')
                     ->where('statut','!=','annulee')
                     ->where('statut','!=','celebre')
@@ -29,7 +29,7 @@ class MesseController extends Controller
 
     public function history()
     {
-        $messess = Auth::user()->messess()
+        $messess = Auth::user()->messes()
                     ->orderBy('created_at', 'desc')
                     ->where('statut','!=','en attente')
                     ->where('statut','!=','confirmee')
