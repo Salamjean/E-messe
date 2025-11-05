@@ -131,4 +131,17 @@ class EventController extends Controller
             'data' => $event
         ], 200);
     }
+
+    
+    public function event_name()
+    {
+       $typesEvents = Event::select('type_event')
+                    ->distinct()
+                    ->get();
+       
+        return response()->json([
+            'status' => 'success',
+            'data' => $typesEvents,
+        ]);
+    }
 }

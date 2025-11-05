@@ -90,6 +90,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('event')->group(function () {
         Route::get('/', [EventController::class, 'index']); 
         Route::get('/{id}', [EventController::class, 'show']);
+        Route::post('/name', [EventController::class, 'event_name']);
 
     });
 
