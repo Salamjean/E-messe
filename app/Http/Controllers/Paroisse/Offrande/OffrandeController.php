@@ -34,6 +34,7 @@ class OffrandeController extends Controller
 
             // Mettre à jour le montant
             $user->montant_offrande = $request->montant;
+            // dd($user);
             $user->save();
 
             return response()->json([
