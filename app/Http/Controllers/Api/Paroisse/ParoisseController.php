@@ -56,7 +56,7 @@ class ParoisseController extends Controller
 
 
         // $montantMoyen =  $paroisse->messes->pluck('montant_offrande');
-        $montantMoyen = $paroisse->value('montant_offrande');
+         $montantMoyen = $paroisse->montant_offrande;
             // 🖼️ Image depuis storage
             
                 
