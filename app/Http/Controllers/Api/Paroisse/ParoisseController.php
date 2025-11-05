@@ -72,7 +72,7 @@ class ParoisseController extends Controller
                 'commune' => $paroisse->commune->nom_commune ?? null,
                 'ville' => $paroisse->commune->ville->nom_ville ?? null,
                 'montant_total_messes' => $montantTotal,
-                'montant_moyen_messes' => $montantMoyen,
+                'montant_unitaire' => $montantMoyen,
                 'is_favori' => in_array($paroisse->id, $favoris),
             ];
         });
@@ -117,7 +117,7 @@ class ParoisseController extends Controller
             'commune' => $paroisse->commune->nom_commune ?? null,
             'ville' => $paroisse->commune->ville->nom_ville ?? null,
             'montant_total_messes' => $montantTotal,
-            'montant_moyen_messes' => $montantMoyen,
+            'montant_unitaire' => $montantMoyen,
             'is_favori' => $isFavori,
         ];
 
