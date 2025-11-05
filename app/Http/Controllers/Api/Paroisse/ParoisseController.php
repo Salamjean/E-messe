@@ -101,7 +101,7 @@ class ParoisseController extends Controller
             ->exists();
 
         $montantTotal = $paroisse->messes->sum('montant_offrande');
-        $montantMoyen = $paroisse->value('montant_offrande');
+        $montantMoyen = $paroisse->montant_offrande;
 
 
         $profilePictureUrl = $paroisse->profile_picture
