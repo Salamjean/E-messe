@@ -214,7 +214,7 @@ class MesseController extends Controller
             $user = $request->user();
             $datesSelectionnees = [];
 
-            // Conversion des jours selon le type de messe
+            // Conversion des jours selon le type de messe 
             if ($request->celebration_choisie === 'Messe quotidienne') {
                 $jours = $request->jours_quotidienne ?? [];
                 $nomsJours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
@@ -230,7 +230,7 @@ class MesseController extends Controller
 
             $datesJson = !empty($datesSelectionnees) ? json_encode($datesSelectionnees) : null;
 
-            // Création de la messe (statut initial)
+            // Création de la messe (statut initial) 
             $messe = Messe::create([
                 'user_id' => $user->id,
                 'paroisse_id' => $request->paroisse_id,
@@ -300,6 +300,7 @@ class MesseController extends Controller
         }
     }
 
+    
 
     /**
      * Affiche les détails d’une messe spécifique.

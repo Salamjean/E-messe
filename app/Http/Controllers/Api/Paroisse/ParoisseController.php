@@ -53,10 +53,10 @@ class ParoisseController extends Controller
         // 🧩 Transformation des données
         $paroisses->getCollection()->transform(function ($paroisse) use ($favoris) {
             $montantTotal = $paroisse->messes->sum('montant_offrande');
-            $montantMoyen = $paroisse->messes->count() > 0
-                ? round($paroisse->messes->avg('montant_offrande'), 2)
-                : 0;
 
+
+        // $montantMoyen =  $paroisse->messes->pluck('montant_offrande');
+        $montantMoyen = $paroisse->value('montant_offrande');
             // 🖼️ Image depuis storage
             
                 
@@ -101,9 +101,8 @@ class ParoisseController extends Controller
             ->exists();
 
         $montantTotal = $paroisse->messes->sum('montant_offrande');
-        $montantMoyen = $paroisse->messes->count() > 0
-            ? round($paroisse->messes->avg('montant_offrande'), 2)
-            : 0;
+        $montantMoyen = $paroisse->value('montant_offrande');
+
 
         $profilePictureUrl = $paroisse->profile_picture
             ? Storage::url('paroisses/' . $paroisse->profile_picture)
