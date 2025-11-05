@@ -75,56 +75,69 @@ class ParoisseController extends Controller
      *     )
      * )
      */
-    public function index(Request $request): JsonResponse
-    {
-        $query = Paroisse::with(['commune.ville', 'messes']);
+public function index(Request $request): JsonResponse
+{
+    $query = Paroisse::with(['commune.ville', 'messes']);
 
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
-
-        if ($request->filled('ville')) {
-            $query->whereHas('commune.ville', function ($q) use ($request) {
-                $q->where('nom_ville', 'like', '%' . $request->ville . '%');
-            });
-        }
-
-        if ($request->filled('commune')) {
-            $query->whereHas('commune', function ($q) use ($request) {
-                $q->where('nom_commune', 'like', '%' . $request->commune . '%');
-            });
-        }
-
-        $perPage = $request->get('per_page', 10);
-        $paroisses = $query->paginate($perPage);
-
-        $favoris = Auth::check()
-            ? Favori::where('user_id', Auth::id())->pluck('paroisse_id')->toArray()
-            : [];
-
-        $paroisses->getCollection()->transform(function ($paroisse) use ($favoris) {
-            $montantTotal = $paroisse->messes->sum('montant_offrande');
-            $montantMoyen = $paroisse->messes->count() > 0 ? round($paroisse->messes->avg('montant_offrande'), 2) : 0;
-
-            return [
-                'id' => $paroisse->id,
-                'name' => $paroisse->name,
-                'email' => $paroisse->email,
-                'contact' => $paroisse->contact,
-                'commune' => $paroisse->commune->nom_commune ?? null,
-                'ville' => $paroisse->commune->ville->nom_ville ?? null,
-                'montant_total_messes' => $montantTotal,
-                'montant_moyen_messes' => $montantMoyen,
-                'is_favori' => in_array($paroisse->id, $favoris),
-            ];
-        });
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Liste des paroisses récupérée avec succès',
-            'data' => $paroisses,
-        ]);
+    // 🔍 Filtres de recherche
+    if ($request->filled('search')) {
+        $query->where('name', 'like', '%' . $request->search . '%');
     }
+
+    if ($request->filled('ville')) {
+        $query->whereHas('commune.ville', function ($q) use ($request) {
+            $q->where('nom_ville', 'like', '%' . $request->ville . '%');
+        });
+    }
+
+    if ($request->filled('commune')) {
+        $query->whereHas('commune', function ($q) use ($request) {
+            $q->where('nom_commune', 'like', '%' . $request->commune . '%');
+        });
+    }
+
+    // 📄 Pagination
+    $perPage = $request->get('per_page', 10);
+    $paroisses = $query->paginate($perPage);
+
+    // ⭐ Favoris utilisateur
+    $favoris = Auth::check()
+        ? Favori::where('user_id', Auth::id())->pluck('paroisse_id')->toArray()
+        : [];
+
+    // 🧩 Transformation des données
+    $paroisses->getCollection()->transform(function ($paroisse) use ($favoris) {
+        $montantTotal = $paroisse->messes->sum('montant_offrande');
+        $montantMoyen = $paroisse->messes->count() > 0
+            ? round($paroisse->messes->avg('montant_offrande'), 2)
+            : 0;
+
+        $profilePictureUrl = $paroisse->profile_picture
+            ? asset('storage/paroisses/' . $paroisse->profile_picture)
+            : null;
+
+        return [
+            'id' => $paroisse->id,
+            'name' => $paroisse->name,
+            'email' => $paroisse->email,
+            'contact' => $paroisse->contact,
+            'profile_picture' => $profilePictureUrl,
+            'commune' => $paroisse->commune->nom_commune ?? null,
+            'ville' => $paroisse->commune->ville->nom_ville ?? null,
+            'montant_total_messes' => $montantTotal,
+            'montant_moyen_messes' => $montantMoyen,
+            'is_favori' => in_array($paroisse->id, $favoris),
+        ];
+    });
+
+    // ✅ Réponse JSON
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Liste des paroisses récupérée avec succès',
+        'data' => $paroisses,
+    ]);
+}
+
 
     /**
      * @OA\Get(
@@ -161,46 +174,51 @@ class ParoisseController extends Controller
      *     @OA\Response(response=404, description="Paroisse introuvable")
      * )
      */
-    public function show($id): JsonResponse
-    {
-        $paroisse = Paroisse::with(['commune.ville', 'messes'])->findOrFail($id);
 
-        // Récupération des favoris de l'utilisateur connecté (si connecté)
-        $favoris = Auth::check()
-            ? Favori::where('user_id', Auth::id())->pluck('paroisse_id')->toArray()
-            : [];
+    
+public function show($id): JsonResponse
+{
+    // 🔍 Récupération de la paroisse avec ses relations
+    $paroisse = Paroisse::with(['commune.ville', 'messes'])->findOrFail($id);
 
-        // Calcul des montants
-        $montantTotal = $paroisse->messes->sum('montant_offrande');
-        $montantMoyen = $paroisse->messes->count() > 0
-            ? round($paroisse->messes->avg('montant_offrande'), 2)
-            : 0;
+    // ⭐ Vérification des favoris
+    $isFavori = Auth::check() && Favori::where('user_id', Auth::id())
+        ->where('paroisse_id', $paroisse->id)
+        ->exists();
 
-        // Génération de l'URL complète de la photo de profil (si elle existe)
-        $profilePictureUrl = $paroisse->profile_picture
-            ? asset('storage/paroisses/' . $paroisse->profile_picture)
-            : null;
+    // 💰 Calculs des montants
+    $montantTotal = $paroisse->messes->sum('montant_offrande');
+    $montantMoyen = $paroisse->messes->count() > 0
+        ? round($paroisse->messes->avg('montant_offrande'), 2)
+        : 0;
 
-        // Structuration de la réponse
-        $data = [
-            'id' => $paroisse->id,
-            'name' => $paroisse->name,
-            'email' => $paroisse->email,
-            'contact' => $paroisse->contact,
-            'profile_picture' => $profilePictureUrl,
-            'commune' => $paroisse->commune->nom_commune ?? null,
-            'ville' => $paroisse->commune->ville->nom_ville ?? null,
-            'montant_total_messes' => $montantTotal,
-            'montant_moyen_messes' => $montantMoyen,
-            'is_favori' => in_array($paroisse->id, $favoris),
-        ];
+    // 🖼️ URL complète de la photo de profil
+    $profilePictureUrl = $paroisse->profile_picture
+        ? asset('storage/paroisses/' . $paroisse->profile_picture)
+        : null;
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Détails de la paroisse récupérés avec succès',
-            'data' => $data,
-        ]);
-    }
+    // 🧩 Structuration des données de réponse
+    $data = [
+        'id' => $paroisse->id,
+        'name' => $paroisse->name,
+        'email' => $paroisse->email,
+        'contact' => $paroisse->contact,
+        'profile_picture' => $profilePictureUrl,
+        'commune' => $paroisse->commune->nom_commune ?? null,
+        'ville' => $paroisse->commune->ville->nom_ville ?? null,
+        'montant_total_messes' => $montantTotal,
+        'montant_moyen_messes' => $montantMoyen,
+        'is_favori' => $isFavori,
+    ];
+
+    // ✅ Réponse JSON
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Détails de la paroisse récupérés avec succès',
+        'data' => $data,
+    ]);
+}
+
 
 
     /**
