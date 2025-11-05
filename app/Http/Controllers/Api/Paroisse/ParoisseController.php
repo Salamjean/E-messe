@@ -58,10 +58,11 @@ class ParoisseController extends Controller
                 : 0;
 
             // 🖼️ Image depuis storage
-            $profilePictureUrl = $paroisse->profile_picture
-                ? Storage::url('paroisses/' . $paroisse->profile_picture)
-                : asset('images/default-paroisse.png'); // image par défaut si besoin
-
+            
+                
+        $profilePictureUrl = $paroisse->profile_picture
+            ? Storage::url('paroisses/' . $paroisse->profile_picture)
+            : null;
             return [
                 'id' => $paroisse->id,
                 'name' => $paroisse->name,
@@ -106,7 +107,7 @@ class ParoisseController extends Controller
 
         $profilePictureUrl = $paroisse->profile_picture
             ? Storage::url('paroisses/' . $paroisse->profile_picture)
-            : asset('images/default-paroisse.png');
+            : null;
 
         $data = [
             'id' => $paroisse->id,
