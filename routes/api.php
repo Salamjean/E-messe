@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\Paiement\PaiementController;
 use App\Http\Controllers\Api\Event\EventController;
 use App\Http\Controllers\Api\User\UserNotificationController;
 use App\Http\Controllers\Api\Divers\VersetController;
+use App\Http\Controllers\Api\Paiement\WaveController;
+
 
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
@@ -17,6 +19,14 @@ Route::post('/auth/google', [AuthController::class, 'loginWithGoogle']);
 
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
+Route::post('/paiement/wave/webhook', [WaveController::class, 'webhook'])->name('wave.webhook');
+Route::get('/paiement/wave/verifier/{id}', [WaveController::class, 'verifier']);
+
+// ✅ Routes pour redirection après paiement
+Route::get('/paiement/wave/success', [WaveController::class, 'success'])->name('wave.success');
+Route::get('/paiement/wave/error', [WaveController::class, 'error'])->name('wave.error');
+
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -84,9 +94,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
         //Route pour les paiement
     Route::prefix('paiement')->group(function () {
-        Route::get('/wave/session', [PaiementController::class, 'wave']);       // Liste favoris
-        Route::post('/streetpay/session', [PaiementController::class, 'streetpay']);      // Ajouter un favori
-        Route::delete('/{id}', [PaiementController::class, 'destroy']); // Supprimer un favori
+        Route::post('/wave/checkout-url', [WaveController::class, 'checkoutUrl']);
+        Route::post('/wave/initier', [WaveController::class, 'initier']);
     });
 
     //Route pour les évènements
@@ -105,6 +114,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
+    Route::prefix('notification')->group(function () {
+        Route::post('/save-fcm-token', [FcmTokenController::class, 'store']);
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+
+
+    });
 
 });
 

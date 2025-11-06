@@ -42,7 +42,7 @@ class MesseController extends Controller
     {
 
         $messes = $request->user()->messes()
-            ->with('paroisse')
+            ->with(['paroisse', 'paiements'])
             ->orderByDesc('created_at')
             ->get();
 
@@ -155,7 +155,7 @@ public function history(Request $request): JsonResponse
 {
     // Récupérer les messes annulées ou célébrées de l'utilisateur connecté
     $messes = $request->user()->messes()
-        ->with('paroisse')
+        ->with(['paroisse', 'paiements'])
         ->whereIn('statut', ['annulee', 'celebre'])
         ->orderByDesc('created_at')
         ->get();
@@ -177,7 +177,7 @@ public function en_cours(Request $request): JsonResponse
 {
     // Récupérer les messes en attente ou confirmées de l'utilisateur connecté
     $messes = $request->user()->messes()
-        ->with('paroisse')
+        ->with(['paroisse', 'paiements'])
         ->whereIn('statut', ['en_attente_paiement', 'en attente', 'confirmee'])
         ->orderByDesc('created_at')
         ->get();
