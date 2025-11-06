@@ -20,7 +20,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
-        Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
     //Le groupe de route user/profil
     Route::prefix('user')->group(function () {
 
@@ -34,14 +34,17 @@ Route::middleware('auth:sanctum')->group(function () {
     
     //Route pour les demande de messe
     Route::prefix('messes')->group(function () {
-        Route::get('/', [MesseController::class, 'index']);
+        Route::get('', [MesseController::class, 'index']);
         Route::post('/', [MesseController::class, 'store']);
 
-        // ✅ Les routes avec un nom fixe en premier
+        // Les routes avec un nom fixe en premier
         Route::get('/history', [MesseController::class, 'history']);
+        Route::get('/en-cours', [MesseController::class, 'en_cours']);
+        Route::get('/detail/{id}', [MesseController::class, 'show']);
+
         Route::get('/demandes-specifiques', [MesseController::class, 'demandesSpecifiques']);
 
-        // ⚠️ Les routes dynamiques à la fin
+        // Les routes dynamiques à la fin
         Route::get('/{messe}', [MesseController::class, 'show']);
         Route::put('/{messe}', [MesseController::class, 'update']);
         Route::delete('/{messe}', [MesseController::class, 'destroy']);

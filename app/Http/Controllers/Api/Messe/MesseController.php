@@ -40,11 +40,18 @@ class MesseController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+
         $messes = $request->user()->messes()
-            ->whereNotIn('statut', ['annulee', 'celebre'])
+            ->with('paroisse')
             ->orderByDesc('created_at')
             ->get();
 
+        // Ajouter le nom de la paroisse à chaque messe
+        $messes->transform(function ($messe) {
+            $messe->paroisse_name = $messe->paroisse ? $messe->paroisse->name : null;
+            unset($messe->paroisse);
+            return $messe;
+        });
         return response()->json([
             'status' => 'success',
             'messes' => $messes
@@ -144,18 +151,50 @@ class MesseController extends Controller
      *     )
      * )
      */
-    public function history(Request $request): JsonResponse
-    {
-        $messes = $request->user()->messes()
-            ->whereIn('statut', ['annulee', 'celebre'])
-            ->orderByDesc('created_at')
-            ->get();
+public function history(Request $request): JsonResponse
+{
+    // Récupérer les messes annulées ou célébrées de l'utilisateur connecté
+    $messes = $request->user()->messes()
+        ->with('paroisse')
+        ->whereIn('statut', ['annulee', 'celebre'])
+        ->orderByDesc('created_at')
+        ->get();
 
-        return response()->json([
-            'status' => 'success',
-            'history' => $messes
-        ]);
-    }
+    // Ajouter le nom de la paroisse à chaque messe
+    $messes->transform(function ($messe) {
+        $messe->paroisse_name = $messe->paroisse ? $messe->paroisse->name : null;
+        unset($messe->paroisse); // On enlève l'objet paroisse complet si tu veux un JSON plus léger
+        return $messe;
+    });
+
+    return response()->json([
+        'status' => 'success',
+        'history' => $messes,
+    ]);
+}
+
+public function en_cours(Request $request): JsonResponse
+{
+    // Récupérer les messes en attente ou confirmées de l'utilisateur connecté
+    $messes = $request->user()->messes()
+        ->with('paroisse')
+        ->whereIn('statut', ['en_attente_paiement', 'en attente', 'confirmee'])
+        ->orderByDesc('created_at')
+        ->get();
+
+    // Ajouter le nom de la paroisse à chaque messe
+    $messes->transform(function ($messe) {
+        $messe->paroisse_name = $messe->paroisse ? $messe->paroisse->name : null;
+        unset($messe->paroisse);
+        return $messe;
+    });
+
+    return response()->json([
+        'status' => 'success',
+        'messes' => $messes,
+    ]);
+}
+
 
     /**
      * Créer une nouvelle demande de messe.
@@ -323,15 +362,25 @@ class MesseController extends Controller
      * )
      */
 
-    public function show(Request $request, Messe $messe): JsonResponse
-    {
-        if ($request->user()->id !== $messe->user_id) {
-            return response()->json(['message' => 'Accès non autorisé.'], 403);
-        }
+public function show(Request $request, $id): JsonResponse
+{
+    $messe = Messe::with(['paroisse', 'paiements'])->find($id);
 
-        $messe->load(['paroisse', 'paiements']);
-        return response()->json($messe);
+    if (!$messe) {
+        return response()->json(['message' => 'Messe introuvable.'], 404);
     }
+
+    if ($request->user()->id !== $messe->user_id) {
+        return response()->json(['message' => 'Accès non autorisé.'], 403);
+    }
+
+    // Ajout du nom de la paroisse dans la réponse
+    $messe->paroisse_name = $messe->paroisse ? $messe->paroisse->name : null;
+
+    return response()->json($messe);
+}
+
+
 
     /**
      * Met à jour une demande de messe (seulement si "en attente").
