@@ -24,7 +24,6 @@ class WaveController extends Controller
 public function checkoutUrl(Request $request): JsonResponse
 {
     $request->validate([
-        'messe_id'  => 'required|exists:messes,id',
         'montant'   => 'required|numeric|min:100',
         'telephone' => 'required|string|min:8',
     ]);
