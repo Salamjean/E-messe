@@ -231,18 +231,126 @@ public function en_cours(Request $request): JsonResponse
      *     @OA\Response(response=500, description="Erreur serveur")
      * )
      */
+    // public function store(Request $request): JsonResponse
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'motif_intention' => 'required|string|max:255',
+    //         'interception_par' => 'nullable|string|max:255',
+    //         'celebration_choisie' => 'required|in:Messe quotidienne,Messe dominicale,Messe solennelle',
+    //         'jours_quotidienne' => 'required_if:celebration_choisie,Messe quotidienne|array',
+    //         'jours_dominicale' => 'required_if:celebration_choisie,Messe dominicale|array',
+    //         'montant_offrande' => 'required|numeric|min:0',
+    //         'date_souhaitee' => 'required|date|after:today',
+    //         'heure_souhaitee' => 'nullable|date_format:H:i',
+    //         'paroisse_id' => 'required|exists:paroisses,id',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json(['errors' => $validator->errors()], 422);
+    //     }
+
+    //     try {
+    //         $user = $request->user();
+    //         $datesSelectionnees = [];
+
+    //         // Conversion des jours selon le type de messe 
+    //         if ($request->celebration_choisie === 'Messe quotidienne') {
+    //             $jours = $request->jours_quotidienne ?? [];
+    //             $nomsJours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+    //             foreach ($jours as $jour) {
+    //                 $index = intval($jour) - 1;
+    //                 if (isset($nomsJours[$index])) {
+    //                     $datesSelectionnees[] = $nomsJours[$index];
+    //                 }
+    //             }
+    //         } elseif ($request->celebration_choisie === 'Messe dominicale') {
+    //             $datesSelectionnees = $request->jours_dominicale ?? [];
+    //         }
+
+    //         $datesJson = !empty($datesSelectionnees) ? json_encode($datesSelectionnees) : null;
+
+    //         // Création de la messe (statut initial) 
+    //         $messe = Messe::create([
+    //             'user_id' => $user->id,
+    //             'paroisse_id' => $request->paroisse_id,
+    //             'interception_par' => $request->interception_par,
+    //             'motif_intention' => $request->motif_intention,
+    //             'date_souhaitee' => $request->date_souhaitee,
+    //             'heure_souhaitee' => $request->heure_souhaitee,
+    //             'celebration_choisie' => $request->celebration_choisie,
+    //             'nom_demandeur' => $user->name,
+    //             'email_demandeur' => $user->email,
+    //             'telephone_demandeur' => $user->contact,
+    //             'statut' => 'en_attente_paiement',
+    //             'montant_offrande' => $request->montant_offrande,
+    //             'dates_selectionnees' => $datesJson,
+    //         ]);
+
+    //         $reference = 'MESSE_API_' . time() . '_' . $messe->id;
+
+    //         try {
+    //             // Simuler un paiement (à remplacer par ton intégration réelle)
+    //             $paiementEffectue = rand(0, 1); // 1 = succès, 0 = échec
+
+    //             $paiement = Paiement::create([
+    //                 'messe_id' => $messe->id,
+    //                 'user_id' => $user->id,
+    //                 'reference' => $reference,
+    //                 'montant' => $request->montant_offrande * 1.02,
+    //                 'devise' => 'XOF',
+    //                 'methode' => 'wave',
+    //                 'statut' => $paiementEffectue ? 'paye' : 'en_attente',
+    //                 'transaction_id' => $paiementEffectue ? uniqid('TX_') : null,
+    //                 'donnees_transaction' => $paiementEffectue ? json_encode(['message' => 'Paiement réussi']) : null,
+    //                 'date_paiement' => $paiementEffectue ? now() : null,
+    //             ]);
+
+    //             // Mettre à jour le statut de la messe selon le paiement
+    //             $messe->update([
+    //                 'statut' => $paiementEffectue ? 'en_attente_validation' : 'en_attente_paiement'
+    //             ]);
+
+    //         } catch (\Exception $e) {
+    //             Log::error('Erreur Paiement Messe', [
+    //                 'message' => $e->getMessage(),
+    //                 'reference' => $reference,
+    //             ]);
+
+    //             $messe->update(['statut' => 'en_attente_paiement']);
+    //         }
+
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'message' => $paiementEffectue
+    //                 ? 'Messe enregistrée et paiement effectué avec succès.'
+    //                 : 'Messe enregistrée, en attente de paiement.',
+    //             'messe' => $messe,
+    //             'paiement' => $paiement ?? null,
+    //         ], 201);
+
+    //     } catch (\Exception $e) {
+    //         Log::error('Erreur création messe API', ['error' => $e->getMessage()]);
+
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Une erreur s\'est produite lors de l\'enregistrement.',
+    //             'error' => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
+
     public function store(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'motif_intention' => 'required|string|max:255',
-            'interception_par' => 'nullable|string|max:255',
-            'celebration_choisie' => 'required|in:Messe quotidienne,Messe dominicale,Messe solennelle',
-            'jours_quotidienne' => 'required_if:celebration_choisie,Messe quotidienne|array',
-            'jours_dominicale' => 'required_if:celebration_choisie,Messe dominicale|array',
-            'montant_offrande' => 'required|numeric|min:0',
-            'date_souhaitee' => 'required|date|after:today',
-            'heure_souhaitee' => 'nullable|date_format:H:i',
-            'paroisse_id' => 'required|exists:paroisses,id',
+            'motif_intention'      => 'required|string|max:255',
+            'interception_par'     => 'nullable|string|max:255',
+            'celebration_choisie'  => 'required|in:Messe quotidienne,Messe dominicale,Messe solennelle',
+            'jours_quotidienne'    => 'required_if:celebration_choisie,Messe quotidienne|array',
+            'jours_dominicale'     => 'required_if:celebration_choisie,Messe dominicale|array',
+            'montant_offrande'     => 'required|numeric|min:0',
+            'date_souhaitee'       => 'required|date|after:today',
+            'heure_souhaitee'      => 'nullable|date_format:H:i',
+            'paroisse_id'          => 'required|exists:paroisses,id',
         ]);
 
         if ($validator->fails()) {
@@ -253,10 +361,11 @@ public function en_cours(Request $request): JsonResponse
             $user = $request->user();
             $datesSelectionnees = [];
 
-            // Conversion des jours selon le type de messe 
+            // Conversion des jours selon le type de messe
             if ($request->celebration_choisie === 'Messe quotidienne') {
                 $jours = $request->jours_quotidienne ?? [];
                 $nomsJours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+
                 foreach ($jours as $jour) {
                     $index = intval($jour) - 1;
                     if (isset($nomsJours[$index])) {
@@ -269,72 +378,36 @@ public function en_cours(Request $request): JsonResponse
 
             $datesJson = !empty($datesSelectionnees) ? json_encode($datesSelectionnees) : null;
 
-            // Création de la messe (statut initial) 
+            // ✅ Création de la messe uniquement (sans paiement)
             $messe = Messe::create([
-                'user_id' => $user->id,
-                'paroisse_id' => $request->paroisse_id,
-                'interception_par' => $request->interception_par,
-                'motif_intention' => $request->motif_intention,
-                'date_souhaitee' => $request->date_souhaitee,
-                'heure_souhaitee' => $request->heure_souhaitee,
-                'celebration_choisie' => $request->celebration_choisie,
-                'nom_demandeur' => $user->name,
-                'email_demandeur' => $user->email,
-                'telephone_demandeur' => $user->contact,
-                'statut' => 'en_attente_paiement',
-                'montant_offrande' => $request->montant_offrande,
-                'dates_selectionnees' => $datesJson,
+                'user_id'              => $user->id,
+                'paroisse_id'          => $request->paroisse_id,
+                'interception_par'     => $request->interception_par,
+                'motif_intention'      => $request->motif_intention,
+                'date_souhaitee'       => $request->date_souhaitee,
+                'heure_souhaitee'      => $request->heure_souhaitee,
+                'celebration_choisie'  => $request->celebration_choisie,
+                'nom_demandeur'        => $user->name,
+                'email_demandeur'      => $user->email,
+                'telephone_demandeur'  => $user->contact,
+                'statut'               => 'en_attente_paiement',
+                'montant_offrande'     => $request->montant_offrande,
+                'dates_selectionnees'  => $datesJson,
             ]);
 
-            $reference = 'MESSE_API_' . time() . '_' . $messe->id;
-
-            try {
-                // Simuler un paiement (à remplacer par ton intégration réelle)
-                $paiementEffectue = rand(0, 1); // 1 = succès, 0 = échec
-
-                $paiement = Paiement::create([
-                    'messe_id' => $messe->id,
-                    'user_id' => $user->id,
-                    'reference' => $reference,
-                    'montant' => $request->montant_offrande * 1.02,
-                    'devise' => 'XOF',
-                    'methode' => 'wave',
-                    'statut' => $paiementEffectue ? 'paye' : 'en_attente',
-                    'transaction_id' => $paiementEffectue ? uniqid('TX_') : null,
-                    'donnees_transaction' => $paiementEffectue ? json_encode(['message' => 'Paiement réussi']) : null,
-                    'date_paiement' => $paiementEffectue ? now() : null,
-                ]);
-
-                // Mettre à jour le statut de la messe selon le paiement
-                $messe->update([
-                    'statut' => $paiementEffectue ? 'en_attente_validation' : 'en_attente_paiement'
-                ]);
-
-            } catch (\Exception $e) {
-                Log::error('Erreur Paiement Messe', [
-                    'message' => $e->getMessage(),
-                    'reference' => $reference,
-                ]);
-
-                $messe->update(['statut' => 'en_attente_paiement']);
-            }
-
             return response()->json([
-                'status' => 'success',
-                'message' => $paiementEffectue
-                    ? 'Messe enregistrée et paiement effectué avec succès.'
-                    : 'Messe enregistrée, en attente de paiement.',
-                'messe' => $messe,
-                'paiement' => $paiement ?? null,
+                'status'  => 'success',
+                'message' => 'Demande de messe enregistrée avec succès. Paiement à effectuer ultérieurement.',
+                'messe'   => $messe,
             ], 201);
 
         } catch (\Exception $e) {
             Log::error('Erreur création messe API', ['error' => $e->getMessage()]);
 
             return response()->json([
-                'status' => 'error',
+                'status'  => 'error',
                 'message' => 'Une erreur s\'est produite lors de l\'enregistrement.',
-                'error' => $e->getMessage(),
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }

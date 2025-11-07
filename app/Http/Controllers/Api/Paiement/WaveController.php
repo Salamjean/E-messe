@@ -24,21 +24,21 @@ class WaveController extends Controller
     public function checkoutUrl(Request $request): JsonResponse
     {
         $request->validate([
-            // 'messe_id' => 'required|exists:messes,id',
+            // 'messe_id' => 'required|exists:messes,id', 
             'montant'  => 'required|numeric|min:100',
         ]);
 
         $user = $request->user();
 
         try {
-            // 🔹 Récupérer la messe
+            // 🔹 Récupérer la messe 
             $messe = Messe::findOrFail($request->messe_id);
             $messe->update(['statut' => 'en attente']);
 
-            // 🔹 Générer une référence unique
+            // 🔹 Générer une référence unique 
             $reference = 'MESSE_WAVE_' . time() . '_' . $user->id;
 
-            // 🔹 Créer le paiement localement
+            // 🔹 Créer le paiement localement 
             $paiement = Paiement::create([
                 'messe_id' => $messe->id,
                 'user_id'  => $user->id,
