@@ -177,7 +177,7 @@ public function en_cours(Request $request): JsonResponse
 {
     $messes = $request->user()->messes()
         ->with(['paroisse', 'paiements'])
-        ->whereIn('statut', ['en_attente_paiement', 'en_attente', 'confirmee'])
+        ->whereIn('statut', ['en_attente_paiement', 'en attente', 'confirmee'])
         ->orderByDesc('created_at')
         ->get();
 
