@@ -46,7 +46,7 @@ class WaveController extends Controller
                 'montant'  => $request->montant,
                 'devise'   => 'XOF',
                 'methode'  => 'wave',
-                'statut'   => 'en_attente',
+                'statut'   => 'paye',
             ]);
 
             // 🔹 URLs de redirection
