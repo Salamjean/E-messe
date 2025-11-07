@@ -287,14 +287,17 @@ public function initier(Request $request): JsonResponse
     }
 
     public function success(Request $request)
-{
-    $ref = $request->query('ref');
-    return response()->json(['message' => "Paiement réussi pour la référence {$ref}"]);
-}
+    {
+        $ref = $request->query('ref');
 
-public function error(Request $request)
-{
-    $ref = $request->query('ref');
-    return response()->json(['message' => "Paiement échoué pour la référence {$ref}"], 400);
-}
+        return redirect()->away("https://sancta-missa.com/api/messes/");
+    }
+
+    public function error(Request $request)
+    {
+        $ref = $request->query('ref');
+
+        return redirect()->away("https://sancta-missa.com/api/messes/");
+    }
+
 }

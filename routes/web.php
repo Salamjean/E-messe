@@ -20,9 +20,15 @@ use App\Http\Controllers\User\UserDashboard;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Paroisse\Event\EventController;
 use App\Http\Controllers\User\Event\EventController as UserEventController;
+use App\Http\Controllers\Api\Paiement\WaveController;
+use App\Http\Controllers\Redirectionpaiement\RedirectController;
 
 
 Route::get('/',[HomeController::class, 'home'])->name('home');
+
+// ✅ Routes pour redirection après paiement
+Route::get('/paiement/wave/success', [RedirectController::class, 'success'])->name('wave.success');
+Route::get('/paiement/wave/error', [RedirectController::class, 'error'])->name('wave.error');
 
 //Les routes de l'administrateur @admin
 Route::prefix('admin')->group(function () {
