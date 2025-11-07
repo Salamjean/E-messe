@@ -175,10 +175,9 @@ public function history(Request $request): JsonResponse
 
 public function en_cours(Request $request): JsonResponse
 {
-    // Récupérer les messes en attente ou confirmées de l'utilisateur connecté
     $messes = $request->user()->messes()
         ->with(['paroisse', 'paiements'])
-        ->whereIn('statut', ['en_attente_paiement', 'en attente', 'confirmee'])
+        ->whereIn('statut', ['en_attente_paiement', 'en_attente', 'confirmee'])
         ->orderByDesc('created_at')
         ->get();
 
@@ -194,6 +193,7 @@ public function en_cours(Request $request): JsonResponse
         'messes' => $messes,
     ]);
 }
+
 
 
     /**
