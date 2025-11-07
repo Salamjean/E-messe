@@ -266,7 +266,8 @@ class VersetSeeder extends Seeder
         ];
 
         // Vider la table avant de la remplir pour éviter les doublons
-        DB::table('versets')->truncate();
+        // DB::table('versets')->truncate();
+        DB::table('versets')->delete();
 
         foreach ($versets as $themeGroup) {
             foreach ($themeGroup['versets'] as $verset) {
