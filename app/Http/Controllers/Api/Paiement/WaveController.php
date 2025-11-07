@@ -19,88 +19,134 @@ class WaveController extends Controller
      */
 
     /**
- * Obtenir le checkout_url Wave pour initier un paiement
- */
-public function checkoutUrl(Request $request): JsonResponse
-{
-    $request->validate([
-        'montant'   => 'required|numeric|min:100',
-        'telephone' => 'required|string|min:8',
-    ]);
-
-    $user = $request->user();
-    $messe = Messe::findOrFail($request->messe_id);
-    $reference = 'MESSE_WAVE_' . time() . '_' . $user->id;
-
-    // Créer le paiement localement
-    $paiement = Paiement::create([
-        'messe_id' => $messe->id,
-        'user_id'  => $user->id,
-        'reference'=> $reference,
-        'montant'  => $request->montant,
-        'devise'   => 'XOF',
-        'methode'  => 'wave',
-        'statut'   => 'en_attente',
-    ]);
-
-    $baseUrl = 'https://sancta-missa.com';
-    $successUrl = $baseUrl . '/paiement/wave/success?ref=' . $reference;
-    $errorUrl   = $baseUrl . '/paiement/wave/error?ref=' . $reference;
-
-    try {
-        $response = Http::withOptions(['verify' => false])
-            ->withHeaders([
-                'Authorization' => 'Bearer ' . env('WAVE_API_KEY'),
-                'Content-Type'  => 'application/json',
-            ])
-            ->post('https://api.wave.com/v1/checkout/sessions', [
-                'amount'      => (string) $request->montant,
-                'currency'    => 'XOF',
-                'success_url' => $successUrl,
-                'error_url'   => $errorUrl
-            ]);
-
-        $data = $response->json();
-
-        if (!$response->successful()) {
-            Log::error('Erreur Wave API: ' . json_encode($data));
-            return response()->json([
-                'message' => 'Erreur lors de la création de la session de paiement',
-                'details' => $data['details'] ?? $data['message'] ?? 'Erreur inconnue',
-            ], 400);
-        }
-
-        // Mettre à jour transaction_id et données
-        $paiement->update([
-            'transaction_id'      => $data['id'] ?? null,
-            'donnees_transaction' => $data,
+     * Obtenir le checkout_url Wave pour initier un paiement
+     */
+    public function checkoutUrl(Request $request): JsonResponse
+    {
+        $request->validate([
+            // 'messe_id' => 'required|exists:messes,id',
+            'montant'  => 'required|numeric|min:100',
         ]);
 
-        // Vérifier que le wave_launch_url est présent dans la réponse
-        if (!isset($data['wave_launch_url'])) {
-            Log::error('Wave launch URL manquant dans la réponse Wave: ' . json_encode($data));
+        $user = $request->user();
+
+        try {
+            // 🔹 Récupérer la messe
+            $messe = Messe::findOrFail($request->messe_id);
+            $messe->update(['statut' => 'en attente']);
+
+            // 🔹 Générer une référence unique
+            $reference = 'MESSE_WAVE_' . time() . '_' . $user->id;
+
+            // 🔹 Créer le paiement localement
+            $paiement = Paiement::create([
+                'messe_id' => $messe->id,
+                'user_id'  => $user->id,
+                'reference'=> $reference,
+                'montant'  => $request->montant,
+                'devise'   => 'XOF',
+                'methode'  => 'wave',
+                'statut'   => 'en_attente',
+            ]);
+
+            // 🔹 URLs de redirection
+            $baseUrl = 'https://sancta-missa.com';
+            $successUrl = $baseUrl . '/paiement/wave/success?ref=' . $reference;
+            $errorUrl   = $baseUrl . '/paiement/wave/error?ref=' . $reference;
+
+            // 🔹 Requête vers l’API Wave
+            $response = Http::withOptions(['verify' => false])
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . env('WAVE_API_KEY'),
+                    'Content-Type'  => 'application/json',
+                ])
+                ->post('https://api.wave.com/v1/checkout/sessions', [
+                    'amount'      => (string) $request->montant,
+                    'currency'    => 'XOF',
+                    'success_url' => $successUrl,
+                    'error_url'   => $errorUrl,
+                ]);
+
+            $data = $response->json();
+
+            // 🔹 Si la requête a échoué
+            if (!$response->successful()) {
+                Log::error('Erreur Wave API: ' . json_encode($data));
+
+                $paiement->update(['statut' => 'en_attente']); 
+                $messe->update(['statut' => 'en_attente_paiement']); 
+
+                return response()->json([
+                    'message' => 'Erreur lors de la création de la session de paiement.',
+                    'details' => $data['message'] ?? 'Erreur inconnue.',
+                ], 400);
+            }
+
+            // 🔹 Vérifier que le lien de paiement existe
+            if (!isset($data['wave_launch_url'])) {
+                Log::error('Wave launch URL manquant: ' . json_encode($data));
+
+                $paiement->update(['statut' => 'en_attente']);
+                $messe->update(['statut' => 'en_attente_paiement']);
+
+                return response()->json([
+                    'message' => 'URL de paiement non générée par Wave.',
+                    'details' => $data,
+                ], 500);
+            }
+
+            // 🔹 Mise à jour du paiement avec les données de la transaction
+            $paiement->update([
+                'transaction_id'      => $data['id'] ?? null,
+                'donnees_transaction' => $data,
+            ]);
+
             return response()->json([
-                'message' => 'URL de paiement non générée par Wave',
-                'details' => $data,
+                'reference'    => $reference,
+                'checkout_url' => $data['wave_launch_url'],
+                'session_id'   => $data['id'] ?? null,
+                'statut'       => 'success',
+                'message'      => 'URL de paiement générée avec succès.',
+            ], 200);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // 🔴 Messe introuvable
+            return response()->json([
+                'message' => 'Messe introuvable.',
+            ], 404);
+
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            // 🔴 Erreur de connexion HTTP
+            Log::error('Erreur HTTP Wave: ' . $e->getMessage());
+
+            $paiement->update(['statut' => 'en_attente']);
+            $messe->update(['statut' => 'en_attente_paiement']);
+
+            return response()->json([
+                'message' => 'Erreur de connexion avec l’API Wave.',
+                'error'   => $e->getMessage(),
+            ], 502);
+
+        } catch (\Exception $e) {
+            // 🔴 Erreur générale
+            Log::error('Erreur inattendue Wave: ' . $e->getMessage());
+
+            // Mettre les statuts en attente si possible
+            if (isset($paiement)) {
+                $paiement->update(['statut' => 'en_attente']);
+            }
+            if (isset($messe)) {
+                $messe->update(['statut' => 'en_attente_paiement']);
+            }
+
+            return response()->json([
+                'message' => 'Une erreur inattendue est survenue.',
+                'error'   => $e->getMessage(),
             ], 500);
         }
-
-        return response()->json([
-            'reference'    => $reference,
-            'checkout_url' => $data['wave_launch_url'], // ⬅️ CORRECTION ICI
-            'session_id'   => $data['id'],
-            'statut'       => 'success',
-            'message'      => 'URL de paiement générée avec succès'
-        ], 200);
-
-    } catch (\Exception $e) {
-        Log::error('Erreur Wave : ' . $e->getMessage());
-        return response()->json([
-            'message' => 'Impossible de générer le checkout_url',
-            'error'   => $e->getMessage(),
-        ], 500);
     }
-}
+
+
 
 
 
