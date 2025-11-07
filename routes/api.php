@@ -44,7 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     //Route pour les demande de messe
     Route::prefix('messes')->group(function () {
-        Route::get('', [MesseController::class, 'index']);
+        Route::get('/', [MesseController::class, 'index']);
         Route::post('/', [MesseController::class, 'store']);
 
         // Les routes avec un nom fixe en premier
