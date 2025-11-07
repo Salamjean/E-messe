@@ -248,6 +248,7 @@ class DemandeController extends Controller
                     ->where('statut','en attente')
                     ->get();
         
+                    // dd( $messess);
         // Filtrer les demandes pour n'afficher que celles avec des dates valides
         // à partir de date_souhaitee
         $filteredMessess = $messess->filter(function($messe) {
