@@ -128,7 +128,7 @@ class WaveController extends Controller
             ], 502);
 
         } catch (\Exception $e) {
-            // 🔴 Erreur générale
+            // 🔴 Erreur générale 
             Log::error('Erreur inattendue Wave: ' . $e->getMessage());
 
             // Mettre les statuts en attente si possible
