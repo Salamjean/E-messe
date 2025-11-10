@@ -234,7 +234,6 @@ class AuthController extends Controller
  */
 public function loginWithGoogle(Request $request)
 {
-
     $validated = $request->validate([
         'email' => 'required|email',
         'googleId' => 'required|string',
