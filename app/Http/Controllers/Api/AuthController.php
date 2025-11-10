@@ -278,7 +278,6 @@ public function loginWithGoogle(Request $request)
         'access_token' => $token,
         'token_type' => 'Bearer',
         'user' => $user,
-        'status' => $request->all()
     ]);
 }
  
