@@ -238,7 +238,7 @@ public function loginWithGoogle(Request $request)
         'email' => 'required|email',
         'googleId' => 'required|string',
         'name' => 'nullable|string|max:191',
-        'photoUrl' => 'nullable|string|max:500',
+        'profile_picture' => 'nullable|string|max:500',
     ]);
 
     // Vérifie si un utilisateur existe déjà avec ce Google ID ou cet email
@@ -255,7 +255,7 @@ public function loginWithGoogle(Request $request)
             'google_id' => $validated['googleId'],
             'password' => bcrypt(Str::random(16)),
             'actif' => 1,
-            'profile_picture' => $validated['photoUrl'] ?? null,
+            'profile_picture' => $validated['profile_picture'] ?? null,
             'contact' => '00000000',
         ]);
     } else {
