@@ -243,17 +243,16 @@ class DemandeController extends Controller
 
     public function validate()
     {
-        $messess = Auth::guard('paroisse')->user()->messes()
+        $filteredMessess = Auth::guard('paroisse')->user()->messes()
                     ->orderBy('created_at', 'desc')
                     ->where('statut','en attente')
                     ->get();
         
-                    // dd( $messess);
         // Filtrer les demandes pour n'afficher que celles avec des dates valides
         // à partir de date_souhaitee
-        $filteredMessess = $messess->filter(function($messe) {
-            return $messe->hasValidDates();
-        });
+        // $filteredMessess = $messess->filter(function($messe) {
+        //     return $messe->hasValidDates();
+        // });
         
         return view('paroisse.demande.validate', compact('filteredMessess'));
     }
