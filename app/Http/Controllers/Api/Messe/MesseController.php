@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\NouveauEvenementParoisseNotification;
+use Illuminate\Support\Facades\Notification;
 
 class MesseController extends Controller
 {
@@ -231,18 +233,22 @@ public function en_cours(Request $request): JsonResponse
      *     @OA\Response(response=500, description="Erreur serveur")
      * )
      */
+    /**
+     * Créer une nouvelle demande de messe + notifier les abonnés à la paroisse
+     */
     public function store(Request $request): JsonResponse
     {
+        // 🔹 Validation
         $validator = Validator::make($request->all(), [
-            'motif_intention' => 'required|string|max:255',
-            'interception_par' => 'nullable|string|max:255',
+            'motif_intention'     => 'required|string|max:255',
+            'interception_par'    => 'nullable|string|max:255',
             'celebration_choisie' => 'required|in:Messe quotidienne,Messe dominicale,Messe solennelle',
-            'jours_quotidienne' => 'required_if:celebration_choisie,Messe quotidienne|array',
-            'jours_dominicale' => 'required_if:celebration_choisie,Messe dominicale|array',
-            'montant_offrande' => 'required|numeric|min:0',
-            'date_souhaitee' => 'required|date|after:today',
-            'heure_souhaitee' => 'nullable|date_format:H:i',
-            'paroisse_id' => 'required|exists:paroisses,id',
+            'jours_quotidienne'   => 'required_if:celebration_choisie,Messe quotidienne|array',
+            'jours_dominicale'    => 'required_if:celebration_choisie,Messe dominicale|array',
+            'montant_offrande'    => 'required|numeric|min:0',
+            'date_souhaitee'      => 'required|date|after:today',
+            'heure_souhaitee'     => 'nullable|date_format:H:i',
+            'paroisse_id'         => 'required|exists:paroisses,id',
         ]);
 
         if ($validator->fails()) {
@@ -251,9 +257,9 @@ public function en_cours(Request $request): JsonResponse
 
         try {
             $user = $request->user();
-            $datesSelectionnees = [];
 
-            // Conversion des jours selon le type de messe 
+            // 🔹 Conversion des jours sélectionnés
+            $datesSelectionnees = [];
             if ($request->celebration_choisie === 'Messe quotidienne') {
                 $jours = $request->jours_quotidienne ?? [];
                 $nomsJours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
@@ -269,62 +275,77 @@ public function en_cours(Request $request): JsonResponse
 
             $datesJson = !empty($datesSelectionnees) ? json_encode($datesSelectionnees) : null;
 
-            // Création de la messe (statut initial) 
+            // 🔹 Création de la messe
             $messe = Messe::create([
-                'user_id' => $user->id,
-                'paroisse_id' => $request->paroisse_id,
-                'interception_par' => $request->interception_par,
-                'motif_intention' => $request->motif_intention,
-                'date_souhaitee' => $request->date_souhaitee,
-                'heure_souhaitee' => $request->heure_souhaitee,
-                'celebration_choisie' => $request->celebration_choisie,
-                'nom_demandeur' => $user->name,
-                'email_demandeur' => $user->email,
-                'telephone_demandeur' => $user->contact,
-                'statut' => 'en_attente_paiement',
-                'montant_offrande' => $request->montant_offrande,
-                'dates_selectionnees' => $datesJson,
+                'user_id'              => $user->id,
+                'paroisse_id'          => $request->paroisse_id,
+                'interception_par'     => $request->interception_par,
+                'motif_intention'      => $request->motif_intention,
+                'date_souhaitee'       => $request->date_souhaitee,
+                'heure_souhaitee'      => $request->heure_souhaitee,
+                'celebration_choisie'  => $request->celebration_choisie,
+                'nom_demandeur'        => $user->name,
+                'email_demandeur'      => $user->email,
+                'telephone_demandeur'  => $user->contact,
+                'statut'               => 'en_attente_paiement',
+                'montant_offrande'     => $request->montant_offrande,
+                'dates_selectionnees'  => $datesJson,
             ]);
 
             $reference = 'MESSE_API_' . time() . '_' . $messe->id;
 
-            try {
-                // Simuler un paiement (à remplacer par ton intégration réelle)
-                $paiementEffectue = rand(0, 1); // 1 = succès, 0 = échec
+            // 🔹 Simulation Paiement
+            $paiementEffectue = rand(0, 1); // à remplacer par ton intégration réelle
+            $paiement = Paiement::create([
+                'messe_id'            => $messe->id,
+                'user_id'             => $user->id,
+                'reference'           => $reference,
+                'montant'             => $request->montant_offrande * 1.02,
+                'devise'              => 'XOF',
+                'methode'             => 'wave',
+                'statut'              => $paiementEffectue ? 'paye' : 'en_attente',
+                'transaction_id'      => $paiementEffectue ? uniqid('TX_') : null,
+                'donnees_transaction' => $paiementEffectue ? json_encode(['message' => 'Paiement réussi']) : null,
+                'date_paiement'       => $paiementEffectue ? now() : null,
+            ]);
 
-                $paiement = Paiement::create([
-                    'messe_id' => $messe->id,
-                    'user_id' => $user->id,
-                    'reference' => $reference,
-                    'montant' => $request->montant_offrande * 1.02,
-                    'devise' => 'XOF',
-                    'methode' => 'wave',
-                    'statut' => $paiementEffectue ? 'paye' : 'en_attente',
-                    'transaction_id' => $paiementEffectue ? uniqid('TX_') : null,
-                    'donnees_transaction' => $paiementEffectue ? json_encode(['message' => 'Paiement réussi']) : null,
-                    'date_paiement' => $paiementEffectue ? now() : null,
-                ]);
+            $messe->update([
+                'statut' => $paiementEffectue ? 'en_attente_validation' : 'en_attente_paiement'
+            ]);
 
-                // Mettre à jour le statut de la messe selon le paiement
-                $messe->update([
-                    'statut' => $paiementEffectue ? 'en_attente_validation' : 'en_attente_paiement'
-                ]);
+            // ===================================================
+            // 🔔 ENVOI DE NOTIFICATION FIREBASE AUX FAVORIS
+            // ===================================================
 
-            } catch (\Exception $e) {
-                Log::error('Erreur Paiement Messe', [
-                    'message' => $e->getMessage(),
-                    'reference' => $reference,
-                ]);
+            // Charger la paroisse liée
+            $messe->load('paroisse');
 
-                $messe->update(['statut' => 'en_attente_paiement']);
+            // Trouver les utilisateurs qui ont cette paroisse en favori (sauf le créateur)
+            $utilisateursANotifier = User::whereHas('favoris', function ($query) use ($request) {
+                $query->where('paroisse_id', $request->paroisse_id);
+            })->where('id', '!=', $user->id)->get();
+
+            // Si des utilisateurs doivent être notifiés
+            if ($utilisateursANotifier->isNotEmpty()) {
+                foreach ($utilisateursANotifier as $u) {
+                    if ($u->fcm_token) { // Vérifie que l'utilisateur a bien un token Firebase
+                        $this->sendFirebaseNotification(
+                            $u->fcm_token,
+                            'Nouvelle messe dans votre paroisse',
+                            "Une nouvelle messe a été demandée à la paroisse {$messe->paroisse->name}."
+                        );
+                    }
+                }
             }
 
+            // ===================================================
+
             return response()->json([
-                'status' => 'success',
-                'message' => $paiementEffectue
+                'status'   => 'success',
+                'message'  => $paiementEffectue
                     ? 'Messe enregistrée et paiement effectué avec succès.'
                     : 'Messe enregistrée, en attente de paiement.',
-                'messe' => $messe,
+                'messe'    => $messe,
                 'paiement' => $paiement ?? null,
             ], 201);
 
@@ -332,14 +353,39 @@ public function en_cours(Request $request): JsonResponse
             Log::error('Erreur création messe API', ['error' => $e->getMessage()]);
 
             return response()->json([
-                'status' => 'error',
+                'status'  => 'error',
                 'message' => 'Une erreur s\'est produite lors de l\'enregistrement.',
-                'error' => $e->getMessage(),
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
 
-    
+    /**
+     * 🔥 Fonction d'envoi de notification Firebase (FCM)
+     */
+    private function sendFirebaseNotification(string $token, string $title, string $body): void
+    {
+        $serverKey = config('services.firebase.server_key'); // clé FCM à mettre dans .env
+        $response = Http::withHeaders([
+            'Authorization' => 'key=' . $serverKey,
+            'Content-Type'  => 'application/json',
+        ])->post('https://fcm.googleapis.com/fcm/send', [
+            'to' => $token,
+            'notification' => [
+                'title' => $title,
+                'body'  => $body,
+            ],
+            'data' => [
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+            ],
+        ]);
+
+        Log::info('Notification Firebase envoyée', [
+            'token' => $token,
+            'response' => $response->json(),
+        ]);
+    }
+
 
     /**
      * Affiche les détails d’une messe spécifique.

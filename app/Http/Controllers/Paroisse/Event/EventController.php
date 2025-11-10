@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use App\Services\FirebaseNotificationService;
 
 class EventController extends Controller
 {
@@ -118,6 +119,45 @@ class EventController extends Controller
             ], 500);
         }
     }
+
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'titre' => 'required|string|max:255',
+    //         'description' => 'required|string',
+    //         'paroisse_id' => 'required|exists:paroisses,id',
+    //         // ... autres champs
+    //     ]);
+
+    //     // Logique pour s'assurer que l'utilisateur a le droit de poster pour cette paroisse
+
+    //     $evenement = Evenement::create($request->all());
+
+    //     // Récupérer la paroisse et ses favoris
+    //     $paroisse = Paroisse::with('favoris.user')->find($request->paroisse_id);
+
+    //     if ($paroisse) {
+    //         $notificationService = new FirebaseNotificationService();
+            
+    //         foreach ($paroisse->favoris as $favori) {
+    //             $user = $favori->user;
+    //             if ($user && $user->fcm_token) {
+    //                 $notificationService->sendNotification(
+    //                     $user->fcm_token,
+    //                     'Nouvel Événement',
+    //                     "La paroisse {$paroisse->name} a publié un nouvel événement : {$evenement->titre}",
+    //                     ['evenement_id' => (string)$evenement->id, 'paroisse_id' => (string)$paroisse->id]
+    //                 );
+    //             }
+    //         }
+    //     }
+
+    //     return response()->json([
+    //         'status' => 'success',
+    //         'message' => 'Événement créé et notifications envoyées.',
+    //         'data' => $evenement
+    //     ], 201);
+    // }
 
     public function update(Request $request, Event $event)
     {

@@ -237,7 +237,7 @@ public function loginWithGoogle(Request $request)
     $validated = $request->validate([
         'email' => 'required|email',
         'googleId' => 'required|string',
-        'fullName' => 'nullable|string|max:191',
+        'name' => 'nullable|string|max:191',
         'photoUrl' => 'nullable|string|max:500',
     ]);
 
@@ -249,17 +249,17 @@ public function loginWithGoogle(Request $request)
     if (!$user) {
         // Crée un nouvel utilisateur minimal
         $user = User::create([
-            'name' => $validated['fullName'] ?? 'Utilisateur Google',
+            'name' => $validated['name'] ?? 'Utilisateur Google',
             'user_name' => Str::slug(explode('@', $validated['email'])[0]) . rand(100, 999),
             'email' => $validated['email'],
             'google_id' => $validated['googleId'],
-            'password' => bcrypt(Str::random(16)), // mot de passe aléatoire
+            'password' => bcrypt(Str::random(16)),
             'actif' => 1,
             'profile_picture' => $validated['photoUrl'] ?? null,
             'contact' => '00000000',
         ]);
     } else {
-        // Si le compte existait, on met à jour la photo et le Google ID
+        // Met à jour le compte existant
         $user->update([
             'google_id' => $validated['googleId'],
             'profile_picture' => $validated['photoUrl'] ?? $user->profile_picture,
@@ -280,6 +280,7 @@ public function loginWithGoogle(Request $request)
         'user' => $user
     ]);
 }
+
 
 
 

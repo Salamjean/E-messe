@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Paroisse\Demande;
 
 use App\Http\Controllers\Controller;
+use App\Services\FirebaseNotificationService;
 use App\Models\Messe;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -220,26 +221,26 @@ class DemandeController extends Controller
         }
     }
 
-    public function cancel($id)
-    {
-        // Récupérer la messe avec l'ID
-        $messe = Messe::findOrFail($id);
+    // public function cancel($id)
+    // {
+    //     // Récupérer la messe avec l'ID
+    //     $messe = Messe::findOrFail($id);
         
-        // Vérifier que l'utilisateur peut annuler cette messe
-        if ($messe->paroisse_id !== Auth::guard('paroisse')->user()->id) {
-            return redirect()->back()->with('error', 'Non autorisé');
-        }
+    //     // Vérifier que l'utilisateur peut annuler cette messe
+    //     if ($messe->paroisse_id !== Auth::guard('paroisse')->user()->id) {
+    //         return redirect()->back()->with('error', 'Non autorisé');
+    //     }
         
-        // Vérifier que la messe peut être annulée
-        if ($messe->statut !== 'en attente') {
-            return redirect()->back()->with('error', 'Seules les demandes en attente peuvent être annulées');
-        }
+    //     // Vérifier que la messe peut être annulée
+    //     if ($messe->statut !== 'en attente') {
+    //         return redirect()->back()->with('error', 'Seules les demandes en attente peuvent être annulées');
+    //     }
         
-        $messe->update(['statut' => 'annulee']);
+    //     $messe->update(['statut' => 'annulee']);
         
-        return redirect()->route('demandes.messes.index')
-            ->with('success', 'Demande annulée avec succès');
-    }
+    //     return redirect()->route('demandes.messes.index')
+    //         ->with('success', 'Demande annulée avec succès');
+    // }
 
     public function validate()
     {
@@ -257,7 +258,88 @@ class DemandeController extends Controller
         return view('paroisse.demande.validate', compact('filteredMessess'));
     }
 
-    public function confirmed($id)
+    // public function confirmed($id)
+    // {
+    //     // Récupérer la messe avec l'ID
+    //     $messe = Messe::findOrFail($id);
+        
+    //     // Vérifier que l'utilisateur peut annuler cette messe
+    //     if ($messe->paroisse_id !== Auth::guard('paroisse')->user()->id) {
+    //         return redirect()->back()->with('error', 'Non autorisé');
+    //     }
+        
+    //     // Vérifier que la messe peut être annulée
+    //     if ($messe->statut !== 'en attente') {
+    //         return redirect()->back()->with('error', 'Seules les demandes en attente peuvent être annulées');
+    //     }
+        
+    //     $messe->update(['statut' => 'confirmee']);
+        
+    //     return redirect()->back()
+    //         ->with('success', 'Demande annulée avec succès');
+    // }
+
+    // Méthodes pour les actions groupées
+// public function bulkConfirm(Request $request)
+// {
+//     try {
+//         $selectedIds = $request->selected_ids;
+        
+//         if (is_string($selectedIds)) {
+//             $selectedIds = json_decode($selectedIds, true);
+//         }
+        
+//         if (!is_array($selectedIds) || empty($selectedIds)) {
+//             return redirect()->back()->with('error', 'Aucune demande sélectionnée.');
+//         }
+
+//         // Mettre à jour le statut de toutes les demandes sélectionnées
+//         Messe::whereIn('id', $selectedIds)
+//             ->where('paroisse_id', Auth::guard('paroisse')->user()->id)
+//             ->where('statut', 'en attente')
+//             ->update(['statut' => 'confirmee']);
+
+//         return redirect()->back()->with('success', count($selectedIds) . ' demande(s) confirmée(s) avec succès.');
+        
+//     } catch (\Exception $e) {
+//         Log::error('Erreur lors de la confirmation groupée: ' . $e->getMessage());
+//         return redirect()->back()->with('error', 'Une erreur est survenue lors de la confirmation.');
+//     }
+// }
+
+// public function bulkCancel(Request $request)
+// {
+//     try {
+//         $selectedIds = $request->selected_ids;
+        
+//         if (is_string($selectedIds)) {
+//             $selectedIds = json_decode($selectedIds, true);
+//         }
+        
+//         if (!is_array($selectedIds) || empty($selectedIds)) {
+//             return redirect()->back()->with('error', 'Aucune demande sélectionnée.');
+//         }
+
+//         // Mettre à jour le statut de toutes les demandes sélectionnées
+//         Messe::whereIn('id', $selectedIds)
+//             ->where('paroisse_id', Auth::guard('paroisse')->user()->id)
+//             ->where('statut', 'en attente')
+//             ->update(['statut' => 'annulee']);
+
+//         return redirect()->back()->with('success', count($selectedIds) . ' demande(s) annulée(s) avec succès.');
+        
+//     } catch (\Exception $e) {
+//         Log::error('Erreur lors de l\'annulation groupée: ' . $e->getMessage());
+//         return redirect()->back()->with('error', 'Une erreur est survenue lors de l\'annulation.');
+//     }
+// }
+
+
+
+
+///NOuvelles fonctions pour les notification
+
+    public function cancel($id)
     {
         // Récupérer la messe avec l'ID
         $messe = Messe::findOrFail($id);
@@ -268,68 +350,145 @@ class DemandeController extends Controller
         }
         
         // Vérifier que la messe peut être annulée
+        // Modifié pour permettre l'annulation des messes confirmées mais pas encore célébrées
+        if (!in_array($messe->statut, ['en attente', 'confirmee'])) {
+            return redirect()->back()->with('error', 'Cette demande ne peut plus être annulée.');
+        }
+        
+        $messe->update(['statut' => 'annulee']);
+
+        // --- Envoi de la notification via le système Laravel ---
+        if ($messe->user) {
+            try {
+                $messe->user->notify(new MesseAnnuleeNotification($messe));
+            } catch (\Exception $e) {
+                // L'erreur est automatiquement loguée par le système, 
+                // mais on peut ajouter un log personnalisé si besoin.
+                Log::error('Échec de l\'envoi de la notification d\'annulation pour la messe #' . $messe->id . ': ' . $e->getMessage());
+            }
+        }
+        
+        return redirect()->route('demandes.messes.index')
+            ->with('success', 'Demande annulée avec succès.');
+    }
+
+
+    public function confirmed($id)
+    {
+        // Récupérer la messe avec l'ID
+        $messe = Messe::findOrFail($id);
+        
+        // Vérifier que l'utilisateur peut confirmer cette messe
+        if ($messe->paroisse_id !== Auth::guard('paroisse')->user()->id) {
+            return redirect()->back()->with('error', 'Non autorisé');
+        }
+        
+        // On suppose que le statut initial est 'en_attente_validation' ou 'en attente'
         if ($messe->statut !== 'en attente') {
-            return redirect()->back()->with('error', 'Seules les demandes en attente peuvent être annulées');
+            return redirect()->back()->with('error', 'Seules les demandes en attente peuvent être confirmées.');
         }
         
         $messe->update(['statut' => 'confirmee']);
-        
-        return redirect()->back()
-            ->with('success', 'Demande annulée avec succès');
+
+        // --- Envoi de la notification via le système Laravel ---
+        if ($messe->user) {
+            try {
+                // Notez l'utilisation de la classe MesseConfirmeeNotification
+                $messe->user->notify(new MesseConfirmeeNotification($messe));
+            } catch (\Exception $e) {
+                Log::error('Échec de l\'envoi de la notification de confirmation pour la messe #' . $messe->id . ': ' . $e->getMessage());
+            }
+        }
+            
+            return redirect()->back()
+                ->with('success', 'Demande confirmée avec succès.');
     }
 
     // Méthodes pour les actions groupées
-public function bulkConfirm(Request $request)
-{
-    try {
-        $selectedIds = $request->selected_ids;
-        
-        if (is_string($selectedIds)) {
-            $selectedIds = json_decode($selectedIds, true);
-        }
-        
-        if (!is_array($selectedIds) || empty($selectedIds)) {
-            return redirect()->back()->with('error', 'Aucune demande sélectionnée.');
-        }
+    public function bulkConfirm(Request $request)
+    {
+        try {
+            $selectedIds = $request->selected_ids;
+            
+            if (is_string($selectedIds)) {
+                $selectedIds = json_decode($selectedIds, true);
+            }
+            
+            if (!is_array($selectedIds) || empty($selectedIds)) {
+                return redirect()->back()->with('error', 'Aucune demande sélectionnée.');
+            }
 
-        // Mettre à jour le statut de toutes les demandes sélectionnées
-        Messe::whereIn('id', $selectedIds)
-            ->where('paroisse_id', Auth::guard('paroisse')->user()->id)
-            ->where('statut', 'en attente')
-            ->update(['statut' => 'confirmee']);
+            $messesToUpdate = Messe::whereIn('id', $selectedIds)
+                ->where('paroisse_id', Auth::guard('paroisse')->user()->id)
+                ->where('statut', 'en attente')
+                ->get();
 
-        return redirect()->back()->with('success', count($selectedIds) . ' demande(s) confirmée(s) avec succès.');
-        
-    } catch (\Exception $e) {
-        Log::error('Erreur lors de la confirmation groupée: ' . $e->getMessage());
-        return redirect()->back()->with('error', 'Une erreur est survenue lors de la confirmation.');
+            // Mettre à jour le statut
+            Messe::whereIn('id', $messesToUpdate->pluck('id'))->update(['statut' => 'confirmee']);
+
+                // --- Envoi des notifications en boucle ---
+            foreach ($messesToUpdate as $messe) {
+                if ($messe->user) {
+                    try {
+                        $messe->user->notify(new MesseConfirmeeNotification($messe));
+                    } catch (\Exception $e) {
+                        Log::error("Échec de l'envoi de la notif groupée (conf.) pour la messe #{$messe->id}: " . $e->getMessage());
+                    }
+                }
+            }
+
+
+            return redirect()->back()->with('success', count($messesToUpdate) . ' demande(s) confirmée(s) avec succès.');
+            
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la confirmation groupée: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Une erreur est survenue lors de la confirmation.');
+        }
     }
-}
 
-public function bulkCancel(Request $request)
-{
-    try {
-        $selectedIds = $request->selected_ids;
-        
-        if (is_string($selectedIds)) {
-            $selectedIds = json_decode($selectedIds, true);
-        }
-        
+    public function bulkCancel(Request $request)
+    {
+        try {
+            $selectedIds = $request->selected_ids;
+            
+            if (is_string($selectedIds)) {
+                $selectedIds = json_decode($selectedIds, true);
+            }
+            
         if (!is_array($selectedIds) || empty($selectedIds)) {
-            return redirect()->back()->with('error', 'Aucune demande sélectionnée.');
+                return redirect()->back()->with('error', 'Aucune demande sélectionnée.');
+            }
+
+            // On charge les relations 'user' et 'paroisse'
+            $messesToUpdate = Messe::with(['user', 'paroisse'])
+                ->whereIn('id', $selectedIds)
+                ->where('paroisse_id', Auth::guard('paroisse')->user()->id)
+                // On peut annuler les messes 'en attente' ou 'confirmee'
+                ->whereIn('statut', ['en attente', 'confirmee']) 
+                ->get();
+            
+            if ($messesToUpdate->isEmpty()) {
+                return redirect()->back()->with('error', 'Aucune demande valide à annuler.');
+            }
+
+            // Mettre à jour le statut
+            Messe::whereIn('id', $messesToUpdate->pluck('id'))->update(['statut' => 'annulee']);
+            
+            // --- Envoi des notifications en boucle ---
+            foreach ($messesToUpdate as $messe) {
+                if ($messe->user) {
+                    try {
+                        $messe->user->notify(new MesseAnnuleeNotification($messe));
+                    } catch (\Exception $e) {
+                        Log::error("Échec de l'envoi de la notif groupée (annul.) pour la messe #{$messe->id}: " . $e->getMessage());
+                    }
+                }
+            }
+            return redirect()->back()->with('success', count($messesToUpdate) . ' demande(s) annulée(s) avec succès.');
+            
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'annulation groupée: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Une erreur est survenue lors de l\'annulation.');
         }
-
-        // Mettre à jour le statut de toutes les demandes sélectionnées
-        Messe::whereIn('id', $selectedIds)
-            ->where('paroisse_id', Auth::guard('paroisse')->user()->id)
-            ->where('statut', 'en attente')
-            ->update(['statut' => 'annulee']);
-
-        return redirect()->back()->with('success', count($selectedIds) . ' demande(s) annulée(s) avec succès.');
-        
-    } catch (\Exception $e) {
-        Log::error('Erreur lors de l\'annulation groupée: ' . $e->getMessage());
-        return redirect()->back()->with('error', 'Une erreur est survenue lors de l\'annulation.');
     }
-}
 }

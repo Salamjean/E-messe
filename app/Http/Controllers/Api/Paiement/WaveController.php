@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
 use Carbon\Carbon;
+// use App\Services\FirebaseNotificationService;
+use App\Notifications\PaiementSuccessNotification;
+use App\Notifications\PaiementEchecNotification;
 
 class WaveController extends Controller
 {
@@ -267,6 +270,7 @@ public function initier(Request $request): JsonResponse
         return response()->json(['message' => 'Webhook traité', 'status' => $status]);
     }
 
+    
     /**
      * Vérifier le statut d’une transaction sur Wave
      */
@@ -299,5 +303,142 @@ public function initier(Request $request): JsonResponse
 
         return redirect()->away("https://sancta-missa.com/api/messes/");
     }
+
+    /**
+     * Réception du webhook Wave pour le paiement d'une messe.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    // public function webhook(Request $request): JsonResponse
+    // {
+    //     Log::info('📩 Webhook Wave reçu', $request->all());
+
+    //     // ✅ Extraction des informations principales
+    //     $transactionId = $request->input('id');
+    //     $status        = $request->input('status');
+
+    //     // ✅ Récupération du paiement associé à la transaction, avec l'utilisateur et la messe
+    //     $paiement = Paiement::with(['user', 'messe'])->where('transaction_id', $transactionId)->first();
+
+    //     if (!$paiement) {
+    //         Log::warning("⚠️ Webhook reçu pour transaction inconnue : {$transactionId}");
+    //         return response()->json([
+    //             'message' => 'Transaction non reconnue',
+    //             'status'  => 'ignored',
+    //         ]);
+    //     }
+
+    //     try {
+    //         // ============================
+    //         // 🔹 CAS 1 : Paiement réussi
+    //         // ============================
+    //         if ($status === 'successful') {
+    //             $paiement->update([
+    //                 'statut'              => 'paye',
+    //                 'date_paiement'       => Carbon::now(),
+    //                 'donnees_transaction' => json_encode($request->all()),
+    //             ]);
+
+    //             if ($paiement->messe) {
+    //                 $paiement->messe->update(['statut' => 'paye']);
+    //             }
+
+    //             // 🔔 Notification utilisateur
+    //             if ($paiement->user && $paiement->user->fcm_token) {
+    //                 $this->sendFirebaseNotification(
+    //                     $paiement->user->fcm_token,
+    //                     'Paiement réussi ✅',
+    //                     "Votre paiement pour la messe #{$paiement->messe_id} a été confirmé."
+    //                 );
+    //             }
+
+    //             // (Optionnel : notification Laravel classique)
+    //             $paiement->user?->notify(new PaiementSuccessNotification($paiement));
+
+    //             Log::info("✅ Paiement Wave réussi pour la messe #{$paiement->messe_id}");
+    //         }
+
+    //         // ============================
+    //         // 🔹 CAS 2 : Paiement échoué
+    //         // ============================
+    //         elseif ($status === 'failed') {
+    //             $paiement->update([
+    //                 'statut'              => 'echec',
+    //                 'donnees_transaction' => json_encode($request->all()),
+    //             ]);
+
+    //             // 🔔 Notification utilisateur
+    //             if ($paiement->user && $paiement->user->fcm_token) {
+    //                 $this->sendFirebaseNotification(
+    //                     $paiement->user->fcm_token,
+    //                     'Échec du paiement ❌',
+    //                     "Votre paiement pour la messe #{$paiement->messe_id} a échoué. Veuillez réessayer."
+    //                 );
+    //             }
+
+    //             $paiement->user?->notify(new PaiementEchecNotification($paiement));
+
+    //             Log::warning("❌ Paiement Wave échoué pour la messe #{$paiement->messe_id}");
+    //         }
+
+    //         // ============================
+    //         // 🔹 Autres statuts possibles
+    //         // ============================
+    //         else {
+    //             Log::info("ℹ️ Statut de paiement non pris en charge : {$status}");
+    //         }
+
+    //         // ✅ Réponse standard pour Wave
+    //         return response()->json([
+    //             'message' => 'Webhook traité avec succès',
+    //             'status'  => $status,
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         Log::error('🔥 Erreur lors du traitement du webhook Wave', [
+    //             'message' => $e->getMessage(),
+    //             'transaction_id' => $transactionId,
+    //         ]);
+
+    //         return response()->json([
+    //             'message' => 'Erreur serveur',
+    //             'error'   => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
+
+    // /**
+    //  * 🔥 Fonction d'envoi de notification Firebase (FCM)
+    //  *
+    //  * @param string $token
+    //  * @param string $title
+    //  * @param string $body
+    //  * @return void
+    //  */
+    // private function sendFirebaseNotification(string $token, string $title, string $body): void
+    // {
+    //     $serverKey = config('services.firebase.server_key');
+
+    //     $response = Http::withHeaders([
+    //         'Authorization' => 'key=' . $serverKey,
+    //         'Content-Type'  => 'application/json',
+    //     ])->post('https://fcm.googleapis.com/fcm/send', [
+    //         'to' => $token,
+    //         'notification' => [
+    //             'title' => $title,
+    //             'body'  => $body,
+    //             'sound' => 'default',
+    //         ],
+    //         'data' => [
+    //             'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+    //         ],
+    //     ]);
+
+    //     Log::info('🔔 Notification Firebase envoyée', [
+    //         'token' => $token,
+    //         'response' => $response->json(),
+    //     ]);
+    // }
+
 
 }

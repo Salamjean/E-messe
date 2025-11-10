@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\FirebaseNotificationService;
 
 /**
  * @OA\Tag(
@@ -144,4 +145,7 @@ class EventController extends Controller
             'data' => $typesEvents,
         ]);
     }
+
+
+
 }

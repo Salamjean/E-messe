@@ -5,9 +5,9 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Brozot\LaravelFcm\FcmMessage;
-use App\Models\Messe;
+use App\Models\Messe; // On considère une messe comme un "événement"
 
-class MesseConfirmeeNotification extends Notification
+class NouveauEvenementParoisseNotification extends Notification
 {
     use Queueable;
 
@@ -20,7 +20,6 @@ class MesseConfirmeeNotification extends Notification
 
     public function via($notifiable)
     {
-        // Envoyer via FCM et sauvegarder dans la base de données
         return ['fcm', 'database'];
     }
 
@@ -28,22 +27,22 @@ class MesseConfirmeeNotification extends Notification
     {
         return (new FcmMessage)
             ->notification([
-                'title' => 'Messe Confirmée',
-                'body' => 'Bonne nouvelle ! Votre demande de messe pour "' . $this->messe->motif_intention . '" a été confirmée.',
+                'title' => 'Nouvel événement dans une de vos paroisses favorites',
+                'body' => 'La paroisse "' . $this->messe->paroisse->name . '" a programmé une nouvelle messe.',
             ])
             ->data([
-                'type' => 'messe_confirmee',
+                'type' => 'nouvel_evenement',
+                'paroisse_id' => $this->messe->paroisse_id,
                 'messe_id' => $this->messe->id
             ]);
     }
-    
-    // Pour le stockage en base de données
+
     public function toArray($notifiable)
     {
         return [
-            'title' => 'Messe Confirmée',
-            'body' => 'Bonne nouvelle ! Votre demande de messe pour "' . $this->messe->motif_intention . '" a été confirmée.',
-            'messe_id' => $this->messe->id,
+            'title' => 'Nouvel événement',
+            'body' => 'La paroisse "' . $this->messe->paroisse->name . '" a programmé une nouvelle messe.',
+            'paroisse_id' => $this->messe->paroisse_id,
         ];
     }
 }
