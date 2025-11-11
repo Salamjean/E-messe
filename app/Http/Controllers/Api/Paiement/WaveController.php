@@ -36,7 +36,7 @@ class WaveController extends Controller
         try {
             // 🔹 Récupérer la messe 
             $messe = Messe::findOrFail($request->messe_id);
-            $messe->update(['statut' => 'en attente']);
+
 
             // 🔹 Générer une référence unique 
             $reference = 'MESSE_WAVE_' . time() . '_' . $user->id;
@@ -104,6 +104,7 @@ class WaveController extends Controller
                 'donnees_transaction' => $data,
             ]);
 
+            // $messe->update(['statut' => 'en attente']);
             return response()->json([
                 'reference'    => $reference,
                 'checkout_url' => $data['wave_launch_url'],
@@ -180,7 +181,7 @@ public function initier(Request $request): JsonResponse
         ]);
 
         // 2️⃣ Préparer les URLs
-        $successUrl = route('wave.success', ['ref' => $reference]); // redirection en cas de succès
+        $successUrl = route('wave.success', ['ref' => $reference]);
         $errorUrl   = route('wave.error', ['ref' => $reference]);   // redirection en cas d'échec
 
         // 3️⃣ Appel API Wave
@@ -190,7 +191,7 @@ public function initier(Request $request): JsonResponse
                 'Content-Type' => 'application/json',
             ])
             ->post('https://api.wave.com/v1/checkout/sessions', [
-                'amount' => (string) $request->montant, // Wave exige une string
+                'amount' => (string) $request->montant,
                 'currency' => 'XOF',
                 'success_url' => $successUrl,
                 'error_url' => $errorUrl,
@@ -294,15 +295,47 @@ public function initier(Request $request): JsonResponse
     {
         $ref = $request->query('ref');
 
+        // 🔹 On récupère le paiement lié à la référence
+        $paiement = Paiement::where('reference', $ref)->first();
+
+        if ($paiement) {
+            // Marquer le paiement comme "paye"
+            $paiement->update(['statut' => 'paye']);
+
+            // Mettre la messe en "en attente"
+            $messe = $paiement->messe;
+            if ($messe) {
+                $messe->update(['statut' => 'en attente']);
+            }
+        }
+
+        // 🔹 Rediriger l'utilisateur vers ton site
         return redirect()->away("https://sancta-missa.com/api/messes/");
     }
+
 
     public function error(Request $request)
     {
         $ref = $request->query('ref');
 
+        // 🔹 On récupère le paiement lié à la référence
+        $paiement = Paiement::where('reference', $ref)->first();
+
+        if ($paiement) {
+            // Marquer le paiement comme "en_attente" (échec ou annulé)
+            $paiement->update(['statut' => 'en_attente']);
+
+            // Remettre la messe en "en_attente_paiement"
+            $messe = $paiement->messe;
+            if ($messe) {
+                $messe->update(['statut' => 'en_attente_paiement']);
+            }
+        }
+
+        // 🔹 Rediriger l'utilisateur vers ton site
         return redirect()->away("https://sancta-missa.com/api/messes/");
     }
+
 
     /**
      * Réception du webhook Wave pour le paiement d'une messe.

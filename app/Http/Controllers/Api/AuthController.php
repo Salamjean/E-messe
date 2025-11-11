@@ -203,7 +203,7 @@ class AuthController extends Controller
 
 
 
-    /**
+/**
  * @OA\Post(
  *     path="/api/auth/google",
  *     summary="Connexion ou inscription via Google",
@@ -232,6 +232,7 @@ class AuthController extends Controller
  *     )
  * )
  */
+
 public function loginWithGoogle(Request $request)
 {
     $validated = $request->validate([
