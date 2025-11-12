@@ -4,7 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Brozot\LaravelFcm\FcmMessage;
+use Illuminate\Support\Facades\Http;
 use App\Models\Messe;
 
 class MesseAnnuleeNotification extends Notification
@@ -18,43 +18,11 @@ class MesseAnnuleeNotification extends Notification
         $this->messe = $messe;
     }
 
-    /**
-     * Spécifie les canaux de notification.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
     public function via($notifiable)
     {
-        // Envoi via Firebase (fcm) et sauvegarde dans la base de données de Laravel
-        return ['fcm', 'database'];
+        return ['database', 'fcm_http'];
     }
 
-    /**
-     * Définit le message pour Firebase Cloud Messaging.
-     *
-     * @param  mixed  $notifiable
-     * @return \Brozot\LaravelFcm\FcmMessage
-     */
-    public function toFcm($notifiable)
-    {
-        return (new FcmMessage)
-            ->notification([
-                'title' => 'Demande de messe annulée',
-                'body' => "Votre demande de messe à la paroisse {$this->messe->paroisse->name} a été annulée.",
-            ])
-            ->data([
-                'type' => 'messe_annulee',
-                'messe_id' => (string)$this->messe->id
-            ]);
-    }
-
-    /**
-     * Définit la représentation en tableau (pour la base de données).
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
     public function toArray($notifiable)
     {
         return [
@@ -62,5 +30,29 @@ class MesseAnnuleeNotification extends Notification
             'body' => "Votre demande de messe à la paroisse {$this->messe->paroisse->name} a été annulée.",
             'messe_id' => $this->messe->id,
         ];
+    }
+
+    public function toFcmHttp($notifiable)
+    {
+        if (!$notifiable->fcm_token) return null;
+
+        $serverKey = env('FIREBASE_SERVER_KEY');
+
+        $response = Http::withHeaders([
+            'Authorization' => 'key=' . $serverKey,
+            'Content-Type' => 'application/json',
+        ])->post('https://fcm.googleapis.com/fcm/send', [
+            'to' => $notifiable->fcm_token,
+            'notification' => [
+                'title' => 'Demande de messe annulée',
+                'body' => "Votre demande de messe à la paroisse {$this->messe->paroisse->name} a été annulée.",
+            ],
+            'data' => [
+                'type' => 'messe_annulee',
+                'messe_id' => $this->messe->id,
+            ],
+        ]);
+
+        return $response->json();
     }
 }

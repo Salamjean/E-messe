@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\Messe;
 use App\Http\Controllers\Controller;
 use App\Models\Messe;
 use App\Models\Paiement;
+use App\Models\Favoris;
+use App\Models\User;    
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
@@ -293,9 +295,19 @@ public function en_cours(Request $request): JsonResponse
             ]);
 
             // --- Envoi de la notification ---
+
             if ($messe->user) {
-                // Assurez-vous d'avoir créé la classe MesseEnAttentePaiementNotification
-                $messe->user->notify(new \App\Notifications\MesseEnAttentePaiementNotification($messe));
+                try {
+                    // Notification en base
+                    $messe->user->notify(new MesseEnAttentePaiementNotification($messe));
+
+                    // Envoi FCM via HTTP
+                    $notification = new MesseEnAttentePaiementNotification($messe);
+                    $notification->toFcmHttp($messe->user);
+
+                } catch (\Exception $e) {
+                    Log::error('Échec de l\'envoi de la notificationen attente de paiement pour la messe #' . $messe->id . ': ' . $e->getMessage());
+                }
             }
 
             $reference = 'MESSE_API_' . time() . '_' . $messe->id;
@@ -316,7 +328,7 @@ public function en_cours(Request $request): JsonResponse
             ]);
 
             $messe->update([
-                'statut' => $paiementEffectue ? 'en_attente_validation' : 'en_attente_paiement'
+                'statut' => $paiementEffectue ? 'en_attente_paiement' : 'en_attente_paiement'
             ]);
 
             // ===================================================

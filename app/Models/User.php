@@ -46,6 +46,7 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+
     /**
      * Les attributs qui doivent être typés (cast).
      *
@@ -67,6 +68,12 @@ class User extends Authenticatable
         return $this->hasMany(Messe::class);
     }
 
+
+
+    public function favoris()
+    {
+        return $this->hasMany(\App\Models\Favori::class);
+    }
     /**
      * Scope : récupérer uniquement les utilisateurs archivés.
      */

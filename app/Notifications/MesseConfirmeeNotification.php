@@ -4,7 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Brozot\LaravelFcm\FcmMessage;
+use Illuminate\Support\Facades\Http;
 use App\Models\Messe;
 
 class MesseConfirmeeNotification extends Notification
@@ -20,24 +20,13 @@ class MesseConfirmeeNotification extends Notification
 
     public function via($notifiable)
     {
-        // Envoyer via FCM et sauvegarder dans la base de données
-        return ['fcm', 'database'];
+        // Notification en base + FCM via HTTP
+        return ['database', 'fcm_http'];
     }
 
-    public function toFcm($notifiable)
-    {
-        return (new FcmMessage)
-            ->notification([
-                'title' => 'Messe Confirmée',
-                'body' => 'Bonne nouvelle ! Votre demande de messe pour "' . $this->messe->motif_intention . '" a été confirmée.',
-            ])
-            ->data([
-                'type' => 'messe_confirmee',
-                'messe_id' => $this->messe->id
-            ]);
-    }
-    
-    // Pour le stockage en base de données
+    /**
+     * Pour la base de données
+     */
     public function toArray($notifiable)
     {
         return [
@@ -45,5 +34,34 @@ class MesseConfirmeeNotification extends Notification
             'body' => 'Bonne nouvelle ! Votre demande de messe pour "' . $this->messe->motif_intention . '" a été confirmée.',
             'messe_id' => $this->messe->id,
         ];
+    }
+
+    /**
+     * Pour FCM via HTTP
+     */
+    public function toFcmHttp($notifiable)
+    {
+        if (!$notifiable->fcm_token) {
+            return null;
+        }
+
+        $serverKey = env('FIREBASE_SERVER_KEY');
+
+        $response = Http::withHeaders([
+            'Authorization' => 'key=' . $serverKey,
+            'Content-Type' => 'application/json',
+        ])->post('https://fcm.googleapis.com/fcm/send', [
+            'to' => $notifiable->fcm_token,
+            'notification' => [
+                'title' => 'Messe Confirmée',
+                'body' => 'Bonne nouvelle ! Votre demande de messe pour "' . $this->messe->motif_intention . '" a été confirmée.',
+            ],
+            'data' => [
+                'type' => 'messe_confirmee',
+                'messe_id' => $this->messe->id,
+            ],
+        ]);
+
+        return $response->json();
     }
 }

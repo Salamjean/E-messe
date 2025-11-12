@@ -65,6 +65,15 @@ class Messe extends Model
         return $this->belongsTo(Paroisse::class);
     }
 
+    public function favoris()
+    {
+        return $this->hasMany(\App\Models\Favori::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
     public function paiements()
     {
         return $this->hasMany(Paiement::class);

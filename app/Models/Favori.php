@@ -31,6 +31,7 @@ class Favori extends Model
         return $this->belongsTo(Paroisse::class);
     }
 
+   
     public function user()
     {
         return $this->belongsTo(User::class);

@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\MesseConfirmeeNotification;
 use PDF;
 
 class DemandeController extends Controller
@@ -269,82 +270,6 @@ class DemandeController extends Controller
         return view('paroisse.demande.validate', compact('filteredMessess'));
     }
 
-    // public function confirmed($id)
-    // {
-    //     // Récupérer la messe avec l'ID
-    //     $messe = Messe::findOrFail($id);
-        
-    //     // Vérifier que l'utilisateur peut annuler cette messe
-    //     if ($messe->paroisse_id !== Auth::guard('paroisse')->user()->id) {
-    //         return redirect()->back()->with('error', 'Non autorisé');
-    //     }
-        
-    //     // Vérifier que la messe peut être annulée
-    //     if ($messe->statut !== 'en attente') {
-    //         return redirect()->back()->with('error', 'Seules les demandes en attente peuvent être annulées');
-    //     }
-        
-    //     $messe->update(['statut' => 'confirmee']);
-        
-    //     return redirect()->back()
-    //         ->with('success', 'Demande annulée avec succès');
-    // }
-
-    // Méthodes pour les actions groupées
-// public function bulkConfirm(Request $request)
-// {
-//     try {
-//         $selectedIds = $request->selected_ids;
-        
-//         if (is_string($selectedIds)) {
-//             $selectedIds = json_decode($selectedIds, true);
-//         }
-        
-//         if (!is_array($selectedIds) || empty($selectedIds)) {
-//             return redirect()->back()->with('error', 'Aucune demande sélectionnée.');
-//         }
-
-//         // Mettre à jour le statut de toutes les demandes sélectionnées
-//         Messe::whereIn('id', $selectedIds)
-//             ->where('paroisse_id', Auth::guard('paroisse')->user()->id)
-//             ->where('statut', 'en attente')
-//             ->update(['statut' => 'confirmee']);
-
-//         return redirect()->back()->with('success', count($selectedIds) . ' demande(s) confirmée(s) avec succès.');
-        
-//     } catch (\Exception $e) {
-//         Log::error('Erreur lors de la confirmation groupée: ' . $e->getMessage());
-//         return redirect()->back()->with('error', 'Une erreur est survenue lors de la confirmation.');
-//     }
-// }
-
-// public function bulkCancel(Request $request)
-// {
-//     try {
-//         $selectedIds = $request->selected_ids;
-        
-//         if (is_string($selectedIds)) {
-//             $selectedIds = json_decode($selectedIds, true);
-//         }
-        
-//         if (!is_array($selectedIds) || empty($selectedIds)) {
-//             return redirect()->back()->with('error', 'Aucune demande sélectionnée.');
-//         }
-
-//         // Mettre à jour le statut de toutes les demandes sélectionnées
-//         Messe::whereIn('id', $selectedIds)
-//             ->where('paroisse_id', Auth::guard('paroisse')->user()->id)
-//             ->where('statut', 'en attente')
-//             ->update(['statut' => 'annulee']);
-
-//         return redirect()->back()->with('success', count($selectedIds) . ' demande(s) annulée(s) avec succès.');
-        
-//     } catch (\Exception $e) {
-//         Log::error('Erreur lors de l\'annulation groupée: ' . $e->getMessage());
-//         return redirect()->back()->with('error', 'Une erreur est survenue lors de l\'annulation.');
-//     }
-// }
-
 
 
 
@@ -369,13 +294,18 @@ class DemandeController extends Controller
         $messe->update(['statut' => 'annulee']);
 
         // --- Envoi de la notification via le système Laravel ---
+
         if ($messe->user) {
             try {
+                // Notification en base
                 $messe->user->notify(new MesseAnnuleeNotification($messe));
+
+                // Envoi FCM via HTTP
+                $notification = new MesseAnnuleeNotification($messe);
+                $notification->toFcmHttp($messe->user);
+
             } catch (\Exception $e) {
-                // L'erreur est automatiquement loguée par le système, 
-                // mais on peut ajouter un log personnalisé si besoin.
-                Log::error('Échec de l\'envoi de la notification d\'annulation pour la messe #' . $messe->id . ': ' . $e->getMessage());
+                 Log::error('Échec de l\'envoi de la notification d\'annulation pour la messe #' . $messe->id . ': ' . $e->getMessage());
             }
         }
         
@@ -401,15 +331,20 @@ class DemandeController extends Controller
         
         $messe->update(['statut' => 'confirmee']);
 
-        // --- Envoi de la notification via le système Laravel ---
         if ($messe->user) {
             try {
-                // Notez l'utilisation de la classe MesseConfirmeeNotification
+                // Notification en base
                 $messe->user->notify(new MesseConfirmeeNotification($messe));
+
+                // Envoi FCM via HTTP
+                $notification = new MesseConfirmeeNotification($messe);
+                $notification->toFcmHttp($messe->user);
+
             } catch (\Exception $e) {
-                Log::error('Échec de l\'envoi de la notification de confirmation pour la messe #' . $messe->id . ': ' . $e->getMessage());
+                Log::error('Échec de l\'envoi de la notification pour la messe #' . $messe->id . ': ' . $e->getMessage());
             }
         }
+
             
             return redirect()->back()
                 ->with('success', 'Demande confirmée avec succès.');
@@ -439,11 +374,18 @@ class DemandeController extends Controller
 
                 // --- Envoi des notifications en boucle ---
             foreach ($messesToUpdate as $messe) {
+
                 if ($messe->user) {
                     try {
+                        // Notification en base
                         $messe->user->notify(new MesseConfirmeeNotification($messe));
+
+                        // Envoi FCM via HTTP
+                        $notification = new MesseConfirmeeNotification($messe);
+                        $notification->toFcmHttp($messe->user);
+
                     } catch (\Exception $e) {
-                        Log::error("Échec de l'envoi de la notif groupée (conf.) pour la messe #{$messe->id}: " . $e->getMessage());
+                       Log::error("Échec de l'envoi de la notif groupée (conf.) pour la messe #{$messe->id}: " . $e->getMessage());
                     }
                 }
             }
@@ -487,13 +429,21 @@ class DemandeController extends Controller
             
             // --- Envoi des notifications en boucle ---
             foreach ($messesToUpdate as $messe) {
+
                 if ($messe->user) {
                     try {
+                        // Notification en base
                         $messe->user->notify(new MesseAnnuleeNotification($messe));
+
+                        // Envoi FCM via HTTP
+                        $notification = new MesseAnnuleeNotification($messe);
+                        $notification->toFcmHttp($messe->user);
+
                     } catch (\Exception $e) {
-                        Log::error("Échec de l'envoi de la notif groupée (annul.) pour la messe #{$messe->id}: " . $e->getMessage());
+                       Log::error("Échec de l'envoi de la notif groupée (annul.) pour la messe #{$messe->id}: " . $e->getMessage());
                     }
                 }
+
             }
             return redirect()->back()->with('success', count($messesToUpdate) . ' demande(s) annulée(s) avec succès.');
             

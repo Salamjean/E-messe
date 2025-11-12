@@ -6,7 +6,7 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Brozot\LaravelFcm\FcmMessage; // Assurez-vous d'utiliser la bonne classe FCM
+use Brozot\LaravelFcm\FcmMessage;
 
 class TestNotification extends Notification
 {
