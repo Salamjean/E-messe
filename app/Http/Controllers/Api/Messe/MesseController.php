@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use App\Notifications\NouveauEvenementParoisseNotification;
+use App\Notifications\MesseEnAttentePaiementNotification;
 use Illuminate\Support\Facades\Notification;
 
 class MesseController extends Controller
