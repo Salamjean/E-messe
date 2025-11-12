@@ -32,7 +32,8 @@ class User extends Authenticatable
         'emailNotif',
         'civilite',
         'smsNotif',
-        'pushNotif'
+        'pushNotif',
+         'fcm_token',
     ];
 
     /**

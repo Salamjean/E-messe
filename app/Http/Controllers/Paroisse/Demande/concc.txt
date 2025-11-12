@@ -128,17 +128,6 @@ class DemandeController extends Controller
 
             if ($messe->download_count >= $celebrationCount['total']) {
                 $messe->statut = 'celebre';
-
-                    // --- Envoi de la notification ---
-                if ($messe->user) {
-                    try {
-                        // Assurez-vous d'avoir créé la classe MesseCelebreeNotification
-                        $messe->user->notify(new \App\Notifications\MesseCelebreeNotification($messe));
-                    } catch (\Exception $e) {
-                        Log::error('Échec de l\'envoi de la notif (célébrée) pour la messe #' . $messe->id . ': ' . $e->getMessage());
-                    }
-                }
-
                 Log::info('Statut changé à "célébrée" pour la messe ID: ' . $id .
                     ', Téléchargements: ' . $messe->download_count .
                     ', Total prévu: ' . $celebrationCount['total']);

@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\Event\EventController;
 use App\Http\Controllers\Api\User\UserNotificationController;
 use App\Http\Controllers\Api\Divers\VersetController;
 use App\Http\Controllers\Api\Paiement\WaveController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\FcmTokenController;
 
 
 Route::post('/auth/login', [AuthController::class, 'login']);
@@ -114,13 +116,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-    Route::prefix('notification')->group(function () {
-        Route::post('/save-fcm-token', [FcmTokenController::class, 'store']);
-        Route::get('/notifications', [NotificationController::class, 'index']);
-        Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
-
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::get('/unread', [NotificationController::class, 'unread']);
+        Route::post('/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
+        Route::post('/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
+        Route::delete('/clear-all', [NotificationController::class, 'clearAll']);
+        Route::delete('/{id}', [NotificationController::class, 'destroy']);
     });
 
+    Route::post('/fcm-token', [FcmTokenController::class, 'store']);
 });
 

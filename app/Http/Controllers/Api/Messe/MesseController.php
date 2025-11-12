@@ -61,7 +61,7 @@ class MesseController extends Controller
     }
 
 
-        /**
+    /**
      * @OA\Get(
      *     path="/api/messes/specifiques",
      *     summary="Liste des messes selon un type spécifique",
@@ -291,6 +291,12 @@ public function en_cours(Request $request): JsonResponse
                 'montant_offrande'     => $request->montant_offrande,
                 'dates_selectionnees'  => $datesJson,
             ]);
+
+            // --- Envoi de la notification ---
+            if ($messe->user) {
+                // Assurez-vous d'avoir créé la classe MesseEnAttentePaiementNotification
+                $messe->user->notify(new \App\Notifications\MesseEnAttentePaiementNotification($messe));
+            }
 
             $reference = 'MESSE_API_' . time() . '_' . $messe->id;
 

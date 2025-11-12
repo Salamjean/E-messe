@@ -234,43 +234,112 @@ public function initier(Request $request): JsonResponse
     /**
      * Webhook de Wave — confirmation du paiement
      */
+    // public function webhook(Request $request): JsonResponse
+    // {
+    //     Log::info('Webhook Wave reçu : ', $request->all());
+
+    //     $transactionId = $request->input('id');
+    //     $status = $request->input('status');
+
+    //     $paiement = Paiement::where('transaction_id', $transactionId)->first();
+
+    //     if ($paiement) {
+    //         if ($status === 'successful') {
+    //             $paiement->update([
+    //                 'statut' => 'paye',
+    //                 'date_paiement' => Carbon::now(),
+    //                 'donnees_transaction' => $request->all(),
+    //             ]);
+
+    //             // Met à jour la messe si besoin
+    //             if ($paiement->messe) {
+    //                 $paiement->messe->update(['statut' => 'paye']);
+    //             }
+
+    //             Log::info("Paiement Wave réussi pour la messe #{$paiement->messe_id}");
+    //         } elseif ($status === 'failed') {
+    //             $paiement->update([
+    //                 'statut' => 'echec',
+    //                 'donnees_transaction' => $request->all(),
+    //             ]);
+    //             Log::warning("Paiement Wave échoué pour la messe #{$paiement->messe_id}");
+    //         }
+    //     } else {
+    //         Log::warning('Webhook reçu pour transaction inconnue : ' . $transactionId);
+    //     }
+
+    //     return response()->json(['message' => 'Webhook traité', 'status' => $status]);
+    // }
+
+
     public function webhook(Request $request): JsonResponse
     {
         Log::info('Webhook Wave reçu : ', $request->all());
 
-        $transactionId = $request->input('id');
-        $status = $request->input('status');
+        // La structure des webhooks Wave enveloppe souvent les données
+        $data = $request->input('data'); 
+        $transactionId = $data['id'] ?? null;
+        $status = $data['status'] ?? null;
 
-        $paiement = Paiement::where('transaction_id', $transactionId)->first();
-
-        if ($paiement) {
-            if ($status === 'successful') {
-                $paiement->update([
-                    'statut' => 'paye',
-                    'date_paiement' => Carbon::now(),
-                    'donnees_transaction' => $request->all(),
-                ]);
-
-                // Met à jour la messe si besoin
-                if ($paiement->messe) {
-                    $paiement->messe->update(['statut' => 'paye']);
-                }
-
-                Log::info("Paiement Wave réussi pour la messe #{$paiement->messe_id}");
-            } elseif ($status === 'failed') {
-                $paiement->update([
-                    'statut' => 'echec',
-                    'donnees_transaction' => $request->all(),
-                ]);
-                Log::warning("Paiement Wave échoué pour la messe #{$paiement->messe_id}");
-            }
-        } else {
-            Log::warning('Webhook reçu pour transaction inconnue : ' . $transactionId);
+        if (!$transactionId) {
+            Log::warning('Webhook Wave reçu sans ID de transaction.');
+            return response()->json(['message' => 'ID de transaction manquant'], 400);
         }
 
-        return response()->json(['message' => 'Webhook traité', 'status' => $status]);
-    }
+        // On charge l'utilisateur pour pouvoir lui envoyer la notification
+        $paiement = Paiement::with('user', 'messe')->where('transaction_id', $transactionId)->first();
 
+        if (!$paiement) {
+            Log::warning('⚠️ Webhook reçu pour transaction inconnue : ' . $transactionId);
+            return response()->json(['message' => 'Transaction non reconnue']);
+        }
+        
+        // Évite de traiter plusieurs fois le même webhook (si le statut est déjà final)
+        if (in_array($paiement->statut, ['paye', 'echec'])) {
+            Log::info("ℹ️ Webhook pour la transaction {$transactionId} déjà traitée. Statut actuel: {$paiement->statut}.");
+            return response()->json(['message' => 'Webhook déjà traité']);
+        }
+
+        // --- CAS 1 : PAIEMENT RÉUSSI ---
+        if ($status === 'successful') {
+            $paiement->update([
+                'statut' => 'paye',
+                'date_paiement' => Carbon::now(),
+                'donnees_transaction' => $request->all(),
+            ]);
+
+            if ($paiement->messe) {
+                $paiement->messe->update(['statut' => 'en attente']);
+            }
+
+            // 🔔 ENVOI DE LA NOTIFICATION DE SUCCÈS
+            if ($paiement->user) {
+                $paiement->user->notify(new PaiementSuccessNotification($paiement));
+            }
+
+            Log::info("✅ Paiement Wave réussi pour la messe #{$paiement->messe_id}");
+
+        // --- CAS 2 : PAIEMENT ÉCHOUÉ ---
+        } elseif ($status === 'failed') {
+            $paiement->update([
+                'statut' => 'echec',
+                'donnees_transaction' => $request->all(),
+            ]);
+
+            if ($paiement->messe) {
+                $paiement->messe->update(['statut' => 'en_attente_paiement']);
+            }
+
+            // 🔔 ENVOI DE LA NOTIFICATION D'ÉCHEC
+            if ($paiement->user) {
+                $paiement->user->notify(new PaiementEchecNotification($paiement));
+            }
+            
+            Log::warning("❌ Paiement Wave échoué pour la messe #{$paiement->messe_id}");
+        }
+
+        return response()->json(['message' => 'Webhook traité']);
+    }
     
     /**
      * Vérifier le statut d’une transaction sur Wave

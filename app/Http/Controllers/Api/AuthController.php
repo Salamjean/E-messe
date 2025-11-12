@@ -396,7 +396,7 @@ public function register(Request $request)
 }
 
 
-    /**
+/**
      * Profil utilisateur connecté
      */
 
@@ -440,8 +440,13 @@ public function logout(Request $request)
     if (!$user) {
         return response()->json(['error' => 'Utilisateur non authentifié'], 401);
     }
+    // Effacer le token FCM
+    $user->fcm_token = null;
+    $user->save();
 
+    // Supprimer les tokens d'authentification Sanctum
     $user->tokens()->delete();
+
 
     return response()->json(['message' => 'Déconnexion réussie']);
 }
@@ -599,7 +604,7 @@ public function logout(Request $request)
 
 
 
-    /**
+/**
  * @OA\Info(
  *     title="E_Messe API",
  *     version="1.0.0",
