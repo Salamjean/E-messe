@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Divers\VersetController;
 use App\Http\Controllers\Api\Paiement\WaveController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\FcmTokenController;
+use App\Http\Controllers\Api\NotificationTestController;
 
 
 Route::post('/auth/login', [AuthController::class, 'login']);
@@ -25,6 +26,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::post('/paiement/wave/webhook', [WaveController::class, 'webhook'])->name('wave.webhook');
 Route::get('/paiement/wave/verifier/{id}', [WaveController::class, 'verifier']);
 
+Route::post('/test-firebase', [TestController::class, 'testFirebaseNotification']);
 // ✅ Routes pour redirection après paiement
 Route::get('/paiement/wave/success', [WaveController::class, 'success'])->name('wave.success');
 Route::get('/paiement/wave/error', [WaveController::class, 'error'])->name('wave.error');
@@ -127,5 +129,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::post('/fcm-token', [FcmTokenController::class, 'store']);
+
+    Route::post('/test-notification', [NotificationTestController::class, 'sendTestNotification']);
 });
 
