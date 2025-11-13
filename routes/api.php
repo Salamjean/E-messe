@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Paiement\WaveController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\FcmTokenController;
 use App\Http\Controllers\Api\NotificationTestController;
+use App\Http\Controllers\Paroisse\Event\EventController as EvController;
 
 
 Route::post('/auth/login', [AuthController::class, 'login']);
@@ -127,7 +128,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/clear-all', [NotificationController::class, 'clearAll']);
         Route::delete('/{id}', [NotificationController::class, 'destroy']);
         Route::get('detail/{id}', [NotificationController::class, 'showMesseDetails']);
-        Route::get('/event/{evenement_id}', [EventController::class, 'showFromNotification']);
+        Route::get('/event/{evenement_id}', [EvController::class, 'showFromNotification']);
+
     });
 
     Route::post('/fcm-token', [FcmTokenController::class, 'store']);
