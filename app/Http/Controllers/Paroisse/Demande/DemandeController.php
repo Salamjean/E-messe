@@ -299,15 +299,10 @@ class DemandeController extends Controller
 
         if ($messe->user) {
             try {
-                // Notification en base
-                $messe->user->notify(new MesseAnnuleeNotification($messe));
-
-                // Envoi FCM via HTTP
-                $notification = new MesseAnnuleeNotification($messe);
-                $notification->toFcmHttp($messe->user);
-
+                // Notification en base + FCM automatique
+                $messe->user->notify(new \App\Notifications\MesseAnnuleeNotification($messe));
             } catch (\Exception $e) {
-                 Log::error('Échec de l\'envoi de la notification d\'annulation pour la messe #' . $messe->id . ': ' . $e->getMessage());
+                \Log::error("Échec notification messe #{$messe->id}: ".$e->getMessage());
             }
         }
         
@@ -413,21 +408,13 @@ class DemandeController extends Controller
             
             // --- Envoi des notifications en boucle ---
             foreach ($messesToUpdate as $messe) {
-
                 if ($messe->user) {
                     try {
-                        // Notification en base
-                        $messe->user->notify(new MesseAnnuleeNotification($messe));
-
-                        // Envoi FCM via HTTP
-                        $notification = new MesseAnnuleeNotification($messe);
-                        $notification->toFcmHttp($messe->user);
-
+                        $messe->user->notify(new \App\Notifications\MesseConfMesseAnnuleeNotificationirmeeNotification($messe));
                     } catch (\Exception $e) {
                        Log::error("Échec de l'envoi de la notif groupée (annul.) pour la messe #{$messe->id}: " . $e->getMessage());
                     }
                 }
-
             }
             return redirect()->back()->with('success', count($messesToUpdate) . ' demande(s) annulée(s) avec succès.');
             
