@@ -119,7 +119,7 @@ class EventController extends Controller
             })->get();
 
             if ($usersToNotify->isNotEmpty()) {
-                Notification::send($usersToNotify, new NouvelEvenementNotification($event));
+                Notification::send($usersToNotify, new NouveauEvenementParoisseNotification($event));
                 \Log::info('Notification envoyée aux users: ' . $usersToNotify->pluck('id')->implode(', '));
             } else {
                 \Log::info('Aucun utilisateur à notifier pour la paroisse ID: ' . $paroisse->id);
