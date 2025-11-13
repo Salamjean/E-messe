@@ -18,11 +18,17 @@ class NouveauEvenementParoisseNotification extends Notification implements Shoul
         $this->event = $event;
     }
 
+    /**
+     * Canaux de notification : base de données + push FCM
+     */
     public function via($notifiable)
     {
-        return ['database', 'fcm']; // database + push mobile
+        return ['database', 'fcm'];
     }
 
+    /**
+     * Contenu pour la table notifications
+     */
     public function toDatabase($notifiable)
     {
         return [
@@ -33,13 +39,15 @@ class NouveauEvenementParoisseNotification extends Notification implements Shoul
         ];
     }
 
+    /**
+     * Envoi FCM manuel
+     */
     public function toFcm($notifiable)
     {
-        if (!$notifiable->fcm_token) {
-            return;
+        if (empty($notifiable->fcm_token)) {
+            return null;
         }
 
-        $url = 'https://fcm.googleapis.com/fcm/send';
         $serverKey = env('FIREBASE_SERVER_KEY');
 
         $payload = [
@@ -53,9 +61,9 @@ class NouveauEvenementParoisseNotification extends Notification implements Shoul
             ],
         ];
 
-        Http::withHeaders([
+        return Http::withHeaders([
             'Authorization' => 'key=' . $serverKey,
             'Content-Type' => 'application/json',
-        ])->post($url, $payload);
+        ])->post('https://fcm.googleapis.com/fcm/send', $payload);
     }
 }
