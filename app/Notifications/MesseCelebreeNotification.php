@@ -13,61 +13,45 @@ class MesseCelebreeNotification extends Notification
 
     protected $messe;
 
-    /**
-     * Crée une nouvelle notification.
-     */
     public function __construct(Messe $messe)
     {
         $this->messe = $messe;
     }
 
-    /**
-     * Définir les canaux de notification.
-     */
     public function via($notifiable)
     {
-        // Notification en base + FCM via HTTP
-        return ['database', 'fcm_http'];
+        return ['database'];
     }
 
-    /**
-     * Représentation pour la base de données.
-     */
-    public function toArray($notifiable)
+    public function toDatabase($notifiable)
     {
-        return [
-            'title' => 'Messe célébrée',
-            'body' => "Votre demande de messe pour '{$this->messe->motif_intention}' a été célébrée.",
-            'messe_id' => $this->messe->id,
-        ];
-    }
+        $title = 'Messe célébrée';
+        $body = "Votre demande de messe pour \"{$this->messe->motif_intention}\" a été célébrée.";
 
-    /**
-     * Notification FCM via HTTP.
-     */
-    public function toFcmHttp($notifiable)
-    {
-        if (!$notifiable->fcm_token) {
-            return null;
+        // 🔹 Envoi FCM
+        if (!empty($notifiable->fcm_token)) {
+            try {
+                Http::withHeaders([
+                    'Authorization' => 'key=' . env('FIREBASE_SERVER_KEY'),
+                    'Content-Type' => 'application/json',
+                ])->post('https://fcm.googleapis.com/fcm/send', [
+                    'to' => $notifiable->fcm_token,
+                    'notification' => compact('title', 'body'),
+                    'data' => [
+                        'type' => 'messe_celebree',
+                        'messe_id' => $this->messe->id,
+                    ],
+                ]);
+            } catch (\Exception $e) {
+                \Log::error("Échec envoi FCM (messe #{$this->messe->id}) : " . $e->getMessage());
+            }
         }
 
-        $serverKey = env('FIREBASE_SERVER_KEY');
-
-        $response = Http::withHeaders([
-            'Authorization' => 'key=' . $serverKey,
-            'Content-Type' => 'application/json',
-        ])->post('https://fcm.googleapis.com/fcm/send', [
-            'to' => $notifiable->fcm_token,
-            'notification' => [
-                'title' => 'Messe célébrée',
-                'body' => "Votre demande de messe pour '{$this->messe->motif_intention}' a été célébrée.",
-            ],
-            'data' => [
-                'type' => 'messe_celebree',
-                'messe_id' => $this->messe->id,
-            ],
-        ]);
-
-        return $response->json();
+        return [
+            'type' => 'messe_celebree',
+            'title' => $title,
+            'body' => $body,
+            'messe_id' => $this->messe->id,
+        ];
     }
 }
