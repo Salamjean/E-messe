@@ -214,9 +214,9 @@ public function showFromNotification($evenement_id)
 {
     $event = Event::with('paroisse')->find($evenement_id);
 
-    if (!$event) {
-        return response()->json(['message' => 'Événement introuvable.'], 404);
-    }
+    // if (!$event) {
+    //     return response()->json(['message' => 'Événement introuvable.'], 404);
+    // }
 
     return response()->json([
         'id' => $event->id,
