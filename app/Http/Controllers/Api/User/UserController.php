@@ -98,24 +98,42 @@ class UserController extends Controller
      * )
      */
 
-    public function updateProfile(Request $request)
-    {
-        $user = $request->user();
+    
+public function updateProfile(Request $request)
+{
+    $user = $request->user();
 
-        $validatedData = $request->validate([
-        
-        ]);
-
-        $user->fill($validatedData);
-        $user->save();
-
-        $user->refresh();
-
+    if (!$user) {
         return response()->json([
-            'status' => 'success',
-            'user' => $user
-        ]);
+            'status' => 'error',
+            'message' => 'Utilisateur non connecté.'
+        ], 401);
     }
+
+    $validatedData = $request->validate([
+        'name'      => 'sometimes|string|max:255',
+        // Pour user_name, on ignore l'utilisateur actuel avec son ID
+        // 'user_name' => 'sometimes|string|max:255|unique:users,user_name,' . $user->id,
+        // Pour email, pareil
+        // 'email'     => 'sometimes|email|max:255|unique:users,email,' . $user->id,
+        'indicatif' => 'sometimes|string|max:10',
+        'contact'   => 'sometimes|string|max:20',
+        'commune'   => 'sometimes|string|max:255',
+        'CMU'       => 'sometimes|string|max:255|nullable',
+    ]);
+
+    $user->fill($validatedData);
+    $user->save();
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Profil mis à jour avec succès.',
+        'user' => $user
+    ]);
+}
+
+
+
 
     /**
      * Changer le mot de passe
