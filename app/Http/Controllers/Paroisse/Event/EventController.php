@@ -13,7 +13,6 @@ use App\Services\FirebaseNotificationService;
 use Illuminate\Support\Facades\Notification;
 use App\Models\User;
 use App\Notifications\NouveauEvenementParoisseNotification;
-use App\Notifications\NouvelEvenementNotification;
 use Illuminate\Support\Facades\DB;
 
 

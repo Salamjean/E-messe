@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Http;
 
-class NouvelEvenementNotification extends Notification implements ShouldQueue
+class NouveauEvenementParoisseNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
