@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use App\Models\Messe;
 
 class NotificationController extends Controller
 {
@@ -70,5 +72,41 @@ class NotificationController extends Controller
         $notification->markAsRead();
 
         return response()->json(['message' => 'Notification marquée comme lue']);
+    }
+
+
+    public function showMesseDetails($id)
+    {
+        $user = Auth::user();
+        $notification = $user->notifications()->find($id);
+
+        if (!$notification) {
+            return response()->json(['message' => 'Notification introuvable'], 404);
+        }
+
+        // Marquer la notification comme lue
+        $notification->markAsRead();
+
+        // Récupérer l'ID de la messe depuis la colonne dédiée ou le champ data
+        $messeId = $notification->messe_id ?? $notification->data['messe_id'] ?? null;
+
+
+        if (!$messeId) {
+            return response()->json(['message' => 'Aucun ID de messe associé à cette notification.'], 404);
+        }
+
+        $messe = Messe::with('paroisse.commune')->find($messeId);
+
+        if (!$messe) {
+            return response()->json(['message' => 'Messe introuvable'], 404);
+        }
+
+        // Vous pouvez ajouter des informations supplémentaires si nécessaire
+        // Par exemple, le statut de la messe, les dates valides, etc.
+        $messe->valid_dates = $messe->getValidDates();
+        $messe->celebrations_count = $messe->getCelebrationsCount();
+
+
+        return response()->json($messe);
     }
 }

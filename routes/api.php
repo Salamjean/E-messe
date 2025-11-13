@@ -122,10 +122,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('notifications')->group(function () {
         Route::get('/', [NotificationController::class, 'index']);
         Route::get('/unread', [NotificationController::class, 'unread']);
-        Route::put('/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
+        Route::put('/read-all', [NotificationController::class, 'markAllAsRead']);
         Route::put('/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
         Route::delete('/clear-all', [NotificationController::class, 'clearAll']);
         Route::delete('/{id}', [NotificationController::class, 'destroy']);
+        Route::get('detail/{id}', [NotificationController::class, 'showMesseDetails']);
     });
 
     Route::post('/fcm-token', [FcmTokenController::class, 'store']);
