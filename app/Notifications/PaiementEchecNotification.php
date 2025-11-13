@@ -20,38 +20,40 @@ class PaiementEchecNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['database'];
+        return ['database', 'fcm_http'];
     }
 
-    public function toDatabase($notifiable)
+    public function toArray($notifiable)
     {
-        $title = 'Échec du Paiement';
-        $body = "Votre paiement de {$this->paiement->montant} {$this->paiement->devise} a échoué. Veuillez réessayer.";
-
-        if (!empty($notifiable->fcm_token)) {
-            try {
-                Http::withHeaders([
-                    'Authorization' => 'key=' . env('FIREBASE_SERVER_KEY'),
-                    'Content-Type' => 'application/json',
-                ])->post('https://fcm.googleapis.com/fcm/send', [
-                    'to' => $notifiable->fcm_token,
-                    'notification' => compact('title', 'body'),
-                    'data' => [
-                        'type' => 'paiement_echec',
-                        'paiement_id' => $this->paiement->id,
-                        'messe_id' => $this->paiement->messe_id,
-                    ],
-                ]);
-            } catch (\Exception $e) {
-                \Log::error("Échec envoi FCM (paiement #{$this->paiement->id}) : " . $e->getMessage());
-            }
-        }
-
         return [
-            'type' => 'paiement_echec',
-            'title' => $title,
-            'body' => $body,
+            'title' => 'Échec du Paiement',
+            'body' => 'Votre paiement de ' . $this->paiement->montant . ' ' . $this->paiement->devise . ' a échoué. Veuillez réessayer.',
             'paiement_id' => $this->paiement->id,
         ];
+    }
+
+    public function toFcmHttp($notifiable)
+    {
+        if (!$notifiable->fcm_token) return null;
+
+        $serverKey = env('FIREBASE_SERVER_KEY');
+
+        $response = Http::withHeaders([
+            'Authorization' => 'key=' . $serverKey,
+            'Content-Type' => 'application/json',
+        ])->post('https://fcm.googleapis.com/fcm/send', [
+            'to' => $notifiable->fcm_token,
+            'notification' => [
+                'title' => 'Échec du Paiement',
+                'body' => 'Votre paiement de ' . $this->paiement->montant . ' ' . $this->paiement->devise . ' a échoué. Veuillez réessayer.',
+            ],
+            'data' => [
+                'type' => 'paiement_echec',
+                'paiement_id' => $this->paiement->id,
+                'messe_id' => $this->paiement->messe_id,
+            ],
+        ]);
+
+        return $response->json();
     }
 }

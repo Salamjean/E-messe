@@ -13,44 +13,61 @@ class MesseEnAttentePaiementNotification extends Notification
 
     protected $messe;
 
+    /**
+     * Crée une nouvelle notification.
+     */
     public function __construct(Messe $messe)
     {
         $this->messe = $messe;
     }
 
+    /**
+     * Définir les canaux de notification.
+     */
     public function via($notifiable)
     {
-        return ['database'];
+        // Notification en base + FCM via HTTP
+        return ['database', 'fcm_http'];
     }
 
-    public function toDatabase($notifiable)
+    /**
+     * Représentation en base de données.
+     */
+    public function toArray($notifiable)
     {
-        $title = 'Messe en attente de paiement';
-        $body = "Votre demande de messe pour \"{$this->messe->motif_intention}\" est en attente de paiement.";
-
-        if (!empty($notifiable->fcm_token)) {
-            try {
-                Http::withHeaders([
-                    'Authorization' => 'key=' . env('FIREBASE_SERVER_KEY'),
-                    'Content-Type' => 'application/json',
-                ])->post('https://fcm.googleapis.com/fcm/send', [
-                    'to' => $notifiable->fcm_token,
-                    'notification' => compact('title', 'body'),
-                    'data' => [
-                        'type' => 'messe_en_attente_paiement',
-                        'messe_id' => $this->messe->id,
-                    ],
-                ]);
-            } catch (\Exception $e) {
-                \Log::error("Échec envoi FCM (messe #{$this->messe->id}) : " . $e->getMessage());
-            }
-        }
-
         return [
-            'type' => 'messe_en_attente_paiement',
-            'title' => $title,
-            'body' => $body,
+            'title' => 'Messe en attente de paiement',
+            'body' => "Votre demande de messe pour '{$this->messe->motif_intention}' est en attente de paiement.",
             'messe_id' => $this->messe->id,
         ];
+    }
+
+    /**
+     * Notification FCM via HTTP.
+     */
+    public function toFcmHttp($notifiable)
+    {
+        if (!$notifiable->fcm_token) {
+            return null;
+        }
+
+        $serverKey = env('FIREBASE_SERVER_KEY');
+
+        $response = Http::withHeaders([
+            'Authorization' => 'key=' . $serverKey,
+            'Content-Type' => 'application/json',
+        ])->post('https://fcm.googleapis.com/fcm/send', [
+            'to' => $notifiable->fcm_token,
+            'notification' => [
+                'title' => 'Messe en attente de paiement',
+                'body' => "Votre demande de messe pour '{$this->messe->motif_intention}' est en attente de paiement.",
+            ],
+            'data' => [
+                'type' => 'messe_en_attente_paiement',
+                'messe_id' => $this->messe->id,
+            ],
+        ]);
+
+        return $response->json();
     }
 }
