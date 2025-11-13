@@ -314,52 +314,43 @@ class DemandeController extends Controller
     }
 
 
+    // Confirmer une seule messe
     public function confirmed($id)
     {
-        // Récupérer la messe avec l'ID
         $messe = Messe::findOrFail($id);
-        
-        // Vérifier que l'utilisateur peut confirmer cette messe
+
         if ($messe->paroisse_id !== Auth::guard('paroisse')->user()->id) {
             return redirect()->back()->with('error', 'Non autorisé');
         }
-        
-        // On suppose que le statut initial est 'en_attente_validation' ou 'en attente'
+
         if ($messe->statut !== 'en attente') {
             return redirect()->back()->with('error', 'Seules les demandes en attente peuvent être confirmées.');
         }
-        
+
         $messe->update(['statut' => 'confirmee']);
 
         if ($messe->user) {
             try {
-                // Notification en base
-                $messe->user->notify(new MesseConfirmeeNotification($messe));
-
-                // Envoi FCM via HTTP
-                $notification = new MesseConfirmeeNotification($messe);
-                $notification->toFcmHttp($messe->user);
-
+                // Notification en base + FCM automatique
+                $messe->user->notify(new \App\Notifications\MesseConfirmeeNotification($messe));
             } catch (\Exception $e) {
-                Log::error('Échec de l\'envoi de la notification pour la messe #' . $messe->id . ': ' . $e->getMessage());
+                \Log::error("Échec notification messe #{$messe->id}: ".$e->getMessage());
             }
         }
 
-            
-            return redirect()->back()
-                ->with('success', 'Demande confirmée avec succès.');
+        return redirect()->back()->with('success', 'Demande confirmée avec succès.');
     }
 
-    // Méthodes pour les actions groupées
+    // Confirmer plusieurs messes
     public function bulkConfirm(Request $request)
     {
         try {
             $selectedIds = $request->selected_ids;
-            
+
             if (is_string($selectedIds)) {
                 $selectedIds = json_decode($selectedIds, true);
             }
-            
+
             if (!is_array($selectedIds) || empty($selectedIds)) {
                 return redirect()->back()->with('error', 'Aucune demande sélectionnée.');
             }
@@ -372,32 +363,23 @@ class DemandeController extends Controller
             // Mettre à jour le statut
             Messe::whereIn('id', $messesToUpdate->pluck('id'))->update(['statut' => 'confirmee']);
 
-                // --- Envoi des notifications en boucle ---
             foreach ($messesToUpdate as $messe) {
-
                 if ($messe->user) {
                     try {
-                        // Notification en base
-                        $messe->user->notify(new MesseConfirmeeNotification($messe));
-
-                        // Envoi FCM via HTTP
-                        $notification = new MesseConfirmeeNotification($messe);
-                        $notification->toFcmHttp($messe->user);
-
+                        $messe->user->notify(new \App\Notifications\MesseConfirmeeNotification($messe));
                     } catch (\Exception $e) {
-                       Log::error("Échec de l'envoi de la notif groupée (conf.) pour la messe #{$messe->id}: " . $e->getMessage());
+                        \Log::error("Échec notification groupée messe #{$messe->id}: ".$e->getMessage());
                     }
                 }
             }
 
-
-            return redirect()->back()->with('success', count($messesToUpdate) . ' demande(s) confirmée(s) avec succès.');
-            
+            return redirect()->back()->with('success', count($messesToUpdate).' demande(s) confirmée(s) avec succès.');
         } catch (\Exception $e) {
-            Log::error('Erreur lors de la confirmation groupée: ' . $e->getMessage());
+            \Log::error('Erreur confirmation groupée: '.$e->getMessage());
             return redirect()->back()->with('error', 'Une erreur est survenue lors de la confirmation.');
         }
     }
+
 
     public function bulkCancel(Request $request)
     {

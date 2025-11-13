@@ -117,6 +117,7 @@ return [
     | Supported drivers: "file", "cache"
     |
     */
+App\Providers\CustomNotificationProvider::class,
 
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),

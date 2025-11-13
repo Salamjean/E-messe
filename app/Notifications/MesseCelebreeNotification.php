@@ -3,52 +3,71 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Http;
+use App\Models\Messe;
 
 class MesseCelebreeNotification extends Notification
 {
     use Queueable;
 
+    protected $messe;
+
     /**
-     * Create a new notification instance.
+     * Crée une nouvelle notification.
      */
-    public function __construct()
+    public function __construct(Messe $messe)
     {
-        //
+        $this->messe = $messe;
     }
 
     /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
+     * Définir les canaux de notification.
      */
-    public function via(object $notifiable): array
+    public function via($notifiable)
     {
-        return ['mail'];
+        // Notification en base + FCM via HTTP
+        return ['database', 'fcm_http'];
     }
 
     /**
-     * Get the mail representation of the notification.
+     * Représentation pour la base de données.
      */
-    public function toMail(object $notifiable): MailMessage
-    {
-        return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
-    }
-
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(object $notifiable): array
+    public function toArray($notifiable)
     {
         return [
-            //
+            'title' => 'Messe célébrée',
+            'body' => "Votre demande de messe pour '{$this->messe->motif_intention}' a été célébrée.",
+            'messe_id' => $this->messe->id,
         ];
+    }
+
+    /**
+     * Notification FCM via HTTP.
+     */
+    public function toFcmHttp($notifiable)
+    {
+        if (!$notifiable->fcm_token) {
+            return null;
+        }
+
+        $serverKey = env('FIREBASE_SERVER_KEY');
+
+        $response = Http::withHeaders([
+            'Authorization' => 'key=' . $serverKey,
+            'Content-Type' => 'application/json',
+        ])->post('https://fcm.googleapis.com/fcm/send', [
+            'to' => $notifiable->fcm_token,
+            'notification' => [
+                'title' => 'Messe célébrée',
+                'body' => "Votre demande de messe pour '{$this->messe->motif_intention}' a été célébrée.",
+            ],
+            'data' => [
+                'type' => 'messe_celebree',
+                'messe_id' => $this->messe->id,
+            ],
+        ]);
+
+        return $response->json();
     }
 }

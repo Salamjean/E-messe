@@ -119,4 +119,8 @@ class User extends Authenticatable
         return $this->belongsToMany(Verset::class, 'user_verset');
     }
 
+    public function notifications()
+    {
+        return $this->morphMany(Notification::class, 'notifiable')->orderBy('created_at', 'desc');
+    }
 }
