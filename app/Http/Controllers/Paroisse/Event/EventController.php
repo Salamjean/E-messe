@@ -209,4 +209,17 @@ class EventController extends Controller
             ], 500);
         }
     }
+
+    public function showFromNotification($evenement_id)
+    {
+        // Récupérer l'événement avec sa paroisse
+        $event = Event::with('paroisse')->find($evenement_id);
+
+        if (!$event) {
+            return redirect()->back()->with('error', 'Événement introuvable.');
+        }
+
+        // Retourner une vue avec les détails de l'événement
+        return view('paroisse.event.show', compact('event'));
+    }
 }

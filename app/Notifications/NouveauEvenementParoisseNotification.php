@@ -31,9 +31,14 @@ class NouveauEvenementParoisseNotification extends Notification implements Shoul
      */
     public function toDatabase($notifiable)
     {
+        // Récupérer le nom de la paroisse via la relation
+        $paroisseName = $this->event->paroisse->name ?? 'la paroisse';
+
         return [
             'title' => 'Nouvel événement créé 🎉',
-            'body' => "« {$this->event->titre} » aura lieu le " . $this->event->date_debut->format('d/m/Y'),
+            'body' => "« {$paroisseName} que vous suivez organise un événement : {$this->event->titre} » qui aura lieu le " 
+                      . $this->event->date_debut->format('d/m/Y') 
+                      . ". Venez nombreux !",
             'evenement_id' => $this->event->id,
             'paroisse_id' => $this->event->created_by,
         ];
@@ -48,13 +53,15 @@ class NouveauEvenementParoisseNotification extends Notification implements Shoul
             return null;
         }
 
+        $paroisseName = $this->event->paroisse->name ?? 'la paroisse';
+
         $serverKey = env('FIREBASE_SERVER_KEY');
 
         $payload = [
             'to' => $notifiable->fcm_token,
             'notification' => [
                 'title' => 'Nouvel événement paroissial 🎊',
-                'body' => "« {$this->event->titre} » organisé par votre paroisse.",
+                'body' => "« {$paroisseName} » organise l'événement « {$this->event->titre} ».",
             ],
             'data' => [
                 'evenement_id' => $this->event->id,

@@ -127,6 +127,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/clear-all', [NotificationController::class, 'clearAll']);
         Route::delete('/{id}', [NotificationController::class, 'destroy']);
         Route::get('detail/{id}', [NotificationController::class, 'showMesseDetails']);
+        Route::get('/event/{evenement_id}', [EventController::class, 'showFromNotification']);
     });
 
     Route::post('/fcm-token', [FcmTokenController::class, 'store']);
