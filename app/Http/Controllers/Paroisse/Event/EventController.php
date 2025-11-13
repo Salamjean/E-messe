@@ -13,6 +13,8 @@ use App\Services\FirebaseNotificationService;
 use Illuminate\Support\Facades\Notification;
 use App\Models\User;
 use App\Notifications\NouveauEvenementParoisseNotification;
+use Illuminate\Support\Facades\DB;
+
 
 class EventController extends Controller
 {
@@ -91,44 +93,65 @@ class EventController extends Controller
 
     public function store(Request $request)
     {
+        $paroisse = Auth::guard('paroisse')->user();
+
         try {
+            // 1️⃣ Valider les données
             $validatedData = $this->validateEvent($request);
 
-            $paroisse = Auth::guard('paroisse')->user();
+            // 2️⃣ Commencer une transaction pour rollback automatique si erreur
+            DB::beginTransaction();
 
+            // 3️⃣ Gérer l'image si présente
             if ($request->hasFile('image')) {
-                $path = $request->file('image')->store('events_images', 'public');
-                $validatedData['image'] = $path;
+                $validatedData['image'] = $request->file('image')->store('events_images', 'public');
             }
 
             $validatedData['statut'] = 'Prévu';
             $validatedData['created_by'] = $paroisse->id;
 
+            // 4️⃣ Créer l'événement
             $event = Event::create($validatedData);
 
-             // 2. Récupérer les objets User correspondants
-            $usersToNotify = User::whereIn('id', $userIds)->get();
+            // 5️⃣ Notifications : récupérer les utilisateurs qui ont cette paroisse comme favori
+            $usersToNotify = User::whereHas('favoris', function($query) use ($paroisse) {
+                $query->where('paroisse_id', $paroisse->id);
+            })->get();
 
-            // 3. Envoyer la notification à tous ces utilisateurs en une seule fois
             if ($usersToNotify->isNotEmpty()) {
-                Notification::send($usersToNotify, new NouveauEvenementParoisseNotification($event->messe)); // Note: le constructeur attend une messe, à adapter si c'est un event
+                Notification::send($usersToNotify, new NouvelEvenementNotification($event));
+                \Log::info('Notification envoyée aux users: ' . $usersToNotify->pluck('id')->implode(', '));
+            } else {
+                \Log::info('Aucun utilisateur à notifier pour la paroisse ID: ' . $paroisse->id);
             }
-            return response()->json([
-                'message' => 'Événement ajouté avec succès !'
-            ], 201);
+
+            // 6️⃣ Commit de la transaction
+            DB::commit();
+
+            // 7️⃣ Redirection avec message de succès
+            return redirect()->back()->with('success', 'Événement ajouté avec succès !');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'message' => 'Erreur de validation',
-                'errors' => $e->errors()
-            ], 422);
+            // Rollback si erreur de validation
+            DB::rollBack();
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
         } catch (\Exception $e) {
+            // Rollback pour toute autre erreur
+            DB::rollBack();
             \Log::error('Erreur création événement: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Erreur lors de la création de l\'événement: ' . $e->getMessage()
-            ], 500);
+            return redirect()->back()
+                ->with('error', 'Erreur lors de la création de l\'événement : ' . $e->getMessage())
+                ->withInput();
         }
     }
+
+    /**
+     * Méthode pour valider les données de l'événement
+     */
+
+
 
 
 
