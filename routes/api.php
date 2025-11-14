@@ -14,7 +14,7 @@ use App\Http\Controllers\Api\Paiement\WaveController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\FcmTokenController;
 use App\Http\Controllers\Api\NotificationTestController;
-use App\Http\Controllers\Paroisse\Event\EventController as EvController;
+// use App\Http\Controllers\Paroisse\Event\EventController as EvController;
 
 
 Route::post('/auth/login', [AuthController::class, 'login']);
@@ -32,6 +32,13 @@ Route::post('/test-firebase', [TestController::class, 'testFirebaseNotification'
 Route::get('/paiement/wave/success', [WaveController::class, 'success'])->name('wave.success');
 Route::get('/paiement/wave/error', [WaveController::class, 'error'])->name('wave.error');
 
+Route::get('/test-mail', function() {
+    Mail::raw('Test email Laravel', function($m) {
+        $m->to('ledevpro03@gmail.com')->subject('Test');
+    });
+
+    return 'OK';
+});
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -129,7 +136,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/clear-all', [NotificationController::class, 'clearAll']);
         Route::delete('/{id}', [NotificationController::class, 'destroy']);
         Route::get('detail/{id}', [NotificationController::class, 'showMesseDetails']);
-        Route::get('/event/{evenement_id}', [EvController::class, 'showFromNotification']);
+        Route::get('/event/{evenement_id}', [EventController::class, 'showFromNotification']);
 
     });
 

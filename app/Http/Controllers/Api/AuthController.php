@@ -454,197 +454,230 @@ public function logout(Request $request)
 
 
 
-    /**
-     * Mot de passe oublié - Envoi du lien
-     */
+    // /**
+    //  * Mot de passe oublié - Envoi du lien
+    //  */
 
-        /**
-     * @OA\Post(
-     *     path="/api/forgot-password",
-     *     summary="Mot de passe oublié",
-     *     description="Envoie un lien de réinitialisation par email",
-     *     tags={"Authentication"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"email"},
-     *             @OA\Property(property="email", type="string", format="email", example="john@example.com")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Email envoyé",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="message", type="string", example="Un lien de réinitialisation a été envoyé à votre e-mail."),
-     *             @OA\Property(property="token_demo", type="string", example="abc123...", description="À supprimer en production")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Email non trouvé",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="message", type="string", example="Aucun utilisateur trouvé avec cet e-mail.")
-     *         )
-     *     )
-     * )
-     */
-    public function forgotPassword(Request $request)
-    {
-        $request->validate(['email' => 'required|email']);
+    //     /**
+    //  * @OA\Post(
+    //  *     path="/api/forgot-password",
+    //  *     summary="Mot de passe oublié",
+    //  *     description="Envoie un lien de réinitialisation par email",
+    //  *     tags={"Authentication"},
+    //  *     @OA\RequestBody(
+    //  *         required=true,
+    //  *         @OA\JsonContent(
+    //  *             required={"email"},
+    //  *             @OA\Property(property="email", type="string", format="email", example="john@example.com")
+    //  *         )
+    //  *     ),
+    //  *     @OA\Response(
+    //  *         response=200,
+    //  *         description="Email envoyé",
+    //  *         @OA\JsonContent(
+    //  *             @OA\Property(property="status", type="string", example="success"),
+    //  *             @OA\Property(property="message", type="string", example="Un lien de réinitialisation a été envoyé à votre e-mail."),
+    //  *             @OA\Property(property="token_demo", type="string", example="abc123...", description="À supprimer en production")
+    //  *         )
+    //  *     ),
+    //  *     @OA\Response(
+    //  *         response=404,
+    //  *         description="Email non trouvé",
+    //  *         @OA\JsonContent(
+    //  *             @OA\Property(property="status", type="string", example="error"),
+    //  *             @OA\Property(property="message", type="string", example="Aucun utilisateur trouvé avec cet e-mail.")
+    //  *         )
+    //  *     )
+    //  * )
+    //  */
+    // public function forgotPassword(Request $request)
+    // {
+    //     $request->validate(['email' => 'required|email']);
 
-        $user = User::where('email', $request->email)->first();
+    //     $user = User::where('email', $request->email)->first();
 
-        if (!$user) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Aucun utilisateur trouvé avec cet e-mail.',
-            ], 404);
-        }
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Aucun utilisateur trouvé avec cet e-mail.',
+    //         ], 404);
+    //     }
 
-        $token = Str::random(60);
+    //     $token = Str::random(60);
 
-        DB::table('password_reset_tokens')->updateOrInsert(
-            ['email' => $user->email],
-            [
-                'token' => Hash::make($token),
-                'created_at' => Carbon::now()
-            ]
-        );
+    //     DB::table('password_reset_tokens')->updateOrInsert(
+    //         ['email' => $user->email],
+    //         [
+    //             'token' => Hash::make($token),
+    //             'created_at' => Carbon::now()
+    //         ]
+    //     );
 
-        // Envoi du mail (simplifié, tu peux personnaliser plus tard)
-        Mail::raw("Voici votre lien de réinitialisation : {$token}", function ($message) use ($user) {
-            $message->to($user->email)
-                    ->subject('Réinitialisation de mot de passe');
-        });
+    //     // Envoi du mail (simplifié, tu peux personnaliser plus tard)
+    //     Mail::raw("Voici votre lien de réinitialisation : {$token}", function ($message) use ($user) {
+    //         $message->to($user->email)
+    //                 ->subject('Réinitialisation de mot de passe');
+    //     });
 
+    //     return response()->json([
+    //         'status' => 'success',
+    //         'message' => 'Un lien de réinitialisation a été envoyé à votre e-mail.',
+    //         'token_demo' => $token // ⚠️ à supprimer en production !
+    //     ]);
+    // }
+
+    // /**
+    //  * Réinitialisation du mot de passe
+    //  */
+
+    //     /**
+    //  * @OA\Post(
+    //  *     path="/api/reset-password",
+    //  *     summary="Réinitialisation du mot de passe",
+    //  *     description="Réinitialise le mot de passe avec le token reçu par email",
+    //  *     tags={"Authentication"},
+    //  *     @OA\RequestBody(
+    //  *         required=true,
+    //  *         @OA\JsonContent(
+    //  *             required={"email","token","password","password_confirmation"},
+    //  *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+    //  *             @OA\Property(property="token", type="string", example="abc123..."),
+    //  *             @OA\Property(property="password", type="string", format="password", minLength=6, example="newpassword123"),
+    //  *             @OA\Property(property="password_confirmation", type="string", format="password", example="newpassword123")
+    //  *         )
+    //  *     ),
+    //  *     @OA\Response(
+    //  *         response=200,
+    //  *         description="Mot de passe réinitialisé",
+    //  *         @OA\JsonContent(
+    //  *             @OA\Property(property="message", type="string", example="Mot de passe réinitialisé avec succès ✅")
+    //  *         )
+    //  *     ),
+    //  *     @OA\Response(
+    //  *         response=400,
+    //  *         description="Token invalide",
+    //  *         @OA\JsonContent(
+    //  *             @OA\Property(property="message", type="string", example="Token invalide.")
+    //  *         )
+    //  *     ),
+    //  *     @OA\Response(
+    //  *         response=404,
+    //  *         description="Email ou utilisateur non trouvé",
+    //  *         @OA\JsonContent(
+    //  *             @OA\Property(property="message", type="string", example="Aucune demande trouvée.")
+    //  *         )
+    //  *     )
+    //  * )
+    //  */
+    // public function resetPassword(Request $request)
+    // {
+    //     $request->validate([
+    //         'email' => 'required|email',
+    //         'token' => 'required|string',
+    //         'password' => 'required|min:6|confirmed',
+    //     ]);
+
+    //     $reset = DB::table('password_reset_tokens')->where('email', $request->email)->first();
+
+    //     if (!$reset) {
+    //         return response()->json(['message' => 'Aucune demande trouvée.'], 404);
+    //     }
+
+    //     // Vérifie le token
+    //     if (!Hash::check($request->token, $reset->token)) {
+    //         return response()->json(['message' => 'Token invalide.'], 400);
+    //     }
+
+    //     // Met à jour le mot de passe
+    //     $user = User::where('email', $request->email)->first();
+    //     if (!$user) {
+    //         return response()->json(['message' => 'Utilisateur introuvable.'], 404);
+    //     }
+
+    //     $user->update(['password' => Hash::make($request->password)]);
+
+    //     // Supprime le token utilisé
+    //     DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+    //     return response()->json(['message' => 'Mot de passe réinitialisé avec succès ✅']);
+    // }
+
+
+public function forgotPassword(Request $request)
+{
+    $request->validate(['email' => 'required|email']);
+
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user) {
         return response()->json([
-            'status' => 'success',
-            'message' => 'Un lien de réinitialisation a été envoyé à votre e-mail.',
-            'token_demo' => $token // ⚠️ à supprimer en production !
-        ]);
+            'status' => 'error',
+            'message' => 'Aucun utilisateur trouvé avec cet e-mail.',
+        ], 404);
     }
 
-    /**
-     * Réinitialisation du mot de passe
-     */
+    // Générer un OTP de 6 chiffres
+    $otp = rand(100000, 999999);
 
-        /**
-     * @OA\Post(
-     *     path="/api/reset-password",
-     *     summary="Réinitialisation du mot de passe",
-     *     description="Réinitialise le mot de passe avec le token reçu par email",
-     *     tags={"Authentication"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"email","token","password","password_confirmation"},
-     *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
-     *             @OA\Property(property="token", type="string", example="abc123..."),
-     *             @OA\Property(property="password", type="string", format="password", minLength=6, example="newpassword123"),
-     *             @OA\Property(property="password_confirmation", type="string", format="password", example="newpassword123")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Mot de passe réinitialisé",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Mot de passe réinitialisé avec succès ✅")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Token invalide",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Token invalide.")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Email ou utilisateur non trouvé",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Aucune demande trouvée.")
-     *         )
-     *     )
-     * )
-     */
-    public function resetPassword(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-            'token' => 'required|string',
-            'password' => 'required|min:6|confirmed',
-        ]);
+    // Enregistrer ou mettre à jour le OTP
+    DB::table('password_reset_tokens')->updateOrInsert(
+        ['email' => $user->email],
+        [
+            'token' => Hash::make($otp),    // On hash pour sécurité
+            'created_at' => Carbon::now()
+        ]
+    );
 
-        $reset = DB::table('password_reset_tokens')->where('email', $request->email)->first();
+    // Envoyer email
+    Mail::send('emails.otp_reset', ['user' => $user, 'otp' => $otp], function ($message) use ($user) {
+        $message->to($user->email)
+                ->subject('Code OTP - Réinitialisation du mot de passe');
+    });
 
-        if (!$reset) {
-            return response()->json(['message' => 'Aucune demande trouvée.'], 404);
-        }
 
-        // Vérifie le token
-        if (!Hash::check($request->token, $reset->token)) {
-            return response()->json(['message' => 'Token invalide.'], 400);
-        }
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Un code OTP a été envoyé à votre e-mail.',
+        'otp_demo' => $otp // ❗ À supprimer en production
+    ]);
+}
 
-        // Met à jour le mot de passe
-        $user = User::where('email', $request->email)->first();
-        if (!$user) {
-            return response()->json(['message' => 'Utilisateur introuvable.'], 404);
-        }
+public function resetPassword(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email',
+        'otp' => 'required|numeric',
+        'password' => 'required|min:6|confirmed',
+    ]);
 
-        $user->update(['password' => Hash::make($request->password)]);
+    $reset = DB::table('password_reset_tokens')->where('email', $request->email)->first();
 
-        // Supprime le token utilisé
-        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
-
-        return response()->json(['message' => 'Mot de passe réinitialisé avec succès ✅']);
+    if (!$reset) {
+        return response()->json(['message' => 'Aucune demande trouvée.'], 404);
     }
 
+    // Vérifier expiration : 10 minutes
+    if (Carbon::parse($reset->created_at)->addMinutes(10)->isPast()) {
+        return response()->json(['message' => 'Code OTP expiré.'], 400);
+    }
 
+    // Vérification OTP
+    if (!Hash::check($request->otp, $reset->token)) {
+        return response()->json(['message' => 'OTP incorrect.'], 400);
+    }
 
-/**
- * @OA\Info(
- *     title="E_Messe API",
- *     version="1.0.0",
- *     description="API pour l'application E_Messe - Gestion des messes",
- *     @OA\Contact(
- *         email="leprodev03@gmail.com"
- *     )
- * )
- *
- * @OA\Server(
- *     url="http://localhost:8081/api",
- *     description="Serveur Local"
- * )
- *
- * @OA\Server(
- *     url="https://votre-domaine.com/api",
- *     description="Serveur de Production"
- * )
- *
- * @OA\SecurityScheme(
- *     securityScheme="bearerAuth",
- *     type="http",
- *     scheme="bearer",
- *     bearerFormat="JWT"
- * )
- *
- * @OA\Schema(
- *     schema="User",
- *     type="object",
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="John Doe"),
- *     @OA\Property(property="user_name", type="string", example="johndoe"),
- *     @OA\Property(property="email", type="string", example="john@example.com"),
- *     @OA\Property(property="contact", type="string", example="01234567"),
- *     @OA\Property(property="civilite", type="string", example="homme"),
- *     @OA\Property(property="CMU", type="string", nullable=true, example="CMU12345"),
- *     @OA\Property(property="profile_picture", type="string", nullable=true),
- *     @OA\Property(property="actif", type="integer", example=1),
- *     @OA\Property(property="created_at", type="string", format="date-time"),
- *     @OA\Property(property="updated_at", type="string", format="date-time")
- * )
- */
+    // Mettre à jour le mot de passe
+    $user = User::where('email', $request->email)->first();
+    if (!$user) {
+        return response()->json(['message' => 'Utilisateur introuvable.'], 404);
+    }
+
+    $user->update(['password' => Hash::make($request->password)]);
+
+    // Supprimer le OTP utilisé
+    DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+    return response()->json(['message' => 'Mot de passe réinitialisé avec succès ✅']);
+}
+
 }
