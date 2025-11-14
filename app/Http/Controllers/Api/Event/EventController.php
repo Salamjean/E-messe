@@ -152,12 +152,7 @@ public function showFromNotification($evenement_id)
     // Charger l'événement avec sa paroisse
     $event = Event::with('paroisse')->find($evenement_id);
 
-    if (!$event) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Événement introuvable.'
-        ], 404);
-    }
+
 
     // Transformer l'image en URL complète
     $event->image = $event->image ? asset('storage/' . $event->image) : null;
