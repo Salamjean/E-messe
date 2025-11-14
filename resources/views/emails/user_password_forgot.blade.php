@@ -17,9 +17,9 @@
 
         <p>Ce code est valable pendant 10 minutes. Ne le partagez avec personne.</p>
 
+        <!-- 🔥 Deep link mobile généré correctement -->
         <p>
-            Cliquez sur le bouton ci-dessous pour ouvrir l’application et saisir votre code :<br><br>
-            <a href="https:http://sancta-missa.com/reset-password" 
+            <a href="maparoisse://reset-password?email={{ urlencode($user->email) }}&otp={{ $code }}"
                style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
                 Ouvrir l'application
             </a>
