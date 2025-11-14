@@ -15,7 +15,9 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\FcmTokenController;
 use App\Http\Controllers\Api\NotificationTestController;
 // use App\Http\Controllers\Paroisse\Event\EventController as EvController;
-
+use Illuminate\Support\Facades\Mail;
+use App\Models\User;
+use App\Notifications\ForgotPasswordUserNotification;
 
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
@@ -23,6 +25,8 @@ Route::post('/auth/google', [AuthController::class, 'loginWithGoogle']);
 
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+
 
 Route::post('/paiement/wave/webhook', [WaveController::class, 'webhook'])->name('wave.webhook');
 Route::get('/paiement/wave/verifier/{id}', [WaveController::class, 'verifier']);
@@ -38,6 +42,37 @@ Route::get('/test-mail', function() {
     });
 
     return 'OK';
+});
+
+
+Route::get('/test-email', function () {
+    try {
+        Mail::raw('Test email configuration', function ($message) {
+            $message->to('ledevpro03@gmail.com')
+                    ->subject('Test Email');
+        });
+        return "Email envoyé avec succès!";
+    } catch (\Exception $e) {
+        return "Erreur: " . $e->getMessage();
+    }
+});
+Route::get('/test-hostinger', function () {
+    try {
+        \Log::info('Testing Hostinger SMTP configuration...');
+        
+        \Mail::raw('Test Hostinger SMTP - ' . now(), function ($message) {
+            $message->to('leprodev03@gmail.com')
+                    ->subject('Test Hostinger SMTP')
+                    ->from('contact@edemarchee-ci.com', 'E-Messe');
+        });
+        
+        \Log::info('Hostinger test email sent successfully');
+        return "Email de test envoyé avec succès!";
+        
+    } catch (\Exception $e) {
+        \Log::error('Hostinger SMTP Error: ' . $e->getMessage());
+        return "Erreur Hostinger SMTP: " . $e->getMessage();
+    }
 });
 
 

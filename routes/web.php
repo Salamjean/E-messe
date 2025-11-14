@@ -26,6 +26,18 @@ use App\Http\Controllers\Redirectionpaiement\RedirectController;
 
 Route::get('/',[HomeController::class, 'home'])->name('home');
 
+
+Route::get('/forgot-password', [AuthenticateUser::class, 'showForgotPasswordForm'])->name('forgot-password.form');
+Route::post('/forgot-password', [AuthenticateUser::class, 'forgotPassword'])->name('forgot-password.send');
+
+Route::get('/verify-otp', [AuthenticateUser::class, 'showVerifyOtpForm'])->name('verify-otp.form');
+Route::post('/verify-otp', [AuthenticateUser::class, 'verifyOtp'])->name('verify-otp.check');
+
+Route::get('/reset-password', [AuthenticateUser::class, 'showResetPasswordForm'])->name('reset-password.form');
+Route::post('/reset-password', [AuthenticateUser::class, 'resetPassword'])->name('reset-password.update');
+
+
+
 // ✅ Routes pour redirection après paiement
 Route::get('/paiement/wave/success', [RedirectController::class, 'success'])->name('wave.success');
 Route::get('/paiement/wave/error', [RedirectController::class, 'error'])->name('wave.error');

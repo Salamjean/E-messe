@@ -10,6 +10,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use App\Notifications\ForgotPasswordUserNotification;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
+
 
 class AuthenticateUser extends Controller
 {
@@ -188,5 +195,137 @@ class AuthenticateUser extends Controller
             return back()->withErrors(['error' => 'Une erreur est survenue lors de la mise à jour. Veuillez réessayer.'])->withInput();
         }
     }
+
+    public function showForgotPasswordForm()
+    {
+        return view('user.auth.forgot_password');
+    }
+
+    /**
+     * Traite la demande de réinitialisation de mot de passe
+     */
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email'
+        ], [
+            'email.exists' => 'Aucun utilisateur trouvé avec cet e-mail.'
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        // Générer un OTP
+        $otp = rand(100000, 999999);
+        $token = Hash::make($otp);
+
+        // Stocker le token
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $user->email],
+            [
+                'token' => $token,
+                'created_at' => Carbon::now(),
+            ]
+        );
+
+        // Envoyer l'email
+        try {
+            $user->notify(new ForgotPasswordUserNotification($otp));
+        } catch (\Exception $e) {
+            \Log::error('Erreur envoi email OTP: ' . $e->getMessage());
+            return back()->withErrors(['email' => 'Impossible d\'envoyer l\'e-mail. Veuillez réessayer.']);
+        }
+
+        return redirect()->route('verify-otp.form')->with([
+            'email' => $user->email,
+            'success' => 'Un code de vérification a été envoyé à votre adresse e-mail.'
+        ]);
+    }
+
+    /**
+     * Affiche le formulaire de vérification OTP
+     */
+    public function showVerifyOtpForm()
+    {
+        if (!session('email')) {
+            return redirect()->route('forgot-password.form');
+        }
+
+        return view('user.auth.verify_otp');
+    }
+
+    /**
+     * Vérifie l'OTP
+     */
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|digits:6',
+        ]);
+
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->first();
+
+        if (!$record || !Hash::check($request->otp, $record->token)) {
+            return back()->withErrors(['otp' => 'Code OTP invalide ou expiré.']);
+        }
+
+        // Vérifier si le token a expiré (15 minutes)
+        if (Carbon::parse($record->created_at)->addMinutes(15)->isPast()) {
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            return back()->withErrors(['otp' => 'Le code OTP a expiré. Veuillez en demander un nouveau.']);
+        }
+
+        return redirect()->route('reset-password.form')->with('email', $request->email);
+    }
+
+    /**
+     * Affiche le formulaire de réinitialisation de mot de passe
+     */
+    public function showResetPasswordForm()
+    {
+        if (!session('email')) {
+            return redirect()->route('forgot-password.form');
+        }
+
+        return view('user.auth.reset_password');
+    }
+
+    /**
+     * Réinitialise le mot de passe
+     */
+public function resetPassword(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email',
+        'password' => [
+            'required', 
+            'confirmed', 
+            'min:8',
+            'regex:/[a-z]/',      // Au moins une minuscule
+            'regex:/[A-Z]/',      // Au moins une majuscule
+            'regex:/[0-9]/',      // Au moins un chiffre
+            'regex:/[@$!%*#?&.]/' // Au moins un caractère spécial
+        ]
+    ], [
+        'password.regex' => 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial.'
+    ]);
+
+    $user = User::where('email', $request->email)->firstOrFail();
+    $user->password = Hash::make($request->password);
+    $user->save();
+
+    // Supprimer le token après réinitialisation
+    DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+    // Retourner une réponse JSON pour SweetAlert au lieu de rediriger immédiatement
+    return response()->json([
+        'success' => true,
+        'message' => 'Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.',
+        'redirect_url' => route('login')
+    ]);
+}
+
 
 }

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\ForgotPasswordUserNotification;
 use Carbon\Carbon;
 use App\Models\User;
 
@@ -603,81 +604,214 @@ public function logout(Request $request)
     // }
 
 
-public function forgotPassword(Request $request)
-{
-    $request->validate(['email' => 'required|email']);
+    public function forgotPassword(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
 
-    $user = User::where('email', $request->email)->first();
+        $user = User::where('email', $request->email)->first();
 
-    if (!$user) {
+        if (!$user) {
+            Log::warning("ForgotPassword: aucun utilisateur trouvé pour l'email {$request->email}");
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Aucun utilisateur trouvé avec cet e-mail.',
+            ], 404);
+        }
+
+        $otp = rand(100000, 999999);
+        Log::info("ForgotPassword: OTP généré pour {$user->email} : {$otp}");
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $user->email],
+            [
+                'token'      => Hash::make($otp),
+                'created_at' => Carbon::now(),
+            ]
+        );
+
+        try {
+            $user->notify(new ForgotPasswordUserNotification($otp, $user->email));
+            Log::info("ForgotPassword: Notification envoyée pour {$user->email}");
+        } catch (\Exception $e) {
+            Log::error("ForgotPassword: Erreur lors de l'envoi du mail à {$user->email} : " . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => "Impossible d'envoyer l'e-mail : " . $e->getMessage()
+            ], 500);
+        }
+
         return response()->json([
-            'status' => 'error',
-            'message' => 'Aucun utilisateur trouvé avec cet e-mail.',
-        ], 404);
+            'status'   => 'success',
+            'message'  => 'Un code de réinitialisation a été envoyé à votre e-mail.',
+            'otp_demo' => $otp // à supprimer en production
+        ]);
     }
 
-    // Générer un OTP de 6 chiffres
-    $otp = rand(100000, 999999);
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp'   => 'required|string',
+        ]);
 
-    // Enregistrer ou mettre à jour le OTP
-    DB::table('password_reset_tokens')->updateOrInsert(
-        ['email' => $user->email],
-        [
-            'token' => Hash::make($otp),    // On hash pour sécurité
-            'created_at' => Carbon::now()
-        ]
-    );
+        $record = DB::table('password_reset_tokens')
+                    ->where('email', $request->email)
+                    ->first();
 
-    // Envoyer email
-    Mail::send('emails.otp_reset', ['user' => $user, 'otp' => $otp], function ($message) use ($user) {
-        $message->to($user->email)
-                ->subject('Code OTP - Réinitialisation du mot de passe');
-    });
+        if (!$record) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Aucun code trouvé pour cet e-mail.',
+            ], 404);
+        }
 
+        // Vérifier expiration (10 minutes)
+        $expiresAt = Carbon::parse($record->created_at)->addMinutes(10);
+        if (Carbon::now()->gt($expiresAt)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Le code a expiré.',
+            ], 400);
+        }
 
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Un code OTP a été envoyé à votre e-mail.',
-        'otp_demo' => $otp // ❗ À supprimer en production
-    ]);
-}
+        if (!Hash::check($request->otp, $record->token)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Code OTP invalide.',
+            ], 400);
+        }
 
-public function resetPassword(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email',
-        'otp' => 'required|numeric',
-        'password' => 'required|min:6|confirmed',
-    ]);
-
-    $reset = DB::table('password_reset_tokens')->where('email', $request->email)->first();
-
-    if (!$reset) {
-        return response()->json(['message' => 'Aucune demande trouvée.'], 404);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Code OTP validé.',
+        ]);
     }
 
-    // Vérifier expiration : 10 minutes
-    if (Carbon::parse($reset->created_at)->addMinutes(10)->isPast()) {
-        return response()->json(['message' => 'Code OTP expiré.'], 400);
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|string',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $record = DB::table('password_reset_tokens')
+                    ->where('email', $request->email)
+                    ->first();
+
+        if (!$record) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Aucun code trouvé pour cet e-mail.',
+            ], 404);
+        }
+
+        // Vérifier expiration
+        $expiresAt = Carbon::parse($record->created_at)->addMinutes(10);
+        if (Carbon::now()->gt($expiresAt)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Le code a expiré.',
+            ], 400);
+        }
+
+        if (!Hash::check($request->otp, $record->token)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Code OTP invalide.',
+            ], 400);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        // Supprimer le code après usage
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Mot de passe réinitialisé avec succès.',
+        ]);
     }
 
-    // Vérification OTP
-    if (!Hash::check($request->otp, $reset->token)) {
-        return response()->json(['message' => 'OTP incorrect.'], 400);
-    }
 
-    // Mettre à jour le mot de passe
-    $user = User::where('email', $request->email)->first();
-    if (!$user) {
-        return response()->json(['message' => 'Utilisateur introuvable.'], 404);
-    }
 
-    $user->update(['password' => Hash::make($request->password)]);
+// public function forgotPassword(Request $request)
+// {
+//     $request->validate(['email' => 'required|email']);
 
-    // Supprimer le OTP utilisé
-    DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+//     $user = User::where('email', $request->email)->first();
 
-    return response()->json(['message' => 'Mot de passe réinitialisé avec succès ✅']);
-}
+//     if (!$user) {
+//         return response()->json([
+//             'status' => 'error',
+//             'message' => 'Aucun utilisateur trouvé avec cet e-mail.',
+//         ], 404);
+//     }
+
+//     // Générer un OTP de 6 chiffres
+//     $otp = rand(100000, 999999);
+
+//     // Enregistrer ou mettre à jour le OTP
+//     DB::table('password_reset_tokens')->updateOrInsert(
+//         ['email' => $user->email],
+//         [
+//             'token' => Hash::make($otp),    // On hash pour sécurité
+//             'created_at' => Carbon::now()
+//         ]
+//     );
+
+//     // Envoyer email
+//     Mail::send('emails.otp_reset', ['user' => $user, 'otp' => $otp], function ($message) use ($user) {
+//         $message->to($user->email)
+//                 ->subject('Code OTP - Réinitialisation du mot de passe');
+//     });
+
+
+//     return response()->json([
+//         'status' => 'success',
+//         'message' => 'Un code OTP a été envoyé à votre e-mail.',
+//         'otp_demo' => $otp // ❗ À supprimer en production
+//     ]);
+// }
+
+// public function resetPassword(Request $request)
+// {
+//     $request->validate([
+//         'email' => 'required|email',
+//         'otp' => 'required|numeric',
+//         'password' => 'required|min:6|confirmed',
+//     ]);
+
+//     $reset = DB::table('password_reset_tokens')->where('email', $request->email)->first();
+
+//     if (!$reset) {
+//         return response()->json(['message' => 'Aucune demande trouvée.'], 404);
+//     }
+
+//     // Vérifier expiration : 10 minutes
+//     if (Carbon::parse($reset->created_at)->addMinutes(10)->isPast()) {
+//         return response()->json(['message' => 'Code OTP expiré.'], 400);
+//     }
+
+//     // Vérification OTP
+//     if (!Hash::check($request->otp, $reset->token)) {
+//         return response()->json(['message' => 'OTP incorrect.'], 400);
+//     }
+
+//     // Mettre à jour le mot de passe
+//     $user = User::where('email', $request->email)->first();
+//     if (!$user) {
+//         return response()->json(['message' => 'Utilisateur introuvable.'], 404);
+//     }
+
+//     $user->update(['password' => Hash::make($request->password)]);
+
+//     // Supprimer le OTP utilisé
+//     DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+//     return response()->json(['message' => 'Mot de passe réinitialisé avec succès ✅']);
+// }
 
 }

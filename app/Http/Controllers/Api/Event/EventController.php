@@ -152,8 +152,6 @@ public function showFromNotification($evenement_id)
     // Charger l'événement avec sa paroisse
     $event = Event::with('paroisse')->find($evenement_id);
 
-
-
     // Transformer l'image en URL complète
     $event->image = $event->image ? asset('storage/' . $event->image) : null;
 
