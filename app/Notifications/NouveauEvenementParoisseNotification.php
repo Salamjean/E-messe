@@ -19,7 +19,6 @@ class NouveauEvenementParoisseNotification extends Notification
 
     /**
      * Un seul canal Laravel → database
-     * FCM sera envoyé manuellement dans toDatabase()
      */
     public function via($notifiable)
     {
@@ -27,7 +26,7 @@ class NouveauEvenementParoisseNotification extends Notification
     }
 
     /**
-     * Notification enregistrée en DB + envoi Push FCM
+     * Notification enregistrée en DB + envoi FCM en data-only
      */
     public function toDatabase($notifiable)
     {
@@ -35,57 +34,32 @@ class NouveauEvenementParoisseNotification extends Notification
 
         $title = 'Nouvel événement créé 🎉';
         $body = "« {$paroisseName} que vous suivez organise un événement : {$this->event->titre} » "
-              . "qui aura lieu le " . $this->event->date_debut->format('d/m/Y') . ". Venez nombreux !";
+               . "qui aura lieu le " . $this->event->date_debut->format('d/m/Y') . ". Venez nombreux !";
 
-        // 🔹 Envoi FCM si token disponible
+        // 🔹 Envoi FCM (DATA ONLY) si token disponible
         if (!empty($notifiable->fcm_token)) {
             try {
+
                 Http::withHeaders([
                     'Authorization' => 'key=' . env('FIREBASE_SERVER_KEY'),
                     'Content-Type' => 'application/json',
                 ])->post('https://fcm.googleapis.com/fcm/send', [
 
-                    // 🔥 Cible
                     'to' => $notifiable->fcm_token,
 
-                    // 🔥 Notification visible (bannière)
-                    'notification' => [
+                    // ⚠️ DATA ONLY : PAS DE BLOC "notification"
+                    'data' => [
                         'title' => 'Nouvel événement paroissial 🎊',
                         'body'  => "« {$paroisseName} » organise l'événement « {$this->event->titre} ». ",
-                        'sound' => 'default',
-                    ],
 
-                    // 🔥 Priorité haute (Android)
-                    'priority' => 'high',
-                    'android' => [
-                        'priority' => 'high',
-                        'notification' => [
-                            'sound'      => 'default',
-                            'channel_id' => 'default', // Doit exister dans l'app mobile
-                        ],
-                    ],
-
-                    // 🔥 Pour iOS
-                    'apns' => [
-                        'payload' => [
-                            'aps' => [
-                                'alert' => [
-                                    'title' => 'Nouvel événement paroissial 🎊',
-                                    'body'  => "« {$paroisseName} » organise l'événement « {$this->event->titre} ». ",
-                                ],
-                                'sound' => 'default',
-                            ],
-                        ],
-                    ],
-
-                    // 🔥 Données envoyées à l'app
-                    'data' => [
+                        // Données supplémentaires
                         'type' => 'nouveau_evenement',
                         'evenement_id' => $this->event->id,
                         'paroisse_id' => $this->event->created_by,
                     ],
 
                 ]);
+
             } catch (\Exception $e) {
                 \Log::error("Échec envoi FCM (event #{$this->event->id}) : " . $e->getMessage());
             }
