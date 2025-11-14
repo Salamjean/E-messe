@@ -168,7 +168,7 @@ public function showFromNotification($evenement_id)
         'image' => $event->image ? asset('storage/'.$event->image) : null,
         'paroisse' => $event->paroisse ? [
             'id' => $event->paroisse->id,
-            'nom' => $event->paroisse->nom,
+            'nom' => $event->paroisse->name,
         ] : null,
     ]);
 }
