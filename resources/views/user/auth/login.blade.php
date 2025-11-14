@@ -660,7 +660,7 @@
                     <label class="remember">
                         <input type="checkbox"> Se souvenir de moi
                     </label>
-                    <a href="#" class="forgot-link">Mot de passe oublié?</a>
+                    <a href="{{route('forgot-password.form')}}" class="forgot-link">Mot de passe oublié?</a>
                 </div>
                 
                 <button type="submit" class="login-button">Se connecter</button>
