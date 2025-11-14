@@ -44,16 +44,47 @@ class NouveauEvenementParoisseNotification extends Notification
                     'Authorization' => 'key=' . env('FIREBASE_SERVER_KEY'),
                     'Content-Type' => 'application/json',
                 ])->post('https://fcm.googleapis.com/fcm/send', [
+
+                    // 🔥 Cible
                     'to' => $notifiable->fcm_token,
+
+                    // 🔥 Notification visible (bannière)
                     'notification' => [
                         'title' => 'Nouvel événement paroissial 🎊',
                         'body'  => "« {$paroisseName} » organise l'événement « {$this->event->titre} ». ",
+                        'sound' => 'default',
                     ],
+
+                    // 🔥 Priorité haute (Android)
+                    'priority' => 'high',
+                    'android' => [
+                        'priority' => 'high',
+                        'notification' => [
+                            'sound'      => 'default',
+                            'channel_id' => 'default', // Doit exister dans l'app mobile
+                        ],
+                    ],
+
+                    // 🔥 Pour iOS
+                    'apns' => [
+                        'payload' => [
+                            'aps' => [
+                                'alert' => [
+                                    'title' => 'Nouvel événement paroissial 🎊',
+                                    'body'  => "« {$paroisseName} » organise l'événement « {$this->event->titre} ». ",
+                                ],
+                                'sound' => 'default',
+                            ],
+                        ],
+                    ],
+
+                    // 🔥 Données envoyées à l'app
                     'data' => [
                         'type' => 'nouveau_evenement',
                         'evenement_id' => $this->event->id,
                         'paroisse_id' => $this->event->created_by,
                     ],
+
                 ]);
             } catch (\Exception $e) {
                 \Log::error("Échec envoi FCM (event #{$this->event->id}) : " . $e->getMessage());
