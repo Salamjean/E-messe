@@ -149,27 +149,23 @@ class EventController extends Controller
 
 public function showFromNotification($evenement_id)
 {
+    // Charger l'événement avec sa paroisse
     $event = Event::with('paroisse')->find($evenement_id);
 
+    if (!$event) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Événement introuvable.'
+        ], 404);
+    }
 
+    // Transformer l'image en URL complète
+    $event->image = $event->image ? asset('storage/' . $event->image) : null;
 
     return response()->json([
-        'id' => $event->id,
-        'titre' => $event->titre,
-        'type_event' => $event->type_event,
-        'description' => $event->description,
-        'date_debut' => $event->date_debut,
-        'date_fin' => $event->date_fin,
-        'lieu' => $event->lieu,
-        'celebrant' => $event->celebrant,
-        'organisateur' => $event->organisateur,
-        'participation_frais' => $event->participation_frais,
-        'statut' => $event->statut,
-        'image' => $event->image ? asset('storage/'.$event->image) : null,
-        'paroisse' => $event->paroisse ? [
-            'id' => $event->paroisse->id,
-            'nom' => $event->paroisse->name,
-        ] : null,
+        'status' => 'success',
+        'event' => $event
     ]);
 }
+
 }
