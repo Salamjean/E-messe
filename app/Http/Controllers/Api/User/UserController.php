@@ -52,15 +52,100 @@ class UserController extends Controller
      * )
      */
 
-    public function profile(Request $request)
-    {
+// ---------------------- PROFILE ----------------------
+public function profile(Request $request)
+{
+    $user = $request->user();
 
-        $user = $request->user();
+    if (!$user) {
         return response()->json([
-            'status' => 'success',
-            'user' => $user
-        ]);
+            'status' => 'error',
+            'message' => 'Utilisateur non connecté.'
+        ], 401);
     }
+
+    return response()->json([
+        'status' => 'success',
+        'user'   => $this->formatUser($user)
+    ]);
+}
+
+// ---------------------- UPDATE PROFILE ----------------------
+public function updateProfile(Request $request)
+{
+    $user = $request->user();
+
+    if (!$user) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Utilisateur non connecté.'
+        ], 401);
+    }
+
+    $validatedData = $request->validate([
+        'name'            => 'sometimes|string|max:255',
+        'user_name'       => 'sometimes|string|max:191|unique:users,user_name,' . $user->id,
+        'email'           => 'sometimes|email|max:191|unique:users,email,' . $user->id,
+        'contact'         => 'sometimes|string|max:20|unique:users,contact,' . $user->id,
+        'civilite'        => 'sometimes|string|max:10',
+        'indicatif'       => 'sometimes|string|max:10',
+        'commune'         => 'sometimes|string|max:255',
+        'CMU'             => 'sometimes|nullable|string|max:255',
+        'profile_picture' => 'nullable',
+    ]);
+
+    $profilePath = $user->profile_picture;
+
+    if ($request->has('profile_picture')) {
+        // Supprimer l'ancienne photo si elle existe
+        if ($profilePath && \Storage::disk('public')->exists($profilePath)) {
+            \Storage::disk('public')->delete($profilePath);
+        }
+
+        // Fichier uploadé
+        if ($request->hasFile('profile_picture')) {
+            $profilePath = $request->file('profile_picture')->store('profiles', 'public');
+        }
+        // Base64
+        elseif (is_string($validatedData['profile_picture']) && str_starts_with($validatedData['profile_picture'], 'data:image')) {
+            $fileData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $validatedData['profile_picture']));
+            preg_match('/^data:image\/(\w+);base64,/', $validatedData['profile_picture'], $matches);
+            $extension = $matches[1] ?? 'png';
+            $fileName = 'profiles/' . uniqid('user_' . $user->id . '_', true) . '.' . $extension;
+            \Storage::disk('public')->put($fileName, $fileData);
+            $profilePath = $fileName;
+        } else {
+            $profilePath = null;
+        }
+    }
+
+    $user->fill(collect($validatedData)->except('profile_picture')->all());
+    $user->profile_picture = $profilePath;
+    $user->save();
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Profil mis à jour avec succès.',
+        'user' => $this->formatUser($user)
+    ]);
+}
+
+// ---------------------- UTILITAIRE ----------------------
+private function formatUser($user)
+{
+    return [
+        'id'             => $user->id,
+        'name'           => $user->name,
+        'user_name'      => $user->user_name,
+        'email'          => $user->email,
+        'contact'        => $user->contact,
+        'civilite'       => $user->civilite,
+        'indicatif'      => $user->indicatif,
+        'commune'        => $user->commune,
+        'CMU'            => $user->CMU,
+        'profile_picture'=> $user->profile_picture ? asset('storage/' . $user->profile_picture) : null
+    ];
+}
 
     /**
      * Mettre à jour le profil
@@ -102,82 +187,82 @@ class UserController extends Controller
      */
 
     
-public function updateProfile(Request $request)
-{
-    $user = $request->user();
+// public function updateProfile(Request $request)
+// {
+//     $user = $request->user();
 
-    if (!$user) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Utilisateur non connecté.'
-        ], 401);
-    }
+//     if (!$user) {
+//         return response()->json([
+//             'status' => 'error',
+//             'message' => 'Utilisateur non connecté.'
+//         ], 401);
+//     }
 
-    // Validation simple pour les champs texte + profile_picture
-    $validatedData = $request->validate([
-        'name'            => 'sometimes|string|max:255',
-        'user_name'       => 'sometimes|string|max:191|unique:users,user_name,' . $user->id,
-        'email'           => 'sometimes|email|max:191|unique:users,email,' . $user->id,
-        'contact'         => 'sometimes|string|max:20|unique:users,contact,' . $user->id,
-        'civilite'        => 'sometimes|string|max:10',
-        'indicatif'       => 'sometimes|string|max:10',
-        'commune'         => 'sometimes|string|max:255',
-        'CMU'             => 'sometimes|nullable|string|max:255',
-        'profile_picture' => 'nullable', // on gère le fichier séparément
-    ]);
+//     // Validation simple pour les champs texte + profile_picture
+//     $validatedData = $request->validate([
+//         'name'            => 'sometimes|string|max:255',
+//         'user_name'       => 'sometimes|string|max:191|unique:users,user_name,' . $user->id,
+//         'email'           => 'sometimes|email|max:191|unique:users,email,' . $user->id,
+//         'contact'         => 'sometimes|string|max:20|unique:users,contact,' . $user->id,
+//         'civilite'        => 'sometimes|string|max:10',
+//         'indicatif'       => 'sometimes|string|max:10',
+//         'commune'         => 'sometimes|string|max:255',
+//         'CMU'             => 'sometimes|nullable|string|max:255',
+//         'profile_picture' => 'nullable', // on gère le fichier séparément
+//     ]);
 
-    // --- Gestion de la photo ---
-    $profilePath = $user->profile_picture;
+//     // --- Gestion de la photo ---
+//     $profilePath = $user->profile_picture;
 
-    if ($request->has('profile_picture')) {
-        // Supprimer l'ancienne photo si elle existe
-        if ($profilePath && \Storage::disk('public')->exists($profilePath)) {
-            \Storage::disk('public')->delete($profilePath);
-        }
+//     if ($request->has('profile_picture')) {
+//         // Supprimer l'ancienne photo si elle existe
+//         if ($profilePath && \Storage::disk('public')->exists($profilePath)) {
+//             \Storage::disk('public')->delete($profilePath);
+//         }
 
-        // Fichier uploadé multipart
-        if ($request->hasFile('profile_picture')) {
-            $profilePath = $request->file('profile_picture')->store('profiles', 'public');
-        }
-        // Image base64
-        elseif (is_string($validatedData['profile_picture']) && str_starts_with($validatedData['profile_picture'], 'data:image')) {
-            $fileData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $validatedData['profile_picture']));
-            preg_match('/^data:image\/(\w+);base64,/', $validatedData['profile_picture'], $matches);
-            $extension = $matches[1] ?? 'png';
-            $fileName = 'profiles/' . uniqid('user_' . $user->id . '_', true) . '.' . $extension;
-            \Storage::disk('public')->put($fileName, $fileData);
-            $profilePath = $fileName;
-        }
-        // Si vide ou null => suppression
-        else {
-            $profilePath = null;
-        }
-    }
+//         // Fichier uploadé multipart
+//         if ($request->hasFile('profile_picture')) {
+//             $profilePath = $request->file('profile_picture')->store('profiles', 'public');
+//         }
+//         // Image base64
+//         elseif (is_string($validatedData['profile_picture']) && str_starts_with($validatedData['profile_picture'], 'data:image')) {
+//             $fileData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $validatedData['profile_picture']));
+//             preg_match('/^data:image\/(\w+);base64,/', $validatedData['profile_picture'], $matches);
+//             $extension = $matches[1] ?? 'png';
+//             $fileName = 'profiles/' . uniqid('user_' . $user->id . '_', true) . '.' . $extension;
+//             \Storage::disk('public')->put($fileName, $fileData);
+//             $profilePath = $fileName;
+//         }
+//         // Si vide ou null => suppression
+//         else {
+//             $profilePath = null;
+//         }
+//     }
 
-    $user->fill(collect($validatedData)->except('profile_picture')->all());
-    $user->profile_picture = $profilePath;
-    $user->save();
+//     $user->fill(collect($validatedData)->except('profile_picture')->all());
+//     $user->profile_picture = $profilePath;
+//     $user->save();
 
-    // URL publique de la photo
-    $profileUrl = $profilePath ? asset('storage/' . $profilePath) : null;
+//     // URL publique de la photo
+//     $profileUrl = $profilePath ? asset('storage/' . $profilePath) : null;
 
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Profil mis à jour avec succès.',
-        'user' => [
-            'id'             => $user->id,
-            'name'           => $user->name,
-            'user_name'      => $user->user_name,
-            'email'          => $user->email,
-            'contact'        => $user->contact,
-            'civilite'       => $user->civilite,
-            'indicatif'      => $user->indicatif,
-            'commune'        => $user->commune,
-            'CMU'            => $user->CMU,
-            'profile_picture'=> $profileUrl
-        ]
-    ]);
-}
+//     return response()->json([
+//         'status' => 'success',
+//         'message' => 'Profil mis à jour avec succès.',
+//         'user' => [
+//             'id'             => $user->id,
+//             'name'           => $user->name,
+//             'user_name'      => $user->user_name,
+//             'email'          => $user->email,
+//             'contact'        => $user->contact,
+//             'civilite'       => $user->civilite,
+//             'indicatif'      => $user->indicatif,
+//             'commune'        => $user->commune,
+//             'CMU'            => $user->CMU,
+//             'profile_picture'=> $profileUrl
+//         ]
+//     ]);
+// }
 
 
 
