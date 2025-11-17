@@ -111,29 +111,36 @@ public function updateProfile(Request $request)
 
     $profilePath = $user->profile_picture;
 
-    if ($request->has('profile_picture')) {
-        // Supprimer l'ancienne photo si elle existe
-        if ($profilePath && \Storage::disk('public')->exists($profilePath)) {
-            \Storage::disk('public')->delete($profilePath);
+    /*** ✔ NOUVELLE PHOTO ? (fichier ou base64) ***/
+    $isBase64 = is_string($request->profile_picture) 
+                && str_starts_with($request->profile_picture, 'data:image');
+
+    $isUploadedFile = $request->hasFile('profile_picture');
+
+    if ($isUploadedFile || $isBase64) {
+
+        // 🔥 Supprimer seulement si une nouvelle photo arrive
+        if ($profilePath && Storage::disk('public')->exists($profilePath)) {
+            Storage::disk('public')->delete($profilePath);
         }
 
-        // Fichier uploadé
-        if ($request->hasFile('profile_picture')) {
+        // 📌 Cas 1 — Upload normal
+        if ($isUploadedFile) {
             $profilePath = $request->file('profile_picture')->store('profiles', 'public');
         }
-        // Base64
-        elseif (is_string($validatedData['profile_picture']) && str_starts_with($validatedData['profile_picture'], 'data:image')) {
-            $fileData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $validatedData['profile_picture']));
-            preg_match('/^data:image\/(\w+);base64,/', $validatedData['profile_picture'], $matches);
+
+        // 📌 Cas 2 — Base64
+        else {
+            $fileData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->profile_picture));
+            preg_match('/^data:image\/(\w+);base64,/', $request->profile_picture, $matches);
             $extension = $matches[1] ?? 'png';
             $fileName = 'profiles/' . uniqid('user_' . $user->id . '_', true) . '.' . $extension;
-            \Storage::disk('public')->put($fileName, $fileData);
+            Storage::disk('public')->put($fileName, $fileData);
             $profilePath = $fileName;
-        } else {
-            $profilePath = null;
         }
     }
 
+    /*** Mise à jour user ***/
     $user->fill(collect($validatedData)->except('profile_picture')->all());
     $user->profile_picture = $profilePath;
     $user->save();
@@ -144,6 +151,7 @@ public function updateProfile(Request $request)
         'user' => $this->formatUser($user)
     ]);
 }
+
 
 // ---------------------- UTILITAIRE ----------------------
 private function formatUser($user)
