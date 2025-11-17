@@ -6,7 +6,6 @@ use App\Models\ParoisseRetrait;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\Notification; // <-- ajouté
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -26,11 +25,6 @@ class AppServiceProvider extends ServiceProvider
                 $pendingWithdrawalsCount = ParoisseRetrait::where('statut', 'en_attente')->count();
                 $view->with('pendingWithdrawalsCount', $pendingWithdrawalsCount);
             }
-        });
-
-        // Enregistrer le canal personnalisé fcm_http
-        Notification::extend('fcm_http', function ($app) {
-            return new \App\Channels\FcmHttpChannel();
         });
     }
 }
