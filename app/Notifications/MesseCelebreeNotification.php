@@ -124,8 +124,8 @@ class MesseCelebreeNotification extends Notification
     /**
      * Route FCM (optionnel mais recommandé)
      */
-    public function routeNotificationForFcm($notification)
-    {
-        return $this->fcm_token;
-    }
+    // public function routeNotificationForFcm($notification)
+    // {
+    //     return $this->fcm_token;
+    // }
 }

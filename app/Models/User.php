@@ -90,6 +90,10 @@ class User extends Authenticatable
         return $query->whereNull('archived_at');
     }
 
+    public function routeNotificationForFcm($notification)
+    {
+        return $this->fcm_token;
+    }
     /**
      * Archiver un utilisateur.
      */
