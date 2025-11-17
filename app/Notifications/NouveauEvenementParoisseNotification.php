@@ -22,7 +22,7 @@ class NouveauEvenementParoisseNotification extends Notification
      */
     public function via($notifiable)
     {
-        return ['database', 'fcm_http'];
+        return ['database'];
     }
 
     /**
@@ -30,6 +30,8 @@ class NouveauEvenementParoisseNotification extends Notification
      */
     public function toArray($notifiable)
     {
+        $this->sendFcm($notifiable);
+
         $paroisseName = $this->event->paroisse->name ?? 'la paroisse';
 
         $title = 'Nouvel événement créé 🎉';
