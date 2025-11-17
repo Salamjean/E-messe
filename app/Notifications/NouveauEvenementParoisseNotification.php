@@ -19,11 +19,12 @@ class NouveauEvenementParoisseNotification extends Notification
     }
 
     /**
-     * Deux canaux : database + FCM HTTP
+     * Canaux de notification
      */
     public function via($notifiable)
     {
-        return ['database', 'fcm_http'];
+        // ❌ On supprime 'fcm_http'
+        return ['database'];
     }
 
     /**
@@ -31,12 +32,13 @@ class NouveauEvenementParoisseNotification extends Notification
      */
     public function toArray($notifiable)
     {
-        $paroisseName = $this->event->paroisse->name ?? 'la paroisse';
+        // Envoi manuel FCM
+        $this->sendFcm($notifiable);
 
+        $paroisseName = $this->event->paroisse->name ?? 'la paroisse';
         $title = 'Nouvel événement créé 🎉';
-        $body =
-            "{$paroisseName} que vous suivez organise un événement : « {$this->event->titre} », " .
-            "prévu le " . $this->event->date_debut->format('d/m/Y') . ".";
+        $body = "{$paroisseName} que vous suivez organise un événement : « {$this->event->titre} », " .
+                "prévu le " . $this->event->date_debut->format('d/m/Y') . ".";
 
         return [
             'type'          => 'nouveau_evenement',
@@ -48,13 +50,13 @@ class NouveauEvenementParoisseNotification extends Notification
     }
 
     /**
-     * Notification FCM via HTTP (avec retour JSON) - CORRIGÉE
+     * Envoi manuel FCM
      */
-    public function toFcmHttp($notifiable)
+    protected function sendFcm($notifiable)
     {
         if (empty($notifiable->fcm_token)) {
             Log::info('Aucun token FCM pour l\'utilisateur', ['user_id' => $notifiable->id]);
-            return null;
+            return;
         }
 
         $paroisseName = $this->event->paroisse->name ?? 'la paroisse';
@@ -67,13 +69,12 @@ class NouveauEvenementParoisseNotification extends Notification
 
         if (!$serverKey) {
             Log::error('Clé FIREBASE_SERVER_KEY manquante');
-            return null;
+            return;
         }
 
-        // 🔥 STRUCTURE CORRIGÉE : Ajout du champ 'notification' pour la bannière
         $payload = [
             'to' => $notifiable->fcm_token,
-            'notification' => [  // 🔥 CE CHAMP EST OBLIGATOIRE POUR LA BANNIÈRE
+            'notification' => [
                 'title' => $title,
                 'body' => $body,
                 'sound' => 'default',
@@ -81,7 +82,7 @@ class NouveauEvenementParoisseNotification extends Notification
                 'icon' => 'ic_notification',
                 'badge' => '1'
             ],
-            'data' => [  // 🔥 Données supplémentaires pour votre app
+            'data' => [
                 'title' => $title,
                 'body' => $body,
                 'type' => 'nouveau_evenement',
@@ -101,7 +102,6 @@ class NouveauEvenementParoisseNotification extends Notification
 
             $responseData = $response->json();
 
-            // Logging pour debug
             if ($response->successful() && isset($responseData['success']) && $responseData['success'] == 1) {
                 Log::info('✅ Notification FCM envoyée avec succès', [
                     'user_id' => $notifiable->id,
@@ -114,15 +114,11 @@ class NouveauEvenementParoisseNotification extends Notification
                     'response' => $responseData
                 ]);
             }
-
-            return $responseData;
-
         } catch (\Exception $e) {
             Log::error('💥 Erreur FCM', [
                 'user_id' => $notifiable->id,
                 'error' => $e->getMessage()
             ]);
-            return null;
         }
     }
 }
