@@ -90,13 +90,6 @@ public function updateProfile(Request $request)
 {
     $user = $request->user();
 
-    if (!$user) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Utilisateur non connecté.'
-        ], 401);
-    }
-
     $validatedData = $request->validate([
         'name'            => 'sometimes|string|max:255',
         'user_name'       => 'sometimes|string|max:191|unique:users,user_name,' . $user->id,
@@ -109,48 +102,56 @@ public function updateProfile(Request $request)
         'profile_picture' => 'nullable',
     ]);
 
-    $profilePath = $user->profile_picture;
+    $newPhoto = $request->profile_picture;
+    $oldPhoto = $user->profile_picture;
 
-    /*** ✔ NOUVELLE PHOTO ? (fichier ou base64) ***/
-    $isBase64 = is_string($request->profile_picture) 
-                && str_starts_with($request->profile_picture, 'data:image');
+    /** ───────────────────────────────
+     * 1️⃣ SI NOUVELLE PHOTO
+     * ───────────────────────────────
+     */
+    if ($newPhoto) {
 
-    $isUploadedFile = $request->hasFile('profile_picture');
-
-    if ($isUploadedFile || $isBase64) {
-
-        // 🔥 Supprimer seulement si une nouvelle photo arrive
-        if ($profilePath && Storage::disk('public')->exists($profilePath)) {
-            Storage::disk('public')->delete($profilePath);
+        // 🔥 SUPPRESSION de l'ancienne photo
+        if ($oldPhoto && Storage::disk('public')->exists($oldPhoto)) {
+            Storage::disk('public')->delete($oldPhoto);
         }
 
-        // 📌 Cas 1 — Upload normal
-        if ($isUploadedFile) {
-            $profilePath = $request->file('profile_picture')->store('profiles', 'public');
+        /** 📌 CAS 1 — FICHIER UPLOADED */
+        if ($request->hasFile('profile_picture')) {
+            $path = $request->file('profile_picture')->store('profiles', 'public');
+            $user->profile_picture = $path;
         }
 
-        // 📌 Cas 2 — Base64
-        else {
-            $fileData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->profile_picture));
-            preg_match('/^data:image\/(\w+);base64,/', $request->profile_picture, $matches);
-            $extension = $matches[1] ?? 'png';
-            $fileName = 'profiles/' . uniqid('user_' . $user->id . '_', true) . '.' . $extension;
-            Storage::disk('public')->put($fileName, $fileData);
-            $profilePath = $fileName;
+        /** 📌 CAS 2 — BASE64 */
+        elseif (str_starts_with($newPhoto, 'data:image')) {
+            $image = preg_replace('#^data:image/\w+;base64,#i', '', $newPhoto);
+            $image = base64_decode($image);
+
+            // Extension
+            preg_match('/^data:image\/(\w+);base64/', $newPhoto, $matches);
+            $ext = $matches[1] ?? 'png';
+
+            $fileName = 'profiles/' . uniqid('pp_', true) . '.' . $ext;
+            Storage::disk('public')->put($fileName, $image);
+
+            $user->profile_picture = $fileName;
         }
     }
 
-    /*** Mise à jour user ***/
+    /** ───────────────────────────────
+     * 2️⃣ UPDATE DES AUTRES CHAMPS
+     * ───────────────────────────────
+     */
     $user->fill(collect($validatedData)->except('profile_picture')->all());
-    $user->profile_picture = $profilePath;
     $user->save();
 
     return response()->json([
         'status' => 'success',
         'message' => 'Profil mis à jour avec succès.',
-        'user' => $this->formatUser($user)
+        'user' => $this->formatUser($user),
     ]);
 }
+
 
 
 // ---------------------- UTILITAIRE ----------------------
