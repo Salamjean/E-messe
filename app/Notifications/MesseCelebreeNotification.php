@@ -36,8 +36,10 @@ class MesseCelebreeNotification extends Notification
                     'Content-Type' => 'application/json',
                 ])->post('https://fcm.googleapis.com/fcm/send', [
                     'to' => $notifiable->fcm_token,
-                    'notification' => compact('title', 'body'),
+                    // 'notification' => compact('title', 'body'),
                     'data' => [
+                        'title' => 'messe celebree',
+                        'body'  => "« Votre messe sera celebrée aujourd'hui ». ",
                         'type' => 'messe_celebree',
                         'messe_id' => $this->messe->id,
                     ],

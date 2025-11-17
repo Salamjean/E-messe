@@ -45,8 +45,15 @@ class MesseAnnuleeNotification extends Notification
                     'Content-Type' => 'application/json',
                 ])->post('https://fcm.googleapis.com/fcm/send', [
                     'to' => $notifiable->fcm_token,
-                    'notification' => compact('title', 'body'),
+                    // 'notification' => compact('title', 'body'),
+                    // 'data' => [
+                    //     'type' => 'messe_annulee',
+                    //     'messe_id' => $this->messe->id,
+                    // ],
+
                     'data' => [
+                        'title' => 'Demande annulee',
+                        'body'  => "«Votre demande  a été annulée ». ",
                         'type' => 'messe_annulee',
                         'messe_id' => $this->messe->id,
                     ],

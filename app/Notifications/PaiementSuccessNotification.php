@@ -43,11 +43,12 @@ class PaiementSuccessNotification extends Notification
             'Content-Type' => 'application/json',
         ])->post('https://fcm.googleapis.com/fcm/send', [
             'to' => $notifiable->fcm_token,
-            'notification' => [
+            // 'notification' => [
+
+            // ],
+            'data' => [
                 'title' => 'Paiement Réussi',
                 'body' => 'Votre paiement de ' . $this->paiement->montant . ' ' . $this->paiement->devise . ' a été effectué avec succès.',
-            ],
-            'data' => [
                 'type' => 'paiement_reussi',
                 'paiement_id' => $this->paiement->id,
                 'messe_id' => $this->paiement->messe_id,

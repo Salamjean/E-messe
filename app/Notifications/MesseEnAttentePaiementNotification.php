@@ -58,11 +58,12 @@ class MesseEnAttentePaiementNotification extends Notification
             'Content-Type' => 'application/json',
         ])->post('https://fcm.googleapis.com/fcm/send', [
             'to' => $notifiable->fcm_token,
-            'notification' => [
+            // 'notification' => [
+                
+            // ],
+            'data' => [
                 'title' => 'Messe en attente de paiement',
                 'body' => "Votre demande de messe pour '{$this->messe->motif_intention}' est en attente de paiement.",
-            ],
-            'data' => [
                 'type' => 'messe_en_attente_paiement',
                 'messe_id' => $this->messe->id,
             ],

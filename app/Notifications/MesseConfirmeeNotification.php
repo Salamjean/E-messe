@@ -45,11 +45,13 @@ class MesseConfirmeeNotification extends Notification
                     'Content-Type' => 'application/json',
                 ])->post('https://fcm.googleapis.com/fcm/send', [
                     'to' => $notifiable->fcm_token,
-                    'notification' => [
-                        'title' => 'Messe Confirmée',
-                        'body' => $messageBody,
-                    ],
+                    // 'notification' => [
+                    //     'title' => 'Messe Confirmée',
+                    //     'body' => $messageBody,
+                    // ],
                     'data' => [
+                        'title' => 'Confirmation de messe',
+                        'body'  => "« Votre demande de messe a été confirmée ». ",
                         'type' => 'messe_confirmee',
                         'messe_id' => $this->messe->id,
                     ],
