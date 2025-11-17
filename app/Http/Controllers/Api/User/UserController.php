@@ -118,30 +118,30 @@ class UserController extends Controller
             'contact'         => 'sometimes|string|max:20',
             'commune'         => 'sometimes|string|max:255',
             'CMU'             => 'sometimes|string|max:255|nullable',
-            'profile_picture' => [
-                'nullable',
-                // Accepte une chaîne (pour base64 ou suppression) ou un fichier.
-                function ($attribute, $value, $fail) {
-                    if (is_string($value)) {
-                        // Permet une chaîne vide pour la suppression
-                        if ($value === '') {
-                            return;
-                        }
-                        // Valide si c'est une chaîne base64
-                        if (!preg_match('/^data:image\/(\w+);base64,/', $value)) {
-                            $fail('Le champ ' . $attribute . ' doit être une image valide au format base64.');
-                        }
-                    } else {
-                        // Valide si c'est un fichier image
-                        $validator = Validator::make(['profile_picture' => $value], [
-                            'profile_picture' => 'image|mimes:jpeg,png,jpg,gif|max:2048'
-                        ]);
-                        if ($validator->fails()) {
-                            $fail('Le fichier de l\'attribut ' . $attribute . ' n\'est pas une image valide.');
-                        }
-                    }
-                },
-            ],
+            // 'profile_picture' => [
+            //     'nullable',
+            //     // Accepte une chaîne (pour base64 ou suppression) ou un fichier.
+            //     function ($attribute, $value, $fail) {
+            //         if (is_string($value)) {
+            //             // Permet une chaîne vide pour la suppression
+            //             if ($value === '') {
+            //                 return;
+            //             }
+            //             // Valide si c'est une chaîne base64
+            //             if (!preg_match('/^data:image\/(\w+);base64,/', $value)) {
+            //                 $fail('Le champ ' . $attribute . ' doit être une image valide au format base64.');
+            //             }
+            //         } else {
+            //             // Valide si c'est un fichier image
+            //             $validator = Validator::make(['profile_picture' => $value], [
+            //                 'profile_picture' => 'image|mimes:jpeg,png,jpg,gif|max:2048'
+            //             ]);
+            //             if ($validator->fails()) {
+            //                 $fail('Le fichier de l\'attribut ' . $attribute . ' n\'est pas une image valide.');
+            //             }
+            //         }
+            //     },
+            // ],
         ]);
 
         if ($validator->fails()) {
