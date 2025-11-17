@@ -118,6 +118,7 @@ return [
     |
     */
 App\Providers\CustomNotificationProvider::class,
+NotificationChannels\Fcm\FcmServiceProvider::class,
 
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
