@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
@@ -99,156 +101,103 @@ class UserController extends Controller
      */
 
     
-public function updateProfile(Request $request)
-{
-    $user = $request->user();
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
 
-    if (!$user) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Utilisateur non connecté.'
-        ], 401);
-    }
-
-    $validatedData = $request->validate([
-        'name'            => 'sometimes|string|max:255',
-        'indicatif'       => 'sometimes|string|max:10',
-        'contact'         => 'sometimes|string|max:20',
-        'commune'         => 'sometimes|string|max:255',
-        'CMU'             => 'sometimes|string|max:255|nullable',
-        'profile_picture' => 'nullable', // upload multipart ou base64
-    ]);
-
-    $profilePath = $user->profile_picture; // garder l'ancienne photo par défaut
-
-    // Cas 1 : fichier uploadé multipart
-    if ($request->hasFile('profile_picture')) {
-        $file = $request->file('profile_picture');
-        
-        // Validation du fichier
-        if (!$file->isValid()) {
+        if (!$user) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Fichier invalide.'
+                'message' => 'Utilisateur non connecté.'
+            ], 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name'            => 'sometimes|string|max:255',
+            'indicatif'       => 'sometimes|string|max:10',
+            'contact'         => 'sometimes|string|max:20',
+            'commune'         => 'sometimes|string|max:255',
+            'CMU'             => 'sometimes|string|max:255|nullable',
+            'profile_picture' => [
+                'nullable',
+                // Accepte une chaîne (pour base64 ou suppression) ou un fichier.
+                function ($attribute, $value, $fail) {
+                    if (is_string($value)) {
+                        // Permet une chaîne vide pour la suppression
+                        if ($value === '') {
+                            return;
+                        }
+                        // Valide si c'est une chaîne base64
+                        if (!preg_match('/^data:image\/(\w+);base64,/', $value)) {
+                            $fail('Le champ ' . $attribute . ' doit être une image valide au format base64.');
+                        }
+                    } else {
+                        // Valide si c'est un fichier image
+                        $validator = Validator::make(['profile_picture' => $value], [
+                            'profile_picture' => 'image|mimes:jpeg,png,jpg,gif|max:2048'
+                        ]);
+                        if ($validator->fails()) {
+                            $fail('Le fichier de l\'attribut ' . $attribute . ' n\'est pas une image valide.');
+                        }
+                    }
+                },
+            ],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
             ], 422);
         }
 
-        // Supprimer l'ancienne photo si elle existe
-        if ($user->profile_picture && \Storage::disk('public')->exists($user->profile_picture)) {
-            \Storage::disk('public')->delete($user->profile_picture);
-        }
+        $validatedData = $validator->validated();
+        $updateData = collect($validatedData)->except('profile_picture')->all();
 
-        $profilePath = $file->store('profiles', 'public');
-    }
-    // Cas 2 : image base64
-    elseif (isset($validatedData['profile_picture']) && is_string($validatedData['profile_picture'])) {
-        // Vérifier si c'est une chaîne vide (suppression)
-        if (empty($validatedData['profile_picture'])) {
-            if ($user->profile_picture && \Storage::disk('public')->exists($user->profile_picture)) {
-                \Storage::disk('public')->delete($user->profile_picture);
-            }
-            $profilePath = null;
-        }
-        // Vérifier si c'est une image base64
-        elseif (preg_match('/^data:image\/(\w+);base64,/', $validatedData['profile_picture'], $type)) {
-            $imageData = substr($validatedData['profile_picture'], strpos($validatedData['profile_picture'], ',') + 1);
-            $imageData = base64_decode($imageData);
-            
-            if ($imageData === false) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Données base64 invalides.'
-                ], 422);
-            }
-
-            $extension = strtolower($type[1] ?? 'jpg');
-            
-            // Normaliser les extensions
-            if ($extension === 'jpeg') $extension = 'jpg';
-
-            if (!in_array($extension, ['jpg', 'png', 'gif', 'webp'])) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Type d\'image non supporté. Utilisez JPG, PNG, GIF ou WebP.'
-                ], 422);
-            }
+        // Gestion de la photo de profil
+        if ($request->has('profile_picture')) {
+            $profilePicture = $request->input('profile_picture');
+            $newImagePath = null;
 
             // Supprimer l'ancienne photo si elle existe
-            if ($user->profile_picture && \Storage::disk('public')->exists($user->profile_picture)) {
-                \Storage::disk('public')->delete($user->profile_picture);
+            if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
+                Storage::disk('public')->delete($user->profile_picture);
             }
 
-            $fileName = 'profile_' . $user->id . '_' . time() . '.' . $extension;
-            $profilePath = 'profiles/' . $fileName;
-            
-            $success = \Storage::disk('public')->put($profilePath, $imageData);
-            
-            if (!$success) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Erreur lors du stockage de l\'image.'
-                ], 500);
+            // Si un nouveau fichier est uploadé (multipart)
+            if ($request->hasFile('profile_picture')) {
+                $newImagePath = $request->file('profile_picture')->store('profiles', 'public');
             }
+            // Si une image en base64 est fournie
+            elseif (is_string($profilePicture) && str_starts_with($profilePicture, 'data:image')) {
+                // Extrait les données de l'image
+                list($type, $data) = explode(';', $profilePicture);
+                list(, $data)      = explode(',', $data);
+                $imageData = base64_decode($data);
+
+                // Crée un nom de fichier unique
+                $extension = explode('/', explode(':', $type)[1])[1];
+                $fileName = 'profiles/' . uniqid() . '.' . $extension;
+
+                // Sauvegarde l'image
+                Storage::disk('public')->put($fileName, $imageData);
+                $newImagePath = $fileName;
+            }
+
+            $updateData['profile_picture'] = $newImagePath;
         }
-        // Si ce n'est ni base64 ni vide, c'est peut-être une URL ou valeur invalide
-        else {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Format de photo de profil non supporté.'
-            ], 422);
-        }
+
+        $user->update($updateData);
+
+        // Rafraîchir le modèle pour obtenir les dernières données
+        $user->refresh();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Profil mis à jour avec succès.',
+            'user' => $user
+        ]);
     }
-    // Cas 3 : suppression explicite de la photo (valeur null ou chaîne vide non capturée plus haut)
-    elseif (array_key_exists('profile_picture', $validatedData) && empty($validatedData['profile_picture'])) {
-        if ($user->profile_picture && \Storage::disk('public')->exists($user->profile_picture)) {
-            \Storage::disk('public')->delete($user->profile_picture);
-        }
-        $profilePath = null;
-    }
-
-    // Préparer les données de mise à jour
-    $updateData = [];
-    $fields = ['name', 'indicatif', 'contact', 'commune', 'CMU'];
-    
-    foreach ($fields as $field) {
-        if (array_key_exists($field, $validatedData)) {
-            $updateData[$field] = $validatedData[$field];
-        }
-    }
-    
-    // Ajouter le chemin de la photo seulement si modifié
-    if (isset($profilePath) || array_key_exists('profile_picture', $validatedData)) {
-        $updateData['profile_picture'] = $profilePath;
-    }
-
-    // Mise à jour de l'utilisateur
-    $user->update($updateData);
-
-    // Générer l'URL publique si une photo existe
-    $profileUrl = null;
-    if ($user->profile_picture) {
-        $profileUrl = \Storage::disk('public')->exists($user->profile_picture) 
-            ? asset('storage/' . $user->profile_picture) 
-            : null;
-    }
-
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Profil mis à jour avec succès.',
-        'user' => [
-            'id'              => $user->id,
-            'name'            => $user->name,
-            'indicatif'       => $user->indicatif,
-            'contact'         => $user->contact,
-            'commune'         => $user->commune,
-            'CMU'             => $user->CMU,
-            'profile_picture' => $profileUrl, // URL complète
-        ]
-    ]);
-}
-
-
-
 
 
     /**
