@@ -106,28 +106,28 @@ public function updateProfile(Request $request)
     $oldPhoto = $user->profile_picture;
 
     /** ───────────────────────────────
-     * 1️⃣ SI NOUVELLE PHOTO
+     * 1️⃣ — TRAITEMENT DE LA PHOTO
      * ───────────────────────────────
      */
-    if ($newPhoto) {
+    if (!empty($newPhoto)) {
 
-        // 🔥 SUPPRESSION de l'ancienne photo
+        // 🔥 Supprimer l'ancienne photo si elle existe
         if ($oldPhoto && Storage::disk('public')->exists($oldPhoto)) {
             Storage::disk('public')->delete($oldPhoto);
         }
 
-        /** 📌 CAS 1 — FICHIER UPLOADED */
+        /** 📌 Cas 1 — FICHIER UPLOADED */
         if ($request->hasFile('profile_picture')) {
             $path = $request->file('profile_picture')->store('profiles', 'public');
             $user->profile_picture = $path;
         }
 
-        /** 📌 CAS 2 — BASE64 */
-        elseif (str_starts_with($newPhoto, 'data:image')) {
+        /** 📌 Cas 2 — BASE64 envoyé */
+        elseif (is_string($newPhoto) && str_starts_with($newPhoto, 'data:image')) {
             $image = preg_replace('#^data:image/\w+;base64,#i', '', $newPhoto);
             $image = base64_decode($image);
 
-            // Extension
+            // Récupérer l’extension
             preg_match('/^data:image\/(\w+);base64/', $newPhoto, $matches);
             $ext = $matches[1] ?? 'png';
 
@@ -139,7 +139,7 @@ public function updateProfile(Request $request)
     }
 
     /** ───────────────────────────────
-     * 2️⃣ UPDATE DES AUTRES CHAMPS
+     * 2️⃣ — UPDATE DES AUTRES CHAMPS
      * ───────────────────────────────
      */
     $user->fill(collect($validatedData)->except('profile_picture')->all());
@@ -151,6 +151,7 @@ public function updateProfile(Request $request)
         'user' => $this->formatUser($user),
     ]);
 }
+
 
 
 
