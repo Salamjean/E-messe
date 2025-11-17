@@ -102,38 +102,94 @@ class UserController extends Controller
      */
 
     
-public function updateProfile(Request $request)
-{
-    $user = $request->user();
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
 
-    if (!$user) {
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Utilisateur non connecté.'
+            ], 401);
+        }
+
+        // Règles de validation de base pour les champs texte
+        $rules = [
+            'name'      => 'sometimes|string|max:255',
+            'indicatif' => 'sometimes|string|max:10',
+            'contact'   => 'sometimes|string|max:20',
+            'commune'   => 'sometimes|string|max:255',
+            'CMU'       => 'sometimes|nullable|string|max:255',
+        ];
+
+        // On ajoute les règles de validation pour la photo de profil de manière conditionnelle
+        if ($request->hasFile('profile_picture')) {
+            // Cas 1 : C'est un fichier uploadé (multipart/form-data)
+            $rules['profile_picture'] = 'image|mimes:jpeg,png,jpg,gif|max:2048';
+        } elseif ($request->filled('profile_picture') && is_string($request->input('profile_picture'))) {
+            // Cas 2 : C'est une chaîne, on vérifie si c'est du base64
+            $rules['profile_picture'] = [
+                'string',
+                function ($attribute, $value, $fail) {
+                    if (!preg_match('/^data:image\/(\w+);base64,/', $value)) {
+                        $fail('Le format de l\'image fournie est invalide. Utilisez un fichier ou une chaîne base64.');
+                    }
+                }
+            ];
+        } else {
+            // Cas 3 : La valeur est nulle ou une chaîne vide (pour suppression)
+            $rules['profile_picture'] = 'nullable|string';
+        }
+        
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $validatedData = $validator->validated();
+        
+        // On met à jour les champs texte
+        $user->fill(collect($validatedData)->except('profile_picture')->all());
+        
+        // --- Gestion de la photo de profil ---
+        if ($request->has('profile_picture')) {
+            $newImagePath = null;
+
+            // D'abord, on supprime l'ancienne photo si elle existe
+            if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
+                Storage::disk('public')->delete($user->profile_picture);
+            }
+
+            // Si un nouveau fichier est uploadé
+            if ($request->hasFile('profile_picture')) {
+                $newImagePath = $request->file('profile_picture')->store('profiles', 'public');
+            }
+            // Si une image en base64 est fournie
+            elseif (is_string($validatedData['profile_picture']) && str_starts_with($validatedData['profile_picture'], 'data:image')) {
+                $fileData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $validatedData['profile_picture']));
+                $extension = explode('/', mime_content_type($validatedData['profile_picture']))[1];
+                $fileName = 'profiles/' . uniqid('user_' . $user->id . '_', true) . '.' . $extension;
+                
+                Storage::disk('public')->put($fileName, $fileData);
+                $newImagePath = $fileName;
+            }
+            
+            // On met à jour le chemin dans la base de données (peut être null si on supprime l'image)
+            $user->profile_picture = $newImagePath;
+        }
+
+        $user->save();
+
         return response()->json([
-            'status' => 'error',
-            'message' => 'Utilisateur non connecté.'
-        ], 401);
+            'status' => 'success',
+            'message' => 'Profil mis à jour avec succès.',
+            'user' => $user->refresh() // On retourne les données fraîches de l'utilisateur
+        ]);
     }
-
-    $validatedData = $request->validate([
-        'name'      => 'sometimes|string|max:255',
-        // Pour user_name, on ignore l'utilisateur actuel avec son ID
-        // 'user_name' => 'sometimes|string|max:255|unique:users,user_name,' . $user->id,
-        // Pour email, pareil
-        // 'email'     => 'sometimes|email|max:255|unique:users,email,' . $user->id,
-        'indicatif' => 'sometimes|string|max:10',
-        'contact'   => 'sometimes|string|max:20',
-        'commune'   => 'sometimes|string|max:255',
-        'CMU'       => 'sometimes|string|max:255|nullable',
-    ]);
-
-    $user->fill($validatedData);
-    $user->save();
-
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Profil mis à jour avec succès.',
-        'user' => $user
-    ]);
-}
 
 
 
