@@ -18,10 +18,11 @@ class NouveauEvenementParoisseNotification extends Notification
     }
 
     /**
-     * Deux canaux : database + FCM HTTP
+     * Canaux de notification
      */
     public function via($notifiable)
     {
+        // Database pour stocker et FCM envoyé manuellement
         return ['database'];
     }
 
@@ -30,14 +31,14 @@ class NouveauEvenementParoisseNotification extends Notification
      */
     public function toArray($notifiable)
     {
+        // Envoi FCM manuel
         $this->sendFcm($notifiable);
 
         $paroisseName = $this->event->paroisse->name ?? 'la paroisse';
 
         $title = 'Nouvel événement créé 🎉';
-        $body =
-            "{$paroisseName} que vous suivez organise un événement : « {$this->event->titre} », " .
-            "prévu le " . $this->event->date_debut->format('d/m/Y') . ".";
+        $body = "{$paroisseName} que vous suivez organise un événement : « {$this->event->titre} », " .
+                "prévu le " . $this->event->date_debut->format('d/m/Y') . ".";
 
         return [
             'type'          => 'nouveau_evenement',
@@ -49,12 +50,12 @@ class NouveauEvenementParoisseNotification extends Notification
     }
 
     /**
-     * Notification FCM via HTTP (avec retour JSON)
+     * Méthode pour envoyer la notification FCM via HTTP
      */
-    public function toFcmHttp($notifiable)
+    protected function sendFcm($notifiable)
     {
         if (empty($notifiable->fcm_token)) {
-            return null;
+            return;
         }
 
         $paroisseName = $this->event->paroisse->name ?? 'la paroisse';
@@ -64,7 +65,7 @@ class NouveauEvenementParoisseNotification extends Notification
 
         $serverKey = env('FIREBASE_SERVER_KEY');
 
-        $response = Http::withHeaders([
+        Http::withHeaders([
             'Authorization' => 'key=' . $serverKey,
             'Content-Type'  => 'application/json',
         ])->post('https://fcm.googleapis.com/fcm/send', [
@@ -76,8 +77,7 @@ class NouveauEvenementParoisseNotification extends Notification
                 'evenement_id' => $this->event->id,
                 'paroisse_id'  => $this->event->created_by,
             ],
+            'priority' => 'high',
         ]);
-
-        return $response->json();
     }
 }
