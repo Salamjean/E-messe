@@ -4,28 +4,23 @@ namespace App\Providers;
 
 use App\Models\ParoisseRetrait;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Notification; // <-- ajouté
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         //
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         Schema::defaultStringLength(191);
 
-        // Compartir el contador de retiros pendientes con todas las vistas de admin
+        // Partager le compteur de retraits en attente avec toutes les vues admin
         View::composer('*', function ($view) {
             if (Auth::guard('admin')->check()) {
                 $pendingWithdrawalsCount = ParoisseRetrait::where('statut', 'en_attente')->count();
@@ -33,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-                // Enregistrer le canal personnalisé fcm_http
+        // Enregistrer le canal personnalisé fcm_http
         Notification::extend('fcm_http', function ($app) {
             return new \App\Channels\FcmHttpChannel();
         });
