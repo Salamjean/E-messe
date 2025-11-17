@@ -112,15 +112,70 @@ public function updateProfile(Request $request)
 
     $validatedData = $request->validate([
         'name'      => 'sometimes|string|max:255',
-        // Pour user_name, on ignore l'utilisateur actuel avec son ID
-        // 'user_name' => 'sometimes|string|max:255|unique:users,user_name,' . $user->id,
-        // Pour email, pareil
-        // 'email'     => 'sometimes|email|max:255|unique:users,email,' . $user->id,
         'indicatif' => 'sometimes|string|max:10',
         'contact'   => 'sometimes|string|max:20',
         'commune'   => 'sometimes|string|max:255',
         'CMU'       => 'sometimes|string|max:255|nullable',
+        'profile_picture' => 'nullable',
     ]);
+
+    // Gestion du téléchargement de la photo (même logique que register)
+    $profilePath = $user->profile_picture; // Garder l'ancienne par défaut
+
+    // Cas 1 : fichier uploadé via multipart/form-data
+    if ($request->hasFile('profile_picture')) {
+        $file = $request->file('profile_picture');
+        $profilePath = $file->store('profiles', 'public');
+        
+        // Supprimer l'ancienne photo si elle existe
+        if ($user->profile_picture) {
+            $oldImagePath = 'public/' . $user->profile_picture;
+            if (\Storage::exists($oldImagePath)) {
+                \Storage::delete($oldImagePath);
+            }
+        }
+    }
+    // Cas 2 : image envoyée en base64
+    elseif (!empty($validatedData['profile_picture']) && is_string($validatedData['profile_picture'])) {
+        if (preg_match('/^data:image\/(\w+);base64,/', $validatedData['profile_picture'], $type)) {
+            $imageData = substr($validatedData['profile_picture'], strpos($validatedData['profile_picture'], ',') + 1);
+            $imageData = base64_decode($imageData);
+            $extension = strtolower($type[1]);
+            
+            if (!in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Type d\'image non supporté.'
+                ], 422);
+            }
+            
+            $fileName = uniqid() . '.' . $extension;
+            $profilePath = 'profiles/' . $fileName;
+            \Storage::disk('public')->put($profilePath, $imageData);
+            
+            // Supprimer l'ancienne photo si elle existe
+            if ($user->profile_picture) {
+                $oldImagePath = 'public/' . $user->profile_picture;
+                if (\Storage::exists($oldImagePath)) {
+                    \Storage::delete($oldImagePath);
+                }
+            }
+        }
+    }
+    // Cas 3 : si on veut supprimer la photo (envoi d'une chaîne vide)
+    elseif (array_key_exists('profile_picture', $validatedData) && empty($validatedData['profile_picture'])) {
+        // Supprimer l'ancienne photo si elle existe
+        if ($user->profile_picture) {
+            $oldImagePath = 'public/' . $user->profile_picture;
+            if (\Storage::exists($oldImagePath)) {
+                \Storage::delete($oldImagePath);
+            }
+        }
+        $profilePath = null;
+    }
+
+    // Mettre à jour le chemin de la photo dans les données validées
+    $validatedData['profile_picture'] = $profilePath;
 
     $user->fill($validatedData);
     $user->save();
