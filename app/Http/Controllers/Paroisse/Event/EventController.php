@@ -114,36 +114,25 @@ class EventController extends Controller
             $event = Event::create($validatedData);
 
             // 5️⃣ Notifications : récupérer les utilisateurs qui ont cette paroisse comme favori
+
             $usersToNotify = User::whereHas('favoris', function($query) use ($paroisse) {
                 $query->where('paroisse_id', $paroisse->id);
-            })->get();
+            })->whereNotNull('fcm_token')->get(); // 🔥 Filtrer les users avec token
 
             if ($usersToNotify->isNotEmpty()) {
                 Notification::send($usersToNotify, new NouveauEvenementParoisseNotification($event));
-                \Log::info('Notification envoyée aux users: ' . $usersToNotify->pluck('id')->implode(', '));
+                \Log::info('Notification envoyée à ' . $usersToNotify->count() . ' utilisateurs avec token FCM');
             } else {
-                \Log::info('Aucun utilisateur à notifier pour la paroisse ID: ' . $paroisse->id);
+                \Log::info('Aucun utilisateur avec token FCM à notifier pour la paroisse ID: ' . $paroisse->id);
             }
 
-            // 6️⃣ Commit de la transaction
             DB::commit();
-
-            // 7️⃣ Redirection avec message de succès
             return redirect()->back()->with('success', 'Événement ajouté avec succès !');
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // Rollback si erreur de validation
-            DB::rollBack();
-            return redirect()->back()
-                ->withErrors($e->errors())
-                ->withInput();
         } catch (\Exception $e) {
-            // Rollback pour toute autre erreur
             DB::rollBack();
             \Log::error('Erreur création événement: ' . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Erreur lors de la création de l\'événement : ' . $e->getMessage())
-                ->withInput();
+            return redirect()->back()->with('error', 'Erreur lors de la création : ' . $e->getMessage());
         }
     }
 

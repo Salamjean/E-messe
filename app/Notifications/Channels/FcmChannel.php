@@ -3,26 +3,18 @@
 namespace App\Notifications\Channels;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Notifications\Notification;
 
 class FcmHttpChannel
 {
-    public function send($notifiable, $notification)
+    public function send($notifiable, Notification $notification)
     {
-        if (!$notifiable->fcm_token) {
-            return;
-        }
-
+        // Vérifier si la notification a la méthode toFcmHttp
         if (!method_exists($notification, 'toFcmHttp')) {
-            return;
+            throw new \Exception('Notification does not have toFcmHttp method');
         }
 
-        $message = $notification->toFcmHttp($notifiable);
-
-        $serverKey = env('FIREBASE_SERVER_KEY');
-
-        Http::withHeaders([
-            'Authorization' => 'key=' . $serverKey,
-            'Content-Type' => 'application/json',
-        ])->post('https://fcm.googleapis.com/fcm/send', $message);
+        // Appeler la méthode toFcmHttp de la notification
+        return $notification->toFcmHttp($notifiable);
     }
 }

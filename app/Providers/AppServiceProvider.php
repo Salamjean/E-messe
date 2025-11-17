@@ -32,5 +32,10 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('pendingWithdrawalsCount', $pendingWithdrawalsCount);
             }
         });
+
+                // Enregistrer le canal personnalisé fcm_http
+        Notification::extend('fcm_http', function ($app) {
+            return new \App\Channels\FcmHttpChannel();
+        });
     }
 }
