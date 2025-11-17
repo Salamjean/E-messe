@@ -14,7 +14,7 @@ class MesseAnnuleeNotification extends Notification
     protected $messe;
 
     /**
-     * Crée une nouvelle notification.
+     * Constructeur.
      */
     public function __construct(Messe $messe)
     {
@@ -22,53 +22,57 @@ class MesseAnnuleeNotification extends Notification
     }
 
     /**
-     * Canal de notification.
+     * Canaux : database + FCM HTTP
      */
     public function via($notifiable)
     {
-        return ['database'];
+        return ['database', 'fcm_http'];
     }
 
     /**
-     * Données enregistrées en base et envoi FCM.
+     * Données enregistrées dans la base
      */
-    public function toDatabase($notifiable)
+    public function toArray($notifiable)
     {
-        $title = 'Demande de messe annulée';
-        $body = "Votre demande de messe à la paroisse {$this->messe->paroisse->name} a été annulée.";
+        $paroisse = $this->messe->paroisse->name ?? 'la paroisse';
 
-        // 🔹 Envoi FCM
-        if (!empty($notifiable->fcm_token)) {
-            try {
-                Http::withHeaders([
-                    'Authorization' => 'key=' . env('FIREBASE_SERVER_KEY'),
-                    'Content-Type' => 'application/json',
-                ])->post('https://fcm.googleapis.com/fcm/send', [
-                    'to' => $notifiable->fcm_token,
-                    // 'notification' => compact('title', 'body'),
-                    // 'data' => [
-                    //     'type' => 'messe_annulee',
-                    //     'messe_id' => $this->messe->id,
-                    // ],
+        return [
+            'type'      => 'messe_annulee',
+            'title'     => 'Messe annulée',
+            'body'      => "Votre demande de messe à {$paroisse} a été annulée.",
+            'messe_id'  => $this->messe->id,
+        ];
+    }
 
-                    'data' => [
-                        'title' => 'Demande annulee',
-                        'body'  => "«Votre demande  a été annulée ». ",
-                        'type' => 'messe_annulee',
-                        'messe_id' => $this->messe->id,
-                    ],
-                ]);
-            } catch (\Exception $e) {
-                \Log::error("Échec envoi FCM pour la messe annulée #{$this->messe->id}: " . $e->getMessage());
-            }
+    /**
+     * Envoi FCM via HTTP + retour JSON
+     */
+    public function toFcmHttp($notifiable)
+    {
+        if (empty($notifiable->fcm_token)) {
+            return null;
         }
 
-        // 🔹 Enregistrement en base
-        return [
-            'type' => 'messe_annulee',
-            'title' => $title,
-            'body' => $body,
-            'messe_id' => $this->messe->id,
-        ];
+        $paroisse = $this->messe->paroisse->name ?? 'la paroisse';
+
+        $title = 'Messe annulée';
+        $body  = "Votre demande de messe à {$paroisse} a été annulée.";
+
+        $serverKey = env('FIREBASE_SERVER_KEY');
+
+        $response = Http::withHeaders([
+            'Authorization' => 'key=' . $serverKey,
+            'Content-Type'  => 'application/json',
+        ])->post('https://fcm.googleapis.com/fcm/send', [
+            'to' => $notifiable->fcm_token,
+            'data' => [
+                'title'     => $title,
+                'body'      => $body,
+                'type'      => 'messe_annulee',
+                'messe_id'  => $this->messe->id,
+            ],
+        ]);
+
+        return $response->json();
     }
 }

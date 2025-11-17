@@ -14,7 +14,7 @@ class MesseConfirmeeNotification extends Notification
     protected $messe;
 
     /**
-     * Crée une nouvelle notification
+     * Constructeur
      */
     public function __construct(Messe $messe)
     {
@@ -22,51 +22,57 @@ class MesseConfirmeeNotification extends Notification
     }
 
     /**
-     * Canaux de notification
+     * Canaux : database + FCM HTTP
      */
     public function via($notifiable)
     {
-        return ['database']; // database seulement, FCM sera envoyé dans toDatabase()
+        return ['database', 'fcm_http'];
     }
 
     /**
-     * Données à stocker en base + envoi FCM
+     * Données enregistrées dans la base
      */
-    public function toDatabase($notifiable)
+    public function toArray($notifiable)
     {
         $motif = $this->messe->motif_intention ?? 'votre intention';
-        $messageBody = "Bonne nouvelle ! Votre demande de messe pour \"$motif\" a été confirmée.";
 
-        // 🔹 Envoi FCM
-        if (!empty($notifiable->fcm_token)) {
-            try {
-                Http::withHeaders([
-                    'Authorization' => 'key=' . env('FIREBASE_SERVER_KEY'),
-                    'Content-Type' => 'application/json',
-                ])->post('https://fcm.googleapis.com/fcm/send', [
-                    'to' => $notifiable->fcm_token,
-                    // 'notification' => [
-                    //     'title' => 'Messe Confirmée',
-                    //     'body' => $messageBody,
-                    // ],
-                    'data' => [
-                        'title' => 'Confirmation de messe',
-                        'body'  => "« Votre demande de messe a été confirmée ». ",
-                        'type' => 'messe_confirmee',
-                        'messe_id' => $this->messe->id,
-                    ],
-                ]);
-            } catch (\Exception $e) {
-                \Log::error("Échec envoi FCM pour la messe #{$this->messe->id}: ".$e->getMessage());
-            }
+        return [
+            'type'      => 'messe_confirmee',
+            'title'     => 'Messe confirmée',
+            'body'      => "Bonne nouvelle ! Votre demande de messe pour « {$motif} » a été confirmée.",
+            'messe_id'  => $this->messe->id,
+        ];
+    }
+
+    /**
+     * Envoi FCM via HTTP + retour JSON
+     */
+    public function toFcmHttp($notifiable)
+    {
+        if (empty($notifiable->fcm_token)) {
+            return null;
         }
 
-        // 🔹 Retour pour enregistrement dans `notifications.data`
-        return [
-            'type' => 'messe_confirmee',
-            'title' => 'Messe Confirmée',
-            'body' => $messageBody,
-            'messe_id' => $this->messe->id,
-        ];
+        $motif = $this->messe->motif_intention ?? 'votre intention';
+
+        $title = 'Messe confirmée';
+        $body  = "Bonne nouvelle ! Votre demande de messe pour « {$motif} » a été confirmée.";
+
+        $serverKey = env('FIREBASE_SERVER_KEY');
+
+        $response = Http::withHeaders([
+            'Authorization' => 'key=' . $serverKey,
+            'Content-Type'  => 'application/json',
+        ])->post('https://fcm.googleapis.com/fcm/send', [
+            'to' => $notifiable->fcm_token,
+            'data' => [
+                'title'     => $title,
+                'body'      => $body,
+                'type'      => 'messe_confirmee',
+                'messe_id'  => $this->messe->id,
+            ],
+        ]);
+
+        return $response->json();
     }
 }
