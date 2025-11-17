@@ -106,9 +106,6 @@ public function updateProfile(Request $request)
             'email'           => 'sometimes|email|max:191|unique:users,email,' . $user->id,
             'contact'         => 'sometimes|string|max:20',
             'civilite'        => 'sometimes|string|max:10',
-            'indicatif'       => 'sometimes|string|max:10',
-            'commune'         => 'sometimes|string|max:255',
-            'CMU'             => 'sometimes|nullable|string|max:255',
             'profile_picture' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
         ], [
             'profile_picture.image' => 'Le fichier doit être une image.',
