@@ -64,11 +64,26 @@ public function profile(Request $request)
         ], 401);
     }
 
+    // URL publique de la photo
+    $profileUrl = $user->profile_picture ? asset('storage/' . $user->profile_picture) : null;
+
     return response()->json([
         'status' => 'success',
-        'user'   => $this->formatUser($user)
+        'user' => [
+            'id'             => $user->id,
+            'name'           => $user->name,
+            'user_name'      => $user->user_name,
+            'email'          => $user->email,
+            'contact'        => $user->contact,
+            'civilite'       => $user->civilite,
+            'indicatif'      => $user->indicatif,
+            'commune'        => $user->commune,
+            'CMU'            => $user->CMU,
+            'profile_picture'=> $profileUrl
+        ]
     ]);
 }
+
 
 // ---------------------- UPDATE PROFILE ----------------------
 public function updateProfile(Request $request)
