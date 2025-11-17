@@ -84,7 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [UserController::class, 'profile']);
         // Utilisez PATCH pour les mises à jour partielles
         // Route::putch('/', [UserController::class, 'updateProfile']);
-        Route::put('/', [UserController::class, 'updateProfile']); 
+        Route::post('/', [UserController::class, 'updateProfile']); 
         Route::put('/change-password', [UserController::class, 'changePassword']);
         Route::put('/notifications', [UserController::class, 'updateNotifications']);
     });

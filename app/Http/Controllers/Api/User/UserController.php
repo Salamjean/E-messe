@@ -90,66 +90,191 @@ public function updateProfile(Request $request)
 {
     $user = $request->user();
 
-    $validatedData = $request->validate([
-        'name'            => 'sometimes|string|max:255',
-        'user_name'       => 'sometimes|string|max:191|unique:users,user_name,' . $user->id,
-        'email'           => 'sometimes|email|max:191|unique:users,email,' . $user->id,
-        'contact'         => 'sometimes|string|max:20|unique:users,contact,' . $user->id,
-        'civilite'        => 'sometimes|string|max:10',
-        'indicatif'       => 'sometimes|string|max:10',
-        'commune'         => 'sometimes|string|max:255',
-        'CMU'             => 'sometimes|nullable|string|max:255',
-        'profile_picture' => 'nullable',
+    \Log::info('🚀 === DÉBUT MISE À JOUR PROFIL ===', [
+        'user_id' => $user->id,
+        'user_name' => $user->user_name,
+        'request_data' => $request->except(['profile_picture', 'password']),
+        'has_profile_picture' => $request->hasFile('profile_picture')
     ]);
 
-    $newPhoto = $request->profile_picture;
-    $oldPhoto = $user->profile_picture;
+    try {
+        \Log::info('📋 Validation des données en cours...');
+        
+        $validatedData = $request->validate([
+            'name'            => 'sometimes|string|max:255',
+            'user_name'       => 'sometimes|string|max:191|unique:users,user_name,' . $user->id,
+            'email'           => 'sometimes|email|max:191|unique:users,email,' . $user->id,
+            'contact'         => 'sometimes|string|max:20',
+            'civilite'        => 'sometimes|string|max:10',
+            'indicatif'       => 'sometimes|string|max:10',
+            'commune'         => 'sometimes|string|max:255',
+            'CMU'             => 'sometimes|nullable|string|max:255',
+            'profile_picture' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
+        ], [
+            'profile_picture.image' => 'Le fichier doit être une image.',
+            'profile_picture.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou svg.',
+            'profile_picture.max' => 'L\'image ne doit pas dépasser 2048 KB.',
+        ]);
 
-    /** ───────────────────────────────
-     * 1️⃣ — TRAITEMENT DE LA PHOTO
-     * ───────────────────────────────
-     */
-    if (!empty($newPhoto)) {
+        \Log::info('✅ VALIDATION RÉUSSIE', ['champs_validés' => array_keys($validatedData)]);
 
-        // 🔥 Supprimer l'ancienne photo si elle existe
-        if ($oldPhoto && Storage::disk('public')->exists($oldPhoto)) {
-            Storage::disk('public')->delete($oldPhoto);
-        }
-
-        /** 📌 Cas 1 — FICHIER UPLOADED */
+        // 1. Mettre à jour l'image de profil si fournie
         if ($request->hasFile('profile_picture')) {
-            $path = $request->file('profile_picture')->store('profiles', 'public');
-            $user->profile_picture = $path;
+            \Log::info('📸 TRAITEMENT PHOTO - Début', [
+                'file_name' => $request->file('profile_picture')->getClientOriginalName(),
+                'file_size' => $request->file('profile_picture')->getSize(),
+                'file_type' => $request->file('profile_picture')->getMimeType()
+            ]);
+
+            // Supprimer l'ancienne image si elle existe
+            if ($user->profile_picture) {
+                if (Storage::disk('public')->exists($user->profile_picture)) {
+                    \Log::info('🗑️ SUPPRESSION ANCIENNE PHOTO', ['ancien_chemin' => $user->profile_picture]);
+                    Storage::disk('public')->delete($user->profile_picture);
+                    \Log::info('✅ ANCIENNE PHOTO SUPPRIMÉE');
+                } else {
+                    \Log::warning('⚠️ ANCIENNE PHOTO INTROUVABLE', ['chemin' => $user->profile_picture]);
+                }
+            } else {
+                \Log::info('ℹ️ AUCUNE ANCIENNE PHOTO À SUPPRIMER');
+            }
+            
+            \Log::info('💾 ENREGISTREMENT NOUVELLE PHOTO...');
+            $profilePicturePath = $request->file('profile_picture')->store('profile_pictures', 'public');
+            \Log::info('✅ NOUVELLE PHOTO ENREGISTRÉE', ['nouveau_chemin' => $profilePicturePath]);
+            
+            $user->profile_picture = $profilePicturePath;
+            \Log::info('💾 SAUVEGARDE AVEC NOUVELLE PHOTO...');
+            $user->save();
+            \Log::info('✅ SAUVEGARDE PHOTO RÉUSSIE');
+        } else {
+            \Log::info('📷 AUCUNE NOUVELLE PHOTO FOURNIE');
         }
 
-        /** 📌 Cas 2 — BASE64 envoyé */
-        elseif (is_string($newPhoto) && str_starts_with($newPhoto, 'data:image')) {
-            $image = preg_replace('#^data:image/\w+;base64,#i', '', $newPhoto);
-            $image = base64_decode($image);
-
-            // Récupérer l’extension
-            preg_match('/^data:image\/(\w+);base64/', $newPhoto, $matches);
-            $ext = $matches[1] ?? 'png';
-
-            $fileName = 'profiles/' . uniqid('pp_', true) . '.' . $ext;
-            Storage::disk('public')->put($fileName, $image);
-
-            $user->profile_picture = $fileName;
+        // 2. Mettre à jour le nom si fourni
+        if (isset($validatedData['name'])) {
+            \Log::info('✏️ MISE À JOUR NOM', [
+                'ancien' => $user->name,
+                'nouveau' => $validatedData['name']
+            ]);
+            $user->name = $validatedData['name'];
+            $user->save();
+            \Log::info('✅ NOM MIS À JOUR');
         }
+
+        // 3. Mettre à jour le username si fourni
+        if (isset($validatedData['user_name'])) {
+            \Log::info('👤 MISE À JOUR USERNAME', [
+                'ancien' => $user->user_name,
+                'nouveau' => $validatedData['user_name']
+            ]);
+            $user->user_name = $validatedData['user_name'];
+            $user->save();
+            \Log::info('✅ USERNAME MIS À JOUR');
+        }
+
+        // 4. Mettre à jour l'email si fourni
+        if (isset($validatedData['email'])) {
+            \Log::info('📧 MISE À JOUR EMAIL', [
+                'ancien' => $user->email,
+                'nouveau' => $validatedData['email']
+            ]);
+            $user->email = $validatedData['email'];
+            $user->save();
+            \Log::info('✅ EMAIL MIS À JOUR');
+        }
+
+        // 5. Mettre à jour le contact si fourni
+        if (isset($validatedData['contact'])) {
+            \Log::info('📞 MISE À JOUR CONTACT', [
+                'ancien' => $user->contact,
+                'nouveau' => $validatedData['contact']
+            ]);
+            $user->contact = $validatedData['contact'];
+            $user->save();
+            \Log::info('✅ CONTACT MIS À JOUR');
+        }
+
+        // 6. Mettre à jour la civilité si fournie
+        if (isset($validatedData['civilite'])) {
+            \Log::info('👔 MISE À JOUR CIVILITÉ', [
+                'ancien' => $user->civilite,
+                'nouveau' => $validatedData['civilite']
+            ]);
+            $user->civilite = $validatedData['civilite'];
+            $user->save();
+            \Log::info('✅ CIVILITÉ MIS À JOUR');
+        }
+
+        // 7. Mettre à jour l'indicatif si fourni
+        if (isset($validatedData['indicatif'])) {
+            \Log::info('🌍 MISE À JOUR INDICATIF', [
+                'ancien' => $user->indicatif,
+                'nouveau' => $validatedData['indicatif']
+            ]);
+            $user->indicatif = $validatedData['indicatif'];
+            $user->save();
+            \Log::info('✅ INDICATIF MIS À JOUR');
+        }
+
+        // 8. Mettre à jour la commune si fournie
+        if (isset($validatedData['commune'])) {
+            \Log::info('🏠 MISE À JOUR COMMUNE', [
+                'ancien' => $user->commune,
+                'nouveau' => $validatedData['commune']
+            ]);
+            $user->commune = $validatedData['commune'];
+            $user->save();
+            \Log::info('✅ COMMUNE MIS À JOUR');
+        }
+
+        // 9. Mettre à jour le CMU si fourni
+        if (isset($validatedData['CMU'])) {
+            \Log::info('🏥 MISE À JOUR CMU', [
+                'ancien' => $user->CMU,
+                'nouveau' => $validatedData['CMU']
+            ]);
+            $user->CMU = $validatedData['CMU'];
+            $user->save();
+            \Log::info('✅ CMU MIS À JOUR');
+        }
+
+        \Log::info('🎉 === MISE À JOUR PROFIL TERMINÉE AVEC SUCCÈS ===', [
+            'user_id' => $user->id,
+            'champs_mis_à_jour' => array_keys($validatedData)
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Profil mis à jour avec succès.',
+            'user' => $this->formatUser($user),
+        ]);
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        \Log::error('❌ ERREUR DE VALIDATION', [
+            'errors' => $e->errors(),
+            'user_id' => $user->id,
+            'request_data' => $request->except(['profile_picture', 'password'])
+        ]);
+        
+        // Relancer l'exception pour que Laravel la gère normalement
+        throw $e;
+
+    } catch (\Exception $e) {
+        \Log::error('💥 ERREUR CRITIQUE DANS updateProfile', [
+            'user_id' => $user->id,
+            'error_message' => $e->getMessage(),
+            'error_file' => $e->getFile(),
+            'error_line' => $e->getLine(),
+            'stack_trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Une erreur est survenue lors de la mise à jour. Veuillez réessayer.',
+            'debug' => env('APP_DEBUG') ? $e->getMessage() : null
+        ], 500);
     }
-
-    /** ───────────────────────────────
-     * 2️⃣ — UPDATE DES AUTRES CHAMPS
-     * ───────────────────────────────
-     */
-    $user->fill(collect($validatedData)->except('profile_picture')->all());
-    $user->save();
-
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Profil mis à jour avec succès.',
-        'user' => $this->formatUser($user),
-    ]);
 }
 
 
