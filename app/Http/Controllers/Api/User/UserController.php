@@ -9,6 +9,8 @@ use Illuminate\Validation\Rule;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
+use App\Models\UserDelete;
 
 
 class UserController extends Controller
@@ -294,125 +296,6 @@ private function formatUser($user)
     ];
 }
 
-    /**
-     * Mettre à jour le profil
-     */
-
-        /**
-     * @OA\Put(
-     *     path="/api/user/profile",
-     *     summary="Mettre à jour le profil",
-     *     description="Met à jour les informations du profil utilisateur",
-     *     tags={"User"},
-     *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="name", type="string", maxLength=191, example="John Doe Updated"),
-     *             @OA\Property(property="user_name", type="string", maxLength=191, example="johndoe_updated"),
-     *             @OA\Property(property="email", type="string", format="email", maxLength=191, example="john.updated@example.com"),
-     *             @OA\Property(property="indicatif", type="string", maxLength=10, example="+225"),
-     *             @OA\Property(property="contact", type="string", maxLength=191, example="07654321"),
-     *             @OA\Property(property="commune", type="string", maxLength=191, example="Cocody"),
-     *             @OA\Property(property="CMU", type="string", maxLength=191, nullable=true, example="CMU67890"),
-     *             @OA\Property(property="profile_picture", type="string", maxLength=191, nullable=true)
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Profil mis à jour avec succès",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="user", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Erreur de validation"
-     *     )
-     * )
-     */
-
-    
-// public function updateProfile(Request $request)
-// {
-//     $user = $request->user();
-
-//     if (!$user) {
-//         return response()->json([
-//             'status' => 'error',
-//             'message' => 'Utilisateur non connecté.'
-//         ], 401);
-//     }
-
-//     // Validation simple pour les champs texte + profile_picture
-//     $validatedData = $request->validate([
-//         'name'            => 'sometimes|string|max:255',
-//         'user_name'       => 'sometimes|string|max:191|unique:users,user_name,' . $user->id,
-//         'email'           => 'sometimes|email|max:191|unique:users,email,' . $user->id,
-//         'contact'         => 'sometimes|string|max:20|unique:users,contact,' . $user->id,
-//         'civilite'        => 'sometimes|string|max:10',
-//         'indicatif'       => 'sometimes|string|max:10',
-//         'commune'         => 'sometimes|string|max:255',
-//         'CMU'             => 'sometimes|nullable|string|max:255',
-//         'profile_picture' => 'nullable', // on gère le fichier séparément
-//     ]);
-
-//     // --- Gestion de la photo ---
-//     $profilePath = $user->profile_picture;
-
-//     if ($request->has('profile_picture')) {
-//         // Supprimer l'ancienne photo si elle existe
-//         if ($profilePath && \Storage::disk('public')->exists($profilePath)) {
-//             \Storage::disk('public')->delete($profilePath);
-//         }
-
-//         // Fichier uploadé multipart
-//         if ($request->hasFile('profile_picture')) {
-//             $profilePath = $request->file('profile_picture')->store('profiles', 'public');
-//         }
-//         // Image base64
-//         elseif (is_string($validatedData['profile_picture']) && str_starts_with($validatedData['profile_picture'], 'data:image')) {
-//             $fileData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $validatedData['profile_picture']));
-//             preg_match('/^data:image\/(\w+);base64,/', $validatedData['profile_picture'], $matches);
-//             $extension = $matches[1] ?? 'png';
-//             $fileName = 'profiles/' . uniqid('user_' . $user->id . '_', true) . '.' . $extension;
-//             \Storage::disk('public')->put($fileName, $fileData);
-//             $profilePath = $fileName;
-//         }
-//         // Si vide ou null => suppression
-//         else {
-//             $profilePath = null;
-//         }
-//     }
-
-//     $user->fill(collect($validatedData)->except('profile_picture')->all());
-//     $user->profile_picture = $profilePath;
-//     $user->save();
-
-//     // URL publique de la photo
-//     $profileUrl = $profilePath ? asset('storage/' . $profilePath) : null;
-
-//     return response()->json([
-//         'status' => 'success',
-//         'message' => 'Profil mis à jour avec succès.',
-//         'user' => [
-//             'id'             => $user->id,
-//             'name'           => $user->name,
-//             'user_name'      => $user->user_name,
-//             'email'          => $user->email,
-//             'contact'        => $user->contact,
-//             'civilite'       => $user->civilite,
-//             'indicatif'      => $user->indicatif,
-//             'commune'        => $user->commune,
-//             'CMU'            => $user->CMU,
-//             'profile_picture'=> $profileUrl
-//         ]
-//     ]);
-// }
-
-
-
 
 
     /**
@@ -453,7 +336,7 @@ private function formatUser($user)
      *         )
      *     )
      * )
-     */
+    */
 
     public function changePassword(Request $request)
     {
@@ -587,5 +470,110 @@ private function formatUser($user)
             'user' => $user
         ]);
     }
+
+
+    public function verifyPassword(Request $request)
+    {
+        $request->validate([
+            'password' => 'required|string'
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Mot de passe incorrect.'
+            ], 400);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Mot de passe vérifié avec succès.'
+        ]);
+    }
+
+
+public function deleteAccount(Request $request)
+{
+    // Validation du mot de passe
+    $request->validate([
+        'password' => 'required|string'
+    ]);
+
+    $user = $request->user();
+
+    if (!$user) {
+        Log::error("Utilisateur non authentifié lors de deleteAccount");
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Utilisateur non authentifié.'
+        ], 401);
+    }
+
+    // Vérification mot de passe
+    if (!Hash::check($request->password, $user->password)) {
+        Log::warning("Mot de passe incorrect pour suppression", [
+            'user_id' => $user->id
+        ]);
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Mot de passe incorrect.'
+        ], 400);
+    }
+
+    // 🔥 NE PAS SUPPRIMER L’IMAGE — l’enregistrer telle qu’elle
+    UserDelete::create([
+        'user_id'         => $user->id,
+        'name'            => $user->name,
+        'user_name'       => $user->user_name,
+        'email'           => $user->email,
+        'contact'         => $user->contact,
+        'profile_picture' => $user->profile_picture, // ⬅️ Lien conservé
+        'additional_data' => json_encode([
+            'created_at' => $user->created_at,
+            'updated_at' => $user->updated_at,
+        ]),
+        'deleted_at'      => now()
+    ]);
+
+    Log::info("Informations utilisateur archivées dans user_deletes", [
+        'user_id' => $user->id
+    ]);
+
+    // Suppression des tokens Sanctum
+    $user->tokens()->delete();
+
+    // ❌ SUPPRESSION IMAGE : supprimée du code
+    // On ne touche plus jamais à l'image
+
+    // Suppression du compte
+    try {
+        $user->delete();
+
+        Log::info("Utilisateur supprimé définitivement", [
+            'user_id' => $user->id
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error("Erreur lors de la suppression du compte utilisateur", [
+            'user_id' => $user->id,
+            'error'   => $e->getMessage()
+        ]);
+
+        return response()->json([
+            'status'  => 'error',
+            'message' => 'Une erreur est survenue lors de la suppression.',
+            'error'   => $e->getMessage()
+        ], 500);
+    }
+
+    return response()->json([
+        'status'  => 'success',
+        'message' => 'Compte supprimé avec succès.'
+    ]);
+}
+
 
 }

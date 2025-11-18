@@ -87,6 +87,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [UserController::class, 'updateProfile']); 
         Route::put('/change-password', [UserController::class, 'changePassword']);
         Route::put('/notifications', [UserController::class, 'updateNotifications']);
+        Route::post('/verify-password', [UserController::class, 'verifyPassword']);
+        Route::delete('/delete-account', [UserController::class, 'deleteAccount']);
     });
 
     
