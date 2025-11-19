@@ -99,4 +99,9 @@
           border-radius: 12px !important;
           padding: 8px 12px !important;
       }
+
+      .mdc-drawer {
+        background: linear-gradient(#5ea7b5, #5ea7b5) !important;
+        position: fixed !important;
+      }
     </style>
