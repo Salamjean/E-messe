@@ -22953,7 +22953,7 @@ address p {
   align-items: center;
   font-size: 0.875rem;
   font-weight: 500;
-  text-decoration: none;
+  text-decoration: none !important;
   /* color: #fff; */
    border-radius: 12px !important;
 }
