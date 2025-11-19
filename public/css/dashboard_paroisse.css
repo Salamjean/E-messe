@@ -1,0 +1,1398 @@
+/* assets/paroiStyle.css */
+
+/* Variables CSS */
+:root {
+    --primary-color: #f35525;
+    --secondary-color: #4CAF50;
+    --accent-color: #2196F3;
+    --purple-color: #9C27B0;
+    --warning-color: #FFC107;
+    --dark-color: #2c3e50;
+    --light-color: #ecf0f1;
+    --gray-color: #95a5a6;
+    --success-color: #27ae60;
+    --danger-color: #e74c3c;
+    --border-radius: 12px;
+    --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    --transition: all 0.3s ease;
+}
+
+/* Reset et styles de base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: var(--dark-color);
+}
+
+.modern-dashboard {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* En-tête du dashboard */
+.dashboard-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius);
+    padding: 25px 30px;
+    margin-bottom: 30px;
+    box-shadow: var(--box-shadow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: slideDown 0.6s ease-out;
+}
+
+
+
+
+/* ============================================================
+   🔍 SECTION : BARRE DE RECHERCHE + BOUTON AJOUTER
+   ============================================================ */
+
+/* Container principal */
+.search-add-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 30px;
+    padding: 0 5px;
+}
+
+/* Wrapper barre de recherche */
+.search-wrapper {
+    position: relative;
+    width: 45%;
+}
+
+/* Champ input */
+.search-input {
+    width: 100%;
+    padding: 12px 20px;
+    border-radius: 50px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    font-size: 1rem;
+    color: #555;
+    outline: none;
+    padding-right: 45px; /* espace pour la loupe à droite */
+}
+
+.search-input:focus {
+    border-color: #aaa;
+}
+
+/* Icône loupe à droite */
+.search-icon-right {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 18px;
+}
+
+/* Bouton Ajouter (Gold) */
+.add-btn-gold {
+    background-color: #cba35c;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.add-btn-gold:hover {
+    background-color: #b58e4a;
+}
+
+.add-btn-gold i {
+    font-size: 18px;
+}
+
+
+
+/* ============================================================
+   📊 SECTION : GRILLE DES CARTES STATISTIQUES
+   ============================================================ */
+
+/* Layout colonne */
+.stats-row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.col-custom {
+    flex: 1;
+    min-width: 200px;
+}
+
+
+
+/* ============================================================
+   🟦🟩🟧🟪🟨 DESIGN GÉNÉRAL DES CARTES
+   ============================================================ */
+
+.stat-card {
+    border-radius: 20px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    padding: 20px 20px 15px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+/* Titre */
+.card-title {
+    font-size: 14px;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 15px;
+    font-weight: 400;
+}
+
+/* Zone basse : chiffres + pourcentage */
+.card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+/* Chiffre principal */
+.stat-number {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1;
+}
+
+/* Trend */
+.stat-trend {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1a1a1a;
+}
+
+.stat-trend i {
+    font-size: 12px;
+}
+
+/* Icône à gauche */
+.icon-wrapper {
+    background: rgba(255,255,255,0.2);
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    backdrop-filter: blur(5px);
+}
+
+.icon-wrapper i {
+    font-size: 22px;
+    color: #fff;
+}
+
+/* Textes */
+.stat-card h6 {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-bottom: 2px;
+}
+
+.stat-card .stat-number {
+    font-size: 1.4rem;
+    line-height: 1.2;
+}
+
+.percent-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+/* Trend badge */
+.trend-badge {
+    background: rgba(255,255,255,0.3);
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.4);
+}
+
+.trend-badge i {
+    color: #fff;
+    font-size: 14px;
+    transform: rotate(45deg);
+}
+
+/* Lien Retrait */
+.withdraw-link {
+    font-size: 13px;
+    color: #fff !important;
+    background: rgba(0,0,0,0.1);
+    padding: 4px 10px;
+    border-radius: 15px;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 5px;
+}
+
+.withdraw-link:hover {
+    background: rgba(0,0,0,0.2);
+}
+
+
+/* Animation du chiffre */
+.stat-number {
+    display: inline-block;
+    transition: transform 0.3s ease, color 0.3s ease;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #fff; /* couleur par défaut */
+}
+
+/* Quand on survole la carte */
+.stat-card:hover .stat-number {
+    transform: scale(1.2); /* agrandit légèrement */
+    color: #ffeb3b; /* change de couleur pour attirer l'œil */
+}
+
+/* Animation de rebond léger (optionnel) */
+@keyframes bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.25); }
+}
+
+/* Si tu veux une version rebond animée en hover */
+.stat-card:hover .stat-number {
+    animation: bounce 0.4s ease-in-out;
+}
+
+
+    /* Conteneur global blanc */
+    .quick-actions-container {
+        background-color: #fff;
+        border-radius: 16px;
+        padding: 25px 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        max-width: 1200px;
+        margin: 20px auto;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #000;
+        margin-bottom: 20px;
+    }
+
+    /* Grille des boutons */
+    .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    /* Style de base de la carte */
+    .action-card {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden; /* Important pour que le header suive les bords ronds */
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        height: 140px; /* Hauteur fixe pour uniformité */
+    }
+
+    /* Animation au survol */
+    .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    /* Partie haute colorée */
+    .card-top {
+        flex: 2; /* Prend 2/3 de la hauteur */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    /* Partie basse blanche */
+    .card-bottom {
+        flex: 1; /* Prend 1/3 de la hauteur */
+        /* background-color: #fff; */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-top: 1px solid rgba(0,0,0,0.02);
+    }
+
+    .card-bottom span {
+        color: #333;
+        font-size: 15px;
+        font-weight: 500;
+        text-align: center;
+    }
+
+    /* Cercle autour de l'icône */
+    .icon-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.25); /* Blanc transparent */
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        color: white;
+        backdrop-filter: blur(2px);
+    }
+
+    /* --- DÉGRADÉS DES COULEURS (Fidèles à l'image) --- */
+
+    /* 1. Vert Sarcelle */
+    .card-green .card-top {
+        background: linear-gradient(135deg, #0B5C58 0%, #189178 100%);
+    }
+
+    /* 2. Or / Moutarde */
+    .card-gold .card-top {
+        background: linear-gradient(135deg, #966F23 0%, #FBC02D 100%);
+    }
+
+    /* 3. Rose / Violet */
+    .card-pink .card-top {
+        background: linear-gradient(135deg, #D04A98 0%, #863668 100%);
+    }
+
+    /* 4. Bleu Royal */
+    .card-blue .card-top {
+        background: linear-gradient(135deg, #224E8E 0%, #3B82F6 100%);
+    }
+
+
+    /* Badge de notification */
+    .badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: #ff4757;
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+        padding: 2px 8px;
+        border-radius: 10px;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+        40% {transform: translateY(-5px);}
+        60% {transform: translateY(-3px);}
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .actions-grid {
+            grid-template-columns: 1fr; /* Une seule colonne sur mobile */
+        }
+    }
+
+
+        :root {
+        --bg-card: #ffffff;
+        --text-dark: #1a1a1a;
+        --text-grey: #6c757d;
+        --blue-link: #6495ED;
+        --pastel-blue-bg: #A8C8D1; /* Couleur de fond carte droite */
+        --pastel-blue-dark: #6096A1; /* Couleur du badge prix */
+    }
+
+    .dashboard-content-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Deux colonnes égales */
+        gap: 25px;
+        max-width: 1300px;
+        margin: 20px auto;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* Style global des cartes blanches */
+    .dashboard-card {
+        background: var(--bg-card);
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        display: flex;
+        flex-direction: column;
+        min-height: 200px;
+    }
+
+    /* Header des cartes */
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .card-header h2 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #000;
+        margin: 0;
+    }
+
+    .link-view-all {
+        color: var(--blue-link);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: opacity 0.3s;
+    }
+    .link-view-all:hover { opacity: 0.7; }
+
+    /* --- PARTIE GAUCHE : État Vide --- */
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 20px 0;
+        color: #333;
+    }
+
+    .calendar-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+        color: #333; /* Couleur sombre pour l'icone outline */
+    }
+    
+    .empty-state h3 {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0 0 5px 0;
+    }
+
+    .empty-state p {
+        font-size: 13px;
+        color: #888;
+        margin: 0;
+    }
+
+    /* Style optionnel pour la liste si ce n'est pas vide */
+    .messe-row {
+        display: flex;
+        gap: 15px;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+    .date-box {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 5px 10px;
+        text-align: center;
+        min-width: 50px;
+    }
+    .d-day { display: block; font-weight: bold; font-size: 18px; }
+    .d-month { display: block; font-size: 12px; text-transform: uppercase; color: #666; }
+    .info-box h4 { margin: 0; font-size: 15px; }
+    .author { font-size: 13px; color: #666; margin: 2px 0; }
+
+    /* --- PARTIE DROITE : Carte Bleue (Dernière demande) --- */
+    
+    .latest-request-card {
+        background-color: var(--pastel-blue-bg); /* Le fond bleu clair */
+        border-radius: 12px;
+        padding: 20px 25px;
+        position: relative;
+        color: #fff;
+        box-shadow: 0 4px 10px rgba(96, 150, 161, 0.2);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 120px;
+    }
+
+    .requester-name {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 10px 0;
+        color: #fff;
+    }
+
+    .request-intention {
+        font-size: 15px;
+        margin: 0 0 20px 0;
+        color: rgba(255,255,255, 0.95);
+    }
+    
+    .request-date {
+        font-size: 13px;
+        margin: 0;
+        color: rgba(255,255,255, 0.8);
+    }
+
+    .request-price {
+        position: absolute;
+        bottom: 20px;
+        right: 25px;
+        background-color: var(--pastel-blue-dark); /* Le badge plus foncé */
+        padding: 6px 15px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    /* --- ANIMATIONS --- */
+    .slide-in-up {
+        animation: slideUp 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    .delay-100 { animation-delay: 0.1s; }
+
+    @keyframes slideUp {
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive Mobile */
+    @media (max-width: 768px) {
+        .dashboard-content-wrapper {
+            grid-template-columns: 1fr;
+        }
+    }
+
+/* ============================================================
+   🎨 COULEURS UNIQUES (sans gradient)
+   ============================================================ */
+
+.col-custom:nth-child(1) .stat-card { 
+    background-color: #f5c773; /* Jaune/orange */
+}
+
+.col-custom:nth-child(2) .stat-card { 
+    background-color: #6fd999; /* Vert */
+}
+
+.col-custom:nth-child(3) .stat-card { 
+    background-color: #6487d1; /* Bleu */
+}
+
+.col-custom:nth-child(4) .stat-card { 
+    background-color: #ff8d29; /* Orange */
+}
+
+.col-custom:nth-child(5) .stat-card { 
+    background-color: #c2a7db; /* Violet */
+}
+
+
+
+
+
+
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.welcome-section h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+}
+
+.welcome-section p {
+    font-size: 1.1rem;
+    color: var(--gray-color);
+    font-weight: 500;
+}
+
+.user-profile img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid var(--primary-color);
+    transition: var(--transition);
+    box-shadow: 0 4px 15px rgba(243, 85, 37, 0.3);
+}
+
+.user-profile img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(243, 85, 37, 0.4);
+}
+
+/* Grille des statistiques */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    box-shadow: var(--box-shadow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s ease;
+}
+
+.stat-card:hover::before {
+    left: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.4s; }
+.stat-card:nth-child(5) { animation-delay: 0.5s; }
+
+.card-icon {
+    margin-bottom: 20px;
+}
+
+.icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.stat-card:hover .icon-wrapper {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.icon-wrapper i {
+    font-size: 1.5rem;
+}
+
+.card-content h3 {
+    font-size: 0.95rem;
+    color: var(--gray-color);
+    margin-bottom: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-number {
+    font-size: 2.2rem;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 15px;
+    background: #1c1c1c;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 1.5s ease-in-out;
+    position: relative;
+}
+
+.progress::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    animation: shimmer 2s infinite;
+}
+
+    /* Conteneur principal */
+    .charts-section {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr; /* Le graphe de droite est plus large */
+        gap: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Styles des Cartes */
+    .chart-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .chart-header h3 {
+        margin: 0;
+        font-size: 18px;
+        color: #111;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    .subtitle {
+        font-size: 14px;
+        color: #999;
+        font-weight: 400;
+        margin-left: 10px;
+    }
+
+    .line-header .header-text {
+        display: flex;
+        align-items: baseline;
+        margin-bottom: 10px;
+    }
+
+    /* Layout spécifique pour le Doughnut (Graphe à gauche, légende à droite) */
+    .chart-body-flex {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        height: 100%;
+    }
+
+    .chart-wrapper-doughnut {
+        width: 180px;
+        height: 180px;
+        position: relative;
+    }
+
+    /* Légende personnalisée HTML */
+    .chart-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        color: #333;
+        justify-content: space-between;
+        min-width: 180px;
+    }
+
+    .legend-info {
+        display: flex;
+        align-items: center;
+    }
+
+    .legend-color {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+
+    .legend-percent {
+        font-weight: 600;
+        margin-left: auto;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+
+    /* --- ANIMATIONS CSS --- */
+    
+    /* Animation d'entrée glissée */
+    .slide-in-left {
+        animation: slideInLeft 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+
+    .slide-in-right {
+        animation: slideInRight 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        opacity: 0;
+        transform: translateX(30px);
+        animation-delay: 0.2s; /* Petit délai pour l'effet cascade */
+    }
+
+    @keyframes slideInLeft {
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes slideInRight {
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .charts-section { grid-template-columns: 1fr; }
+        .chart-body-flex { flex-direction: column; gap: 20px; }
+    }
+/* Actions rapides */
+.quick-actions {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: var(--box-shadow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: slideUp 0.6s ease-out;
+}
+
+.quick-actions h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--dark-color);
+    font-weight: 600;
+}
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.action-btn:hover::before {
+    left: 100%;
+}
+
+.action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.btn-icon {
+    margin-right: 15px;
+    font-size: 1.3rem;
+}
+
+.action-btn span:not(.badge) {
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.badge {
+    background: var(--danger-color);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    margin-left: auto;
+    animation: pulse 2s infinite;
+}
+
+/* Contenu principal */
+.dashboard-content {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 25px;
+}
+
+.content-left, .recent-offrandes {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: fadeIn 0.8s ease-out;
+}
+
+.upcoming-section, .recent-offrandes {
+    padding: 25px;
+}
+
+.section-header, .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-header h2, .card-header h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.view-all {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.view-all:hover {
+    color: var(--primary-color);
+    transform: translateX(3px);
+}
+
+/* Liste des messes */
+.messe-list {
+    space-y: 15px;
+}
+
+.messe-item {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: rgba(248, 249, 250, 0.8);
+    border-radius: 10px;
+    margin-bottom: 15px;
+    transition: var(--transition);
+    border-left: 4px solid var(--accent-color);
+}
+
+.messe-item:hover {
+    background: rgba(233, 236, 239, 0.9);
+    transform: translateX(5px);
+}
+
+.messe-date {
+    text-align: center;
+    margin-right: 20px;
+    min-width: 60px;
+}
+
+.day {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1;
+}
+
+.month {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--gray-color);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.messe-details {
+    flex: 1;
+}
+
+.messe-details h4 {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    color: var(--dark-color);
+    font-weight: 600;
+}
+
+.messe-details p {
+    color: var(--gray-color);
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.messe-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 0.85rem;
+}
+
+.time {
+    color: var(--gray-color);
+}
+
+.status {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status.confirmed {
+    background: rgba(76, 175, 80, 0.1);
+    color: var(--secondary-color);
+}
+
+.status.pending {
+    background: rgba(243, 85, 37, 0.1);
+    color: var(--primary-color);
+}
+
+.messe-actions .icon-btn {
+    color: var(--gray-color);
+    text-decoration: none;
+    padding: 8px;
+    border-radius: 6px;
+    transition: var(--transition);
+}
+
+.messe-actions .icon-btn:hover {
+    color: var(--accent-color);
+    background: rgba(33, 150, 243, 0.1);
+}
+
+/* État vide */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--gray-color);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+/* Liste des offrandes */
+.offrande-list {
+    space-y: 12px;
+}
+
+.offrande-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: rgba(248, 249, 250, 0.8);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    transition: var(--transition);
+    border-left: 4px solid var(--secondary-color);
+}
+
+.offrande-item:hover {
+    background: rgba(233, 236, 239, 0.9);
+    transform: translateX(3px);
+}
+
+.offrande-icon {
+    margin-right: 15px;
+    font-size: 1.2rem;
+}
+
+.offrande-details p {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--dark-color);
+}
+
+.offrande-amount {
+    display: block;
+    font-weight: 700;
+    color: var(--secondary-color);
+    font-size: 1.1rem;
+    margin-bottom: 3px;
+}
+
+.offrande-donor, .offrande-time {
+    font-size: 0.8rem;
+    color: var(--gray-color);
+}
+
+.offrande-donor {
+    margin-bottom: 2px;
+}
+
+/* Animations */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Effet de vague sur les cartes */
+.wave-effect {
+    position: relative;
+    overflow: hidden;
+}
+
+.wave-effect::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.4) 0%, transparent 80%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.wave-effect:hover::after {
+    opacity: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .dashboard-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .charts-section {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .modern-dashboard {
+        padding: 15px;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .messe-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .messe-date {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+    
+    .messe-meta {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-section h1 {
+        font-size: 1.8rem;
+    }
+    
+    .stat-card {
+        padding: 20px;
+    }
+    
+    .chart-card {
+        padding: 20px;
+    }
+    
+    .charts-section {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Styles pour les sélecteurs de graphique améliorés */
+.chart-selector {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.chart-selector:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Amélioration des barres de progression */
+.progress-bar {
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: shimmer 3s infinite;
+}
+
+/* Effet de profondeur */
+.stat-card, .chart-card, .quick-actions, .content-left, .recent-offrandes {
+    position: relative;
+}
+
+.stat-card::after, .chart-card::after, .quick-actions::after, .content-left::after, .recent-offrandes::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: var(--border-radius);
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}

@@ -15,7 +15,8 @@
 
 /* ============================
    Style global
-============================ */
+   ============================
+*/
 body {
   font-family: var(--font-family);
   color: var(--primary-color);
@@ -24,9 +25,10 @@ body {
   padding: 0;
 }
 
-/* ============================
+/* ================================
    Grille principale des événements
-============================ */
+   ================================
+ */
 .event-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));

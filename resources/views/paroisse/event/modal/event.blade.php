@@ -62,10 +62,17 @@
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Annuler</button>
-          <button type="submit" class="btn btn-dark" id="saveBtn">
-            <i class="material-icons align-middle me-1">save</i> Enregistrer
+          <!-- Bouton Annuler avec icône "close" -->
+          <button type="button" class="btn btn-light border" data-bs-dismiss="modal">
+              <i class="material-icons align-middle me-1">cancel</i> Annuler
           </button>
+
+          <!-- Bouton Sauvegarder avec icône "save" -->
+          <button type="submit" class="btn btn-dark" id="saveBtn">
+              <i class="material-icons align-middle me-1">save</i> Créer l'évènement
+          </button>
+      </div>
+
         </div>
       </form>
     </div>
@@ -83,3 +90,13 @@
     document.getElementById('date_fin').setAttribute('min', formattedNow);
   });
 </script>
+
+<style>
+  .modal-dialog {
+    max-width: 65%;       /* largeur jusqu'à 90% de l'écran */
+    width: auto;          /* s'adapte au contenu si nécessaire */
+    height: 80vh;         /* hauteur jusqu'à 80% de la fenêtre */
+    display: flex;
+    align-items: right;  /* centre verticalement */
+}
+</style>

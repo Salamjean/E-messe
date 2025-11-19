@@ -227,7 +227,7 @@
     }
     
     .messe-card[data-status="confirmee"] {
-        border-left-color: #28a745;
+        border-left-color: #5ea7b5;
     }
     
     .messe-card[data-status="celebre"] {
@@ -355,7 +355,7 @@
     }
     
     .view-btn {
-        background: #f35525;
+        background: #c49d54;
         color: white;
     }
     
@@ -525,7 +525,7 @@
     
     .progress-bar {
         height: 100%;
-        background: #28a745;
+        background: #5ea7b5;
         transition: width 0.3s ease;
     }
     

@@ -3,7 +3,7 @@
 
 <div class="messe-container">
     <div class="messe-header">
-        <h1>Toutes les demandes de messe celebrées ou annulées.</h1>
+        <h1>Historique celebrées ou annulées.</h1>
         <p>Retrouvez toutes les demandes celebrées.</p>
     </div>
 
@@ -122,7 +122,7 @@
     }
     
     .messe-header h1 {
-        color: #f35525;
+        color: #5ea7b5;
         font-size: 2.5rem;
         margin-bottom: 10px;
         font-weight: 700;
@@ -148,7 +148,7 @@
         box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
         overflow: hidden;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border-left: 4px solid #f35525;
+        border-left: 4px solid #5ea7b5;
         position: relative;
     }
     
@@ -166,7 +166,7 @@
     }
     
     .messe-card[data-status="annulee"] {
-        border-left-color: #6c757d;
+        border-left-color: #5ea7b5;
     }
     
     .card-header {
@@ -286,7 +286,7 @@
     }
     
     .view-btn {
-        background: #f35525;
+        background: #c49d54;
         color: white;
     }
     

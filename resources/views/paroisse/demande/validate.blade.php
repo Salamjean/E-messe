@@ -5,7 +5,7 @@
 
 <div class="messe-container">
     <div class="messe-header">
-        <h1>Toutes les demandes de messe</h1>
+        <h1>Validation des intentions de messses</h1>
         <p>Retrouvez toutes vos demandes en attente de validatation.</p>
     </div>
 
@@ -164,7 +164,7 @@
     }
     
     .messe-header h1 {
-        color: #f35525;
+        color: #5ea7b5;
         font-size: 2.5rem;
         margin-bottom: 10px;
         font-weight: 700;
@@ -190,7 +190,7 @@
         box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
         overflow: hidden;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border-left: 4px solid #f35525;
+        border-left: 4px solid #5ea7b5;
         position: relative;
     }
     
@@ -328,7 +328,7 @@
     }
     
     .view-btn {
-        background: #f35525;
+        background: #c49d54;
         color: white;
     }
     
@@ -338,7 +338,7 @@
     }
     
     .confirm-btn {
-        background: #28a745;
+        background: #339c5d;
         color: white;
     }
     
@@ -348,12 +348,12 @@
     }
     
     .cancel-btn {
-        background: #dc3545;
+        background: #de353e;
         color: white;
     }
     
     .cancel-btn:hover {
-        background: #c82333;
+        background: #de353e;
         color: white;
     }
     

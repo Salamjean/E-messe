@@ -1,251 +1,288 @@
 @extends('paroisse.layouts.template')
-@section('content')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 <link rel="stylesheet" href="{{asset('assets/paroiStyle.css')}}">
+<link rel="stylesheet" href="{{asset('css/dashboard_paroisse.css')}}">
 <!-- Ajout de SweetAlert2 CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+@section('content')
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="modern-dashboard">
-    <!-- En-tête du tableau de bord -->
-    <div class="dashboard-header">
-        <div class="header-content">
-            <div class="welcome-section">
-                <h1>Tableau de Bord Paroissial</h1>
-                <p>Bienvenue, à la paroisse {{ Auth::guard('paroisse')->user()->name }}!</p>
+    <!-- En-tête : Recherche et Bouton -->
+    <div class="search-add-container">
+        <!-- Barre de recherche (Style Pillule) -->
+        <div class="search-wrapper">
+            <input type="text" class="search-input" placeholder="Recherche">
+            <i class="fas fa-search search-icon-right"></i>
+        </div>
+
+        <!-- Bouton Ajouter (Style Gold) -->
+        <button class="add-btn-gold" onclick="window.location.href='{{ route('paroisse.offrande') }}'">
+            <i class="fas fa-plus"></i>
+            <span>Ajouter un événement</span>
+        </button>
+    </div>
+
+    <!-- Cartes de statistiques -->
+    <div class="row stats-row">
+        <!-- Carte 1 : En attente (Jaune) -->
+        <div class="col-custom">
+            <div class="stat-card card-yellow shadow-sm">
+                <h6 class="card-title">Demandes en attente</h6>
+                <div class="card-bottom">
+                    <span class="stat-number">{{ $pendingDemandes }}</span>
+                    <div class="stat-trend">
+                        <span>+{{ $totalDemandes > 0 ? round(($pendingDemandes/$totalDemandes)*100) : 0 }}%</span>
+                        <i class="fas fa-arrow-trend-up"></i>
+                    </div>
+                </div>
             </div>
-            <div class="header-actions">
-                <div class="user-profile">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('paroisse')->user()->name) }}&background=f35525&color=fff" alt="Profile">
+        </div>
+
+        <!-- Carte 2 : Célébrés (Vert) -->
+        <div class="col-custom">
+            <div class="stat-card card-green shadow-sm">
+                <h6 class="card-title">Messe Célébrés</h6>
+                <div class="card-bottom">
+                    <span class="stat-number">{{ $celebratedDemandes }}</span>
+                    <div class="stat-trend">
+                        <span>-0.03%</span> <!-- Exemple statique ou dynamique -->
+                        <i class="fas fa-arrow-trend-down"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carte 3 : Confirmé (Bleu) -->
+        <div class="col-custom">
+            <div class="stat-card card-blue shadow-sm">
+                <h6 class="card-title">Messe Confirmé</h6>
+                <div class="card-bottom">
+                    <span class="stat-number">{{ $confirmedDemandes }}</span>
+                    <div class="stat-trend">
+                        <span>+{{ $totalDemandes > 0 ? round(($confirmedDemandes/$totalDemandes)*100) : 0 }}%</span>
+                        <i class="fas fa-arrow-trend-up"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carte 4 : Montant (Orange) -->
+        <div class="col-custom">
+            <div class="stat-card card-orange shadow-sm">
+                <h6 class="card-title">Montant demande</h6>
+                <div class="card-bottom">
+                    <!-- number_format court pour l'affichage (ex: 3070F) -->
+                    <span class="stat-number">{{ number_format($totalOffrandes, 0, ',', ' ') }}F</span>
+                    <div class="stat-trend">
+                        <span>-0.03%</span>
+                        <i class="fas fa-arrow-trend-down"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carte 5 : Portefeuille (Violet) -->
+        <div class="col-custom">
+            <div class="stat-card card-purple shadow-sm">
+                <h6 class="card-title">Portefeuille</h6>
+                <div class="card-bottom">
+                    <span class="stat-number">{{ number_format($soldeDisponible, 0, ',', ' ') }}F</span>
+                    <div class="stat-trend">
+                        <span>+15.03%</span>
+                        <i class="fas fa-arrow-trend-up"></i>
+                    </div>
+                </div>
+                <!-- Lien cliquable discret pour le retrait si besoin -->
+                <a href="{{ route('paroisse.retrait.create') }}" class="stretched-link"></a> 
+            </div>
+        </div>
+    </div><br>
+
+<div class="charts-section">
+    <!-- Carte 1 : Répartition (Doughnut) -->
+    <div class="chart-card slide-in-left">
+        <div class="chart-header">
+            <h3>Répartition des demandes</h3>
+        </div>
+        <div class="chart-body-flex">
+            <div class="chart-wrapper-doughnut">
+                <canvas id="demands-chart"></canvas>
+            </div>
+            <!-- Légende personnalisée -->
+            <div class="chart-legend-custom">
+                <div class="legend-item">
+                    <span class="legend-color" style="background-color: #f5c773"></span>
+                    <span class="legend-text">Messe En attente 8.3%</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background-color: #87e0ab"></span>
+                    <span class="legend-text">Messe  Célébrés 65.8%</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background-color: #6487d1"></span>
+                    <span class="legend-text">Messe Confirmé 25.9%</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Cartes de statistiques -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="card-icon">
-                <div class="icon-wrapper" style="background: rgba(243, 85, 37, 0.1);">
-                    <i class="fas fa-clock" style="color: #f35525;"></i>
-                </div>
+    <!-- Carte 2 : Évolution (Line) -->
+    <div class="chart-card slide-in-right">
+        <div class="chart-header line-header">
+            <div class="header-text">
+                <h3>Évolution mensuelle des demandes de messe</h3>
+                <span class="subtitle">Totale Messes demandées</span>
             </div>
-            <div class="card-content">
-                <h3>Demandes en attente</h3>
-                <span class="stat-number">{{ $pendingDemandes }}</span>
-                <div class="progress-bar">
-                    <div class="progress" style="width: {{ $totalDemandes > 0 ? ($pendingDemandes/$totalDemandes)*100 : 0 }}%; background: #f35525;"></div>
-                </div>
+            <div class="chart-legend-top">
+                <div class="legend-badge active">Cette année</div>
+                <div class="legend-badge">Tannée dernière</div>
             </div>
         </div>
-
-        <div class="stat-card">
-            <div class="card-icon">
-                <div class="icon-wrapper" style="background: rgba(76, 175, 80, 0.1);">
-                    <i class="fas fa-check-circle" style="color: #4CAF50;"></i>
-                </div>
-            </div>
-            <div class="card-content">
-                <h3>Demandes confirmées</h3>
-                <span class="stat-number">{{ $confirmedDemandes }}</span>
-                <div class="progress-bar">
-                    <div class="progress" style="width: {{ $totalDemandes > 0 ? ($confirmedDemandes/$totalDemandes)*100 : 0 }}%; background: #4CAF50;"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="card-icon">
-                <div class="icon-wrapper" style="background: rgba(33, 150, 243, 0.1);">
-                    <i class="fas fa-history" style="color: #2196F3;"></i>
-                </div>
-            </div>
-            <div class="card-content">
-                <h3>Messes célébrées</h3>
-                <span class="stat-number">{{ $celebratedDemandes }}</span>
-                <div class="progress-bar">
-                    <div class="progress" style="width: {{ $totalDemandes > 0 ? ($celebratedDemandes/$totalDemandes)*100 : 0 }}%; background: #2196F3;"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="card-icon">
-                <div class="icon-wrapper" style="background: rgba(156, 39, 176, 0.1);">
-                    <i class="fas fa-coins" style="color: #9C27B0;"></i>
-                </div>
-            </div>
-            <div class="card-content">
-                <h3>Montant de demande de messe</h3>
-                <span class="stat-number">{{ number_format($totalOffrandes, 0, ',', ' ') }} FCFA</span>
-                <div class="progress-bar">
-                    <div class="progress" style="width: 100%; background: #9C27B0;"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="stat-card">
-        <div class="card-icon">
-            <div class="icon-wrapper" style="background: rgba(255, 193, 7, 0.1);">
-                <i class="fas fa-wallet" style="color: #FFC107;"></i>
-            </div>
-        </div>
-        <div class="card-content">
-            <h3>Portefeuille électronique</h3>
-            <span class="stat-number">{{ number_format($soldeDisponible, 0, ',', ' ') }} FCFA</span>
-            <div class="progress-bar">
-                <div class="progress" style="width: 100%; background: #FFC107;"></div>
-            </div>
-            <div class="mt-2">
-                <a href="{{route('paroisse.retrait.create')}}"  style="color: #FFC107; font-size: 12px;">
-                    <i class="fas fa-money-bill-wave"></i> Demander un retrait
-                </a>
-            </div>
+        <div class="chart-container">
+            <canvas id="offrandes-chart"></canvas>
         </div>
     </div>
 </div>
 
-    <!-- Graphiques -->
-    <div class="charts-section">
-        <div class="chart-card">
-            <div class="chart-header">
-                <h3>Répartition des demandes</h3>
-                <select id="chart-type-selector" class="chart-selector">
-                    <option value="doughnut">Anneau</option>
-                    <option value="pie">Circulaire</option>
-                    <option value="bar">Barres</option>
-                </select>
-            </div>
-            <div class="chart-container">
-                <canvas id="demands-chart"></canvas>
-            </div>
-        </div>
-
-        <div class="chart-card">
-            <div class="chart-header">
-                <h3>Évolution mensuelle des demandes de messe</h3>
-            </div>
-            <div class="chart-container">
-                <canvas id="offrandes-chart"></canvas>
-            </div>
-        </div>
-
-        
-    </div>
-
-    <!-- Actions rapides -->
-    <div class="quick-actions">
-        <h2>Actions Rapides</h2>
-        <div class="action-buttons">
-            <a href="{{ route('demandes.messes.validate') }}" class="action-btn">
-                <div class="btn-icon">
-                    <i class="fas fa-check-circle"></i>
+<!-- Section Actions Rapides -->
+<div class="quick-actions-container">
+    <h2 class="section-title">Action rapide</h2>
+    
+    <div class="actions-grid">
+        <!-- Bouton 1 : Valider (Vert) -->
+        <a href="{{ route('demandes.messes.validate') }}" class="action-card card-green">
+            <div class="card-top">
+                <div class="icon-circle">
+                    <i class="fas fa-check"></i>
                 </div>
+            </div>
+            <div class="card-bottom">
                 <span>Valider demandes</span>
-                @if($pendingDemandes > 0)
+            </div>
+            
+            <!-- Badge de notification (Positionné en absolu) -->
+            {{-- @if(isset($pendingDemandes) && $pendingDemandes > 0)
                 <span class="badge">{{ $pendingDemandes }}</span>
-                @endif
-            </a>
-            <a href="{{ route('demandes.messes.index') }}" class="action-btn">
-                <div class="btn-icon">
-                    <i class="fas fa-list"></i>
+            @endif --}}
+        </a>
+
+        <!-- Bouton 2 : Confirmées (Or/Moutarde) -->
+        <a href="{{ route('demandes.messes.index') }}" class="action-card card-gold">
+            <div class="card-top">
+                <div class="icon-circle">
+                    <i class="fas fa-tasks"></i> <!-- Icone liste -->
                 </div>
-                <span>Demandes confirmées</span>
-            </a>
-            <a href="{{ route('paroisse.offrande') }}" class="action-btn">
-                <div class="btn-icon">
+            </div>
+            <div class="card-bottom">
+                <span>Demande confirmées</span>
+            </div>
+        </a>
+
+        <!-- Bouton 3 : Ajouter Offrande (Rose/Violet) -->
+        <a href="{{ route('paroisse.offrande') }}" class="action-card card-pink">
+            <div class="card-top">
+                <div class="icon-circle">
                     <i class="fas fa-plus"></i>
                 </div>
+            </div>
+            <div class="card-bottom">
                 <span>Ajouter offrande</span>
-            </a>
-            <a href="{{ route('demandes.messes.history') }}" class="action-btn">
-                <div class="btn-icon">
+            </div>
+        </a>
+
+        <!-- Bouton 4 : Historique (Bleu) -->
+        <a href="{{ route('demandes.messes.history') }}" class="action-card card-blue">
+            <div class="card-top">
+                <div class="icon-circle">
                     <i class="fas fa-history"></i>
                 </div>
+            </div>
+            <div class="card-bottom">
                 <span>Historique</span>
-            </a>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="dashboard-content-wrapper">
+    <!-- SECTION GAUCHE : Prochaines Messes -->
+    <div class="dashboard-card section-left slide-in-up">
+        <div class="card-header">
+            <h2>Prochaines messes à célébrer</h2>
+            <a href="{{ route('demandes.messes.index') }}" class="link-view-all">Voir tout</a>
+        </div>
+
+        <div class="card-body">
+            @if(isset($upcomingMessess) && $upcomingMessess->count() > 0)
+                <!-- Liste des messes (si données) -->
+                <div class="messes-list-container">
+                    @foreach($upcomingMessess as $messe)
+                    <div class="messe-row">
+                        <div class="date-box">
+                            <span class="d-day">{{ \Carbon\Carbon::parse($messe->date_souhaitee)->format('d') }}</span>
+                            <span class="d-month">{{ \Carbon\Carbon::parse($messe->date_souhaitee)->format('M') }}</span>
+                        </div>
+                        <div class="info-box">
+                            <h4>{{ $messe->type_intention }}</h4>
+                            <p class="author">Par : {{ $messe->nom_demandeur }}</p>
+                            <div class="meta-tags">
+                                <span class="tag-time"><i class="far fa-clock"></i> {{ $messe->heure_souhaitee }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            @else
+                <!-- État Vide (Comme sur l'image) -->
+                <div class="empty-state">
+                    <div class="calendar-icon">
+                        <!-- Icône style calandre SVG ou FontAwesome -->
+                        <i class="far fa-calendar-alt"></i>
+                    </div>
+                    <h3>Aucune Messe prévue</h3>
+                    <p>Ajoutez un évènement pour démarrer</p>
+                </div>
+            @endif
         </div>
     </div>
 
-    <!-- Section des prochaines messes -->
-    <div class="dashboard-content">
-        <div class="content-left">
-            <div class="upcoming-section">
-                <div class="section-header">
-                    <h2>Prochaines Messes à Célébrer</h2>
-                    <a href="{{ route('demandes.messes.index') }}" class="view-all">Voir tout</a>
-                </div>
-                
-                @if($upcomingMessess->count() > 0)
-                <div class="messe-list">
-                    @foreach($upcomingMessess as $messe)
-                    <div class="messe-item">
-                        <div class="messe-date">
-                            <span class="day">{{ \Carbon\Carbon::parse($messe->date_souhaitee)->format('d') }}</span>
-                            <span class="month">{{ \Carbon\Carbon::parse($messe->date_souhaitee)->format('M') }}</span>
-                        </div>
-                        <div class="messe-details">
-                            <h4>{{ $messe->type_intention }}</h4>
-                            <p>Demandé par: {{ $messe->nom_demandeur }}</p>
-                            <div class="messe-meta">
-                                <span class="time"><i class="fas fa-clock"></i> {{ $messe->heure_souhaitee }}</span>
-                                <span class="status {{ $messe->statut }}">{{ $messe->statut }}</span>
-                            </div>
-                        </div>
-                        <div class="messe-actions">
-                            <a href="#" class="icon-btn" title="Voir détails">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-                @else
-                <div class="empty-state">
-                    <div class="empty-icon">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                    <p>Aucune messe prévue</p>
-                </div>
-                @endif
-            </div>
+    <!-- SECTION DROITE : Dernière Demande -->
+    <div class="dashboard-card section-right slide-in-up delay-100">
+        <div class="card-header">
+            <h2>Dernière demande de messe</h2>
         </div>
 
-        <!-- Dernières offrandes -->
-        <div class="recent-offrandes">
-            <div class="card-header">
-                <h2>Dernière demande de messe</h2>
-                <a href="#" class="view-all">Voir tout</a>
-            </div>
-            <div class="offrande-list">
-                @if($latestOffrandes->count() > 0)
-                    @foreach($latestOffrandes as $offrande)
-                    <div class="offrande-item">
-                        <div class="offrande-icon">
-                            <i class="fas fa-donate" style="color: #4CAF50;"></i>
-                        </div>
-                        <div class="offrande-details">
-                            <p>Offrande pour {{ $offrande->type_intention }}</p>
-                            <span class="offrande-amount">{{ number_format($offrande->montant_offrande, 0, ',', ' ') }} FCFA</span>
-                            <span class="offrande-donor">Par: {{ $offrande->nom_demandeur }}</span>
-                            <span class="offrande-time">{{ $offrande->created_at->diffForHumans() }}</span>
-                        </div>
+        <div class="card-body">
+            @if(isset($latestOffrandes) && $latestOffrandes->count() > 0)
+                @php 
+                    // On prend juste le premier élément pour l'affichage "Grande Carte"
+                    $latest = $latestOffrandes->first(); 
+                @endphp
+                
+                <!-- La Carte Bleue Stylisée -->
+                <div class="latest-request-card">
+                    <div class="request-info">
+                        <h3 class="requester-name">{{ $latest->nom_demandeur }}</h3>
+                        <p class="request-intention">
+                            <span class="label">Intention :</span> {{ $latest->type_intention }}
+                        </p>
+                        <p class="request-date">
+                            Validé le {{ $latest->created_at->format('d F Y') }}
+                        </p>
                     </div>
-                    @endforeach
-                @else
-                    <div class="offrande-item">
-                        <div class="offrande-icon">
-                            <i class="fas fa-donate" style="color: #6c757d;"></i>
-                        </div>
-                        <div class="offrande-details">
-                            <p>Aucune offrande enregistrée</p>
-                            <span class="offrande-time">Les offrandes apparaîtront ici</span>
-                        </div>
+                    <div class="request-price">
+                        {{ number_format($latest->montant_offrande, 0, ',', ' ') }} F
                     </div>
-                @endif
-            </div>
+                </div>
+            @else
+                <div class="empty-simple">
+                    <p>Aucune demande récente.</p>
+                </div>
+            @endif
         </div>
     </div>
 </div>
@@ -292,119 +329,80 @@
             }, 300);
         });
 
-        // Graphique de répartition des demandes
+        // Graphique de répartition des demandes - ADAPTÉ À LA CAPTURE
         const demandsCtx = document.getElementById('demands-chart').getContext('2d');
         let demandsChart = new Chart(demandsCtx, {
             type: 'doughnut',
             data: {
-                labels: ['En attente', 'Confirmées', 'Célébrées'],
+                // J'ai réorganisé l'ordre pour coller à votre image (Vert -> Bleu -> Jaune)
+                // labels: ['Messe Célébrés', 'Messe Confirmé', 'En attente'],
                 datasets: [{
-                    data: [{{ $pendingDemandes }}, {{ $confirmedDemandes }}, {{ $celebratedDemandes }}],
+                    data: [65.8, 25.9, 8.3], // Ordre correspondant à la taille des sections sur l'image
                     backgroundColor: [
-                        '#f35525',
-                        '#4CAF50',
-                        '#2196F3'
+                        '#9ce6b9', // Vert (Le grand)
+                        '#6487d1', // Bleu (Le moyen)
+                        '#f5c773'  // Jaune (Le petit)
                     ],
-                    borderWidth: 0,
+                    borderWidth: 0,   // Pas de bordure classique
+                    borderRadius: 20, // C'est ici qu'on arrondit les bouts des sections !
+                    spacing: 10,      // C'est ici qu'on crée l'espace vide entre les sections !
                     hoverOffset: 10
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    animateScale: true, // Ajoute une animation de "zoom" au chargement
+                    animateRotate: true // Ajoute une animation de rotation au chargement
+                },
                 plugins: {
                     legend: {
-                        position: 'bottom',
-                        labels: {
-                            font: {
-                                size: 12
-                            },
-                            padding: 20
-                        }
+                        display: false 
                     },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
                                 const label = context.label || '';
                                 const value = context.raw || 0;
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = Math.round((value / total) * 100);
-                                return `${label}: ${value} (${percentage}%)`;
+                                return `${label}: ${value}%`;
                             }
                         }
                     }
                 },
-                cutout: '70%'
+                cutout: '70%', // Épaisseur de l'anneau (plus le % est haut, plus l'anneau est fin)
             }
         });
 
-        // Changer le type de graphique
-        document.getElementById('chart-type-selector').addEventListener('change', function() {
-            demandsChart.destroy();
-            demandsChart = new Chart(demandsCtx, {
-                type: this.value,
-                data: {
-                    labels: ['En attente', 'Confirmées', 'Célébrées'],
-                    datasets: [{
-                        data: [{{ $pendingDemandes }}, {{ $confirmedDemandes }}, {{ $celebratedDemandes }}],
-                        backgroundColor: [
-                            '#f35525',
-                            '#4CAF50',
-                            '#2196F3'
-                        ],
-                        borderWidth: 0,
-                        hoverOffset: 10
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                font: {
-                                    size: 12
-                                },
-                                padding: 20
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((value / total) * 100);
-                                    return `${label}: ${value} (${percentage}%)`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        });
-
-        // Graphique d'évolution des offrandes (données réelles)
+        // Graphique d'évolution des demandes de messe - ADAPTÉ À LA CAPTURE
         const offrandesCtx = document.getElementById('offrandes-chart').getContext('2d');
-        const monthlyOffrandeData = @json($monthlyOffrandeData);
-        const monthlyOffrandeLabels = @json($monthlyOffrandeLabels);
-
         new Chart(offrandesCtx, {
             type: 'line',
             data: {
-                labels: monthlyOffrandeLabels,
+                labels: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juu'],
                 datasets: [{
-                    label: 'Montant des offrandes (FCFA)',
-                    data: monthlyOffrandeData,
-                    borderColor: '#9C27B0',
-                    backgroundColor: 'rgba(156, 39, 176, 0.1)',
+                    label: 'Cette année',
+                    data: [120, 380, 150, 300, 440, 300, 290],
+                    borderColor: '#828282',
+                    backgroundColor: '#f2f2f2',
                     borderWidth: 2,
                     fill: true,
                     tension: 0.3,
-                    pointBackgroundColor: '#9C27B0',
-                    pointRadius: 4,
-                    pointHoverRadius: 6
+                    pointBackgroundColor: '#828282',
+                    pointRadius: 1,
+                    pointHoverRadius: 1
+                }, {
+                    label: 'Année dernière',
+                    data: [350, 220, 280, 280, 320, 190, 350],
+                    borderColor: '#abc4eb',
+                    backgroundColor: '#fafafa',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#abc4eb',
+                    pointRadius: 1,
+                    pointHoverRadius: 1,
+                    borderDash: [5, 5]
                 }]
             },
             options: {
@@ -412,12 +410,12 @@
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'top',
+                        display: false // On utilise notre légende personnalisée en haut
                     },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return `${context.dataset.label}: ${context.raw.toLocaleString('fr-FR')} FCFA`;
+                                return `${context.dataset.label}: ${context.raw}`;
                             }
                         }
                     }
@@ -425,10 +423,20 @@
                 scales: {
                     y: {
                         beginAtZero: true,
+                        max: 300,
                         ticks: {
+                            stepSize: 100,
                             callback: function(value) {
-                                return value.toLocaleString('fr-FR') + ' FCFA';
+                                return value;
                             }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
                         }
                     }
                 }

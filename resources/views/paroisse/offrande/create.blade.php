@@ -12,9 +12,9 @@
             </div>
 
             <!-- Affichage du montant actuel -->
-            <div class="rounded-xl shadow-lg p-6 mb-8 text-white" style="background: linear-gradient(135deg, #181824 0%, #2d2b42 100%);">
-                <h2 class="text-lg font-semibold mb-2">Montant actuel de demande de messe</h2>
-                <p class="text-3xl font-bold" id="currentAmount">{{ number_format($paroisse->montant_offrande ?? 0, 0, ',', ' ') }} Fcfa</p>
+            <div class="rounded-xl shadow-lg p-6 mb-8 text-white" style="background: linear-gradient(135deg, #7ebac4 0%, #7ebac4 100%);">
+                <p class="text-3xl font-bold text-center" id="currentAmount">{{ number_format($paroisse->montant_offrande ?? 0, 0, ',', ' ') }} Fcfa</p>
+                <h2 class="text-lg font-semibold mb-2 text-center">Montant actuel de demande de messe</h2>
             </div>
 
             <!-- Carte du formulaire -->
@@ -42,7 +42,7 @@
                             <div>
                                 <button type="submit" 
                                         class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                                        style="background-color: #f35525; hover:background-color: #e04e22; focus:ring-color: #f35525;">
+                                        style="background-color: #c49d54; hover:background-color: #e04e22; focus:ring-color: #f35525;">
                                     Ajouter le montant
                                 </button>
                             </div>

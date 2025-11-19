@@ -22880,7 +22880,7 @@ address p {
 
 /* Sidebar */
 .mdc-drawer {
-  background: linear-gradient(#f35525, #f35525);
+  background: linear-gradient(#5ea7b5, #5ea7b5);
   position: fixed;
 }
 
@@ -22981,10 +22981,13 @@ address p {
 
 .mdc-drawer .mdc-drawer__content .mdc-drawer-menu .mdc-drawer-item .mdc-expansion-panel-link.active,
 .mdc-drawer .mdc-drawer__content .mdc-drawer-menu .mdc-drawer-item .mdc-drawer-link.active {
-  background: #fff;
-  color: #000;
-  font-weight: bold;
+    background: #7ebac4;
+    color: #000;
+    font-weight: bold;
+    border-radius: 12px; /* Arrondi des coins */
+    padding: 8px 12px; /* Optionnel : ajoute de l’espace à l’intérieur pour un look plus rond */
 }
+
 
 .mdc-drawer .mdc-drawer__content .mdc-drawer-menu .mdc-drawer-item .mdc-expansion-panel {
   display: none;
