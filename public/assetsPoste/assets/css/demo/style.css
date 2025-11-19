@@ -22881,7 +22881,6 @@ address p {
 
 /* Sidebar */
 .mdc-drawer {
-  /* background: linear-gradient(#5ea7b5, #5ea7b5); */
   position: fixed;
   background: #7ebac4 !important;
   color: #000 !important;
