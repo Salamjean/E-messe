@@ -102,6 +102,6 @@
 
       .mdc-drawer {
         background: linear-gradient(#5ea7b5, #5ea7b5) !important;
-        position: fixed !important;
+        position: fixed;
       }
     </style>
