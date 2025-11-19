@@ -22954,10 +22954,15 @@ address p {
   font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none !important;
-  /* color: #fff; */
+  color: #fff;
    border-radius: 12px !important;
 }
 
+.mdc-drawer .mdc-drawer-item > a {
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center;
+}
 .mdc-drawer .mdc-drawer__content .mdc-drawer-menu .mdc-drawer-item .mdc-expansion-panel-link i,
 .mdc-drawer .mdc-drawer__content .mdc-drawer-menu .mdc-drawer-item .mdc-drawer-link i {
   color: inherit;
