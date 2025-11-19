@@ -22882,8 +22882,11 @@ address p {
 /* Sidebar */
 .mdc-drawer {
   /* background: linear-gradient(#5ea7b5, #5ea7b5); */
-  background: #7ebac4 !important;
   position: fixed;
+  background: #7ebac4 !important;
+  color: #000 !important;
+  font-weight: bold !important;
+  border-radius: 12px !important;
   
 }
 
@@ -22951,7 +22954,8 @@ address p {
   font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none;
-  color: #fff;
+  /* color: #fff; */
+   border-radius: 12px !important;
 }
 
 .mdc-drawer .mdc-drawer__content .mdc-drawer-menu .mdc-drawer-item .mdc-expansion-panel-link i,
