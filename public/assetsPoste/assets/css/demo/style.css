@@ -20299,11 +20299,11 @@ address p {
   height: 50px;
   border-radius: 50%;
   background: #7a00ff;
-  background: -moz-linear-gradient(left, #7a00ff 10%, rgba(0, 0, 0, 0) 42%);
-  background: -webkit-linear-gradient(left, #7a00ff 10%, rgba(0, 0, 0, 0) 42%);
-  background: -o-linear-gradient(left, #7a00ff 10%, rgba(0, 0, 0, 0) 42%);
-  background: -ms-linear-gradient(left, #7a00ff 10%, rgba(0, 0, 0, 0) 42%);
-  background: linear-gradient(to right, #7a00ff 10%, rgba(0, 0, 0, 0) 42%);
+  background: -moz-linear-gradient(left, #7ebac4 10%, #7ebac4);
+  background: -webkit-linear-gradient(left, #7ebac4 10%, #7ebac4);
+  background: -o-linear-gradient(left, #7ebac4 10%, #7ebac4);
+  background: -ms-linear-gradient(left,#7ebac4 10%, #7ebac4);
+  background: linear-gradient(to right, #7ebac4 10%, #7ebac4);
   -webkit-animation: loading 1.4s infinite linear;
   animation: loading 1.4s infinite linear;
   -webkit-transform: translateZ(0);
