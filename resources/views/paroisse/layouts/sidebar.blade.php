@@ -1,4 +1,4 @@
-<aside class="mdc-drawer mdc-drawer--dismissible mdc-drawer--open" style="background-color: red">
+<aside class="mdc-drawer mdc-drawer--dismissible mdc-drawer--open">
       <div class="mdc-drawer__header" >
         <a href="{{route('paroisse.dashboard')}}" class="brand-logo">
           <img src="{{ optional(Auth::guard('paroisse')->user())->profile_picture 
