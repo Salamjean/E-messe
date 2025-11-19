@@ -22981,11 +22981,11 @@ address p {
 
 .mdc-drawer .mdc-drawer__content .mdc-drawer-menu .mdc-drawer-item .mdc-expansion-panel-link.active,
 .mdc-drawer .mdc-drawer__content .mdc-drawer-menu .mdc-drawer-item .mdc-drawer-link.active {
-    background: #7ebac4;
-    color: #000;
-    font-weight: bold;
-    border-radius: 12px; /* Arrondi des coins */
-    padding: 8px 12px; /* Optionnel : ajoute de l’espace à l’intérieur pour un look plus rond */
+    background: #7ebac4 !important;
+    color: #000 !important;
+    font-weight: bold !important;
+    border-radius: 12px !important;
+    padding: 8px 12px !important;
 }
 
 
