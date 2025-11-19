@@ -2,7 +2,7 @@
 
 /* Variables CSS */
 :root {
-    /* --primary-color: #f35525; */
+    --primary-color: #7ebac4;
     --secondary-color: #4CAF50;
     --accent-color: #2196F3;
     --purple-color: #9C27B0;
@@ -11,7 +11,7 @@
     --light-color: #ecf0f1;
     --gray-color: #95a5a6;
     --success-color: #27ae60;
-    --danger-color: #e74c3c;
+    --danger-color: #7ebac4;
     --border-radius: 12px;
     --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
     --transition: all 0.3s ease;
