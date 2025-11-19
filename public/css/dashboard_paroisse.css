@@ -29,10 +29,12 @@ body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     color: var(--dark-color);
+    padding-left: 200;
 }
 
 .modern-dashboard {
     padding: 20px;
+    /* padding-left: 200; */
     max-width: 1400px;
     margin: 0 auto;
 }

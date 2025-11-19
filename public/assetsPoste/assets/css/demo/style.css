@@ -19286,6 +19286,7 @@ body {
   font-family: "Roboto", sans-serif;
   font-weight: initial;
   -webkit-font-smoothing: antialiased;
+  
 }
 
 p {
@@ -22882,6 +22883,7 @@ address p {
 .mdc-drawer {
   background: linear-gradient(#5ea7b5, #5ea7b5);
   position: fixed;
+  
 }
 
 .mdc-drawer--open, .mdc-drawer__drawer {
@@ -22981,13 +22983,10 @@ address p {
 
 .mdc-drawer .mdc-drawer__content .mdc-drawer-menu .mdc-drawer-item .mdc-expansion-panel-link.active,
 .mdc-drawer .mdc-drawer__content .mdc-drawer-menu .mdc-drawer-item .mdc-drawer-link.active {
-    background: #7ebac4 !important;
-    color: #000 !important;
-    font-weight: bold !important;
-    border-radius: 12px !important;
-    padding: 8px 12px !important;
+  background: #fff;
+  color: #000;
+  font-weight: bold;
 }
-
 
 .mdc-drawer .mdc-drawer__content .mdc-drawer-menu .mdc-drawer-item .mdc-expansion-panel {
   display: none;
@@ -23126,6 +23125,7 @@ footer .vertical-divider {
 .body-wrapper .main-wrapper .page-wrapper .content-wrapper {
   min-height: calc(100vh - 64px - 67px);
   padding: 16px 30px;
+  
 }
 
 @media (max-width: 767px) {

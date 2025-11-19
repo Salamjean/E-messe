@@ -91,17 +91,3 @@
 
     </aside>
 
-    <style>
-      .mdc-drawer .mdc-drawer__content .mdc-drawer-menu .mdc-drawer-item .mdc-drawer-link.active {
-          background: #7ebac4 !important;
-          color: #000 !important;
-          font-weight: bold !important;
-          border-radius: 12px !important;
-          padding: 8px 12px !important;
-      }
-
-      .mdc-drawer {
-        background: linear-gradient(#5ea7b5, #5ea7b5) !important;
-        position: fixed;
-      }
-    </style>
