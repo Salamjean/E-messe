@@ -101,7 +101,7 @@ svg.mdc-button__icon {
 
 .mdc-button--raised .mdc-button__icon,
 .mdc-button--unelevated .mdc-button__icon,
-.mdc-button--outlined .mdc-button__icon {
+.mdc-button--outlined .mdc-button__icon { 
   /* @noflip */
   margin-left: -4px;
   /* @noflip */
@@ -112,9 +112,12 @@ svg.mdc-button__icon {
 .mdc-button--unelevated .mdc-button__icon,
 .mdc-button--unelevated .mdc-button__icon[dir="rtl"], [dir="rtl"]
 .mdc-button--outlined .mdc-button__icon,
+
 .mdc-button--outlined .mdc-button__icon[dir="rtl"] {
   /* @noflip */
+
   margin-left: 8px;
+  
   /* @noflip */
   margin-right: -4px;
 }
@@ -20299,11 +20302,11 @@ address p {
   height: 50px;
   border-radius: 50%;
   background: #7a00ff;
-  background: -moz-linear-gradient(left, #7ebac4 10%, #7ebac4);
-  background: -webkit-linear-gradient(left, #7ebac4 10%, #7ebac4);
-  background: -o-linear-gradient(left, #7ebac4 10%, #7ebac4);
-  background: -ms-linear-gradient(left,#7ebac4 10%, #7ebac4);
-  background: linear-gradient(to right, #7ebac4 10%, #7ebac4);
+  background: -moz-linear-gradient(left, #7a00ff 10%, rgba(0, 0, 0, 0) 42%);
+  background: -webkit-linear-gradient(left, #7a00ff 10%, rgba(0, 0, 0, 0) 42%);
+  background: -o-linear-gradient(left, #7a00ff 10%, rgba(0, 0, 0, 0) 42%);
+  background: -ms-linear-gradient(left, #7a00ff 10%, rgba(0, 0, 0, 0) 42%);
+  background: linear-gradient(to right, #7a00ff 10%, rgba(0, 0, 0, 0) 42%);
   -webkit-animation: loading 1.4s infinite linear;
   animation: loading 1.4s infinite linear;
   -webkit-transform: translateZ(0);
@@ -22882,10 +22885,10 @@ address p {
 /* Sidebar */
 .mdc-drawer {
   position: fixed;
-  background: #7ebac4 !important;
+  background: #7ebac4;
   color: #000 !important;
   font-weight: bold !important;
-  border-radius: 12px !important;
+  /* border-radius: 12px !important; */
   
 }
 
