@@ -1,35 +1,20 @@
 <?php
 
-namespace App\Channels;
+namespace App\Notifications\Channels;
 
-use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Notifications\Notification;
 
 class FcmHttpChannel
 {
     public function send($notifiable, Notification $notification)
     {
+        // Vérifier si la notification a la méthode toFcmHttp
         if (!method_exists($notification, 'toFcmHttp')) {
-            return;
+            throw new \Exception('Notification does not have toFcmHttp method');
         }
 
-        $payload = $notification->toFcmHttp($notifiable);
-
-        if (!$payload) return;
-
-        $serverKey = env('FIREBASE_SERVER_KEY');
-
-        $response = Http::withHeaders([
-            'Authorization' => 'key=' . $serverKey,
-            'Content-Type'  => 'application/json',
-        ])->post('https://fcm.googleapis.com/fcm/send', $payload);
-
-        if ($response->failed()) {
-            Log::error('FCM Error - Custom Channel', [
-                'response' => $response->body(),
-                'payload'  => $payload,
-            ]);
-        }
+        // Appeler la méthode toFcmHttp de la notification
+        return $notification->toFcmHttp($notifiable);
     }
 }

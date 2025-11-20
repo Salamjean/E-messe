@@ -4,9 +4,9 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use App\Models\Event;
-
-use App\Channels\FcmHttpChannel;
 
 class NouveauEvenementParoisseNotification extends Notification
 {
@@ -20,11 +20,11 @@ class NouveauEvenementParoisseNotification extends Notification
     }
 
     /**
-     * Canaux : database + custom FCM channel
+     * Canaux de notification : database + FCM HTTP
      */
     public function via($notifiable)
     {
-        return ['database', FcmHttpChannel::class];
+        return ['database', 'fcm_http'];
     }
 
     /**
@@ -40,13 +40,12 @@ class NouveauEvenementParoisseNotification extends Notification
             'body'          => "{$paroisseName} que vous suivez organise un événement : « {$this->event->titre} », prévu le " .
                                $this->event->date_debut->format('d/m/Y') . ".",
             'evenement_id'  => $this->event->id,
-            'paroisse_id'   => $this->event->created_by,
+            'paroisse_id'   => $this->event->created_by, // ✔ cohérent avec ton modèle
         ];
     }
 
-    /**
-     * Données pour FCM via HTTP
-     */
+
+
     public function toFcmHttp($notifiable)
     {
         if (empty($notifiable->fcm_token)) {
