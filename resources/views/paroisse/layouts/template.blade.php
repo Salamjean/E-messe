@@ -21,6 +21,7 @@
   <!-- Styles personnalisés -->
   <link rel="stylesheet" href="{{ asset('assetsPoste/assets/css/demo/style.css') }}">
   <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+  {{-- <link rel="stylesheet" href="{{ asset('css/dashboard_paroisse.css') }}"> --}}
 
   <link rel="shortcut icon" href="{{ asset('assets/assets/images/logo E-messe.jpeg') }}" />
 

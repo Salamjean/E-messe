@@ -32,7 +32,14 @@ body {
     padding-left: 200;
 }
 
-
+.mdc-drawer {
+  position: fixed;
+  background: #7ebac4;
+  color: #000 !important;
+  font-weight: bold !important;
+  /* border-radius: 12px !important; */
+  
+}
 
 .modern-dashboard {
     padding: 20px;
