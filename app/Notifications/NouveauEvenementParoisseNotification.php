@@ -44,8 +44,9 @@ class NouveauEvenementParoisseNotification extends Notification
         ];
     }
 
-
-
+    /**
+     * Envoi via FCM HTTP (correct et standardisé)
+     */
     public function toFcmHttp($notifiable)
     {
         if (empty($notifiable->fcm_token)) {
@@ -58,13 +59,19 @@ class NouveauEvenementParoisseNotification extends Notification
         $title = 'Nouvel événement paroissial 🎊';
         $body  = "{$paroisseName} organise l'événement « {$this->event->titre} » le {$dateFormatted}.";
 
-        return [
+        $serverKey = env('FIREBASE_SERVER_KEY');
+
+        $payload = [
             'to' => $notifiable->fcm_token,
+
+            // 🔹 Notification visible (Android / iOS)
             'notification' => [
                 'title' => $title,
                 'body'  => $body,
                 'sound' => 'default'
             ],
+
+            // 🔹 Données techniques pour Flutter
             'data' => [
                 'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
                 'type'         => 'nouveau_evenement',
@@ -74,7 +81,23 @@ class NouveauEvenementParoisseNotification extends Notification
                 'title'        => $title,
                 'body'         => $body,
             ],
+
             'priority' => 'high',
         ];
+
+        $response = Http::withHeaders([
+            'Authorization' => 'key=' . $serverKey,
+            'Content-Type'  => 'application/json',
+        ])->post('https://fcm.googleapis.com/fcm/send', $payload);
+
+        // ✔ Log si erreur pour debug
+        if ($response->failed()) {
+            Log::error('FCM Error - NouveauEvenementParoisseNotification', [
+                'response' => $response->body(),
+                'payload'  => $payload,
+            ]);
+        }
+
+        return $response->json();
     }
 }
