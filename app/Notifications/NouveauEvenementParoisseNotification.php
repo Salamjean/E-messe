@@ -6,119 +6,98 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\Event;
 
 class NouveauEvenementParoisseNotification extends Notification
 {
     use Queueable;
 
-    protected $event;
+    protected Event $event;
 
-    public function __construct($event)
+    public function __construct(Event $event)
     {
         $this->event = $event;
     }
 
     /**
-     * Canaux de notification
+     * Canaux de notification : database + FCM HTTP
      */
     public function via($notifiable)
     {
-        // ❌ On supprime 'fcm_http'
-        return ['database'];
+        return ['database', 'fcm_http'];
     }
 
     /**
-     * Données enregistrées dans la base de données
+     * Données enregistrées en base
      */
     public function toArray($notifiable)
     {
-        // Envoi manuel FCM
-        $this->sendFcm($notifiable);
-
         $paroisseName = $this->event->paroisse->name ?? 'la paroisse';
-        $title = 'Nouvel événement créé 🎉';
-        $body = "{$paroisseName} que vous suivez organise un événement : « {$this->event->titre} », " .
-                "prévu le " . $this->event->date_debut->format('d/m/Y') . ".";
 
         return [
             'type'          => 'nouveau_evenement',
-            'title'         => $title,
-            'body'          => $body,
+            'title'         => 'Nouvel événement paroissial 🎊',
+            'body'          => "{$paroisseName} que vous suivez organise un événement : « {$this->event->titre} », prévu le " .
+                               $this->event->date_debut->format('d/m/Y') . ".",
             'evenement_id'  => $this->event->id,
-            'paroisse_id'   => $this->event->created_by,
+            'paroisse_id'   => $this->event->created_by, // ✔ cohérent avec ton modèle
         ];
     }
 
     /**
-     * Envoi manuel FCM
+     * Envoi via FCM HTTP (correct et standardisé)
      */
-    protected function sendFcm($notifiable)
+    public function toFcmHttp($notifiable)
     {
         if (empty($notifiable->fcm_token)) {
-            Log::info('Aucun token FCM pour l\'utilisateur', ['user_id' => $notifiable->id]);
-            return;
+            return null;
         }
 
-        $paroisseName = $this->event->paroisse->name ?? 'la paroisse';
+        $paroisseName  = $this->event->paroisse->name ?? 'la paroisse';
         $dateFormatted = $this->event->date_debut->format('d/m/Y');
 
         $title = 'Nouvel événement paroissial 🎊';
-        $body = "{$paroisseName} organise l'événement « {$this->event->titre} » le {$dateFormatted}.";
+        $body  = "{$paroisseName} organise l'événement « {$this->event->titre} » le {$dateFormatted}.";
 
         $serverKey = env('FIREBASE_SERVER_KEY');
 
-        if (!$serverKey) {
-            Log::error('Clé FIREBASE_SERVER_KEY manquante');
-            return;
-        }
-
         $payload = [
             'to' => $notifiable->fcm_token,
+
+            // 🔹 Notification visible (Android / iOS)
             'notification' => [
                 'title' => $title,
-                'body' => $body,
-                'sound' => 'default',
-                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                'icon' => 'ic_notification',
-                'badge' => '1'
+                'body'  => $body,
+                'sound' => 'default'
             ],
+
+            // 🔹 Données techniques pour Flutter
             'data' => [
-                'title' => $title,
-                'body' => $body,
-                'type' => 'nouveau_evenement',
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                'type'         => 'nouveau_evenement',
                 'evenement_id' => (string) $this->event->id,
-                'paroisse_id' => (string) $this->event->created_by,
-                'paroisse_name' => $paroisseName,
-                'click_action' => 'FLUTTER_NOTIFICATION_CLICK'
+                'paroisse_id'  => (string) $this->event->created_by,
+                'paroisse_name'=> $paroisseName,
+                'title'        => $title,
+                'body'         => $body,
             ],
-            'priority' => 'high'
+
+            'priority' => 'high',
         ];
 
-        try {
-            $response = Http::withHeaders([
-                'Authorization' => 'key=' . $serverKey,
-                'Content-Type'  => 'application/json',
-            ])->timeout(10)->post('https://fcm.googleapis.com/fcm/send', $payload);
+        $response = Http::withHeaders([
+            'Authorization' => 'key=' . $serverKey,
+            'Content-Type'  => 'application/json',
+        ])->post('https://fcm.googleapis.com/fcm/send', $payload);
 
-            $responseData = $response->json();
-
-            if ($response->successful() && isset($responseData['success']) && $responseData['success'] == 1) {
-                Log::info('✅ Notification FCM envoyée avec succès', [
-                    'user_id' => $notifiable->id,
-                    'event_id' => $this->event->id,
-                    'message_id' => $responseData['message_id'] ?? null
-                ]);
-            } else {
-                Log::warning('❌ Échec envoi FCM', [
-                    'user_id' => $notifiable->id,
-                    'response' => $responseData
-                ]);
-            }
-        } catch (\Exception $e) {
-            Log::error('💥 Erreur FCM', [
-                'user_id' => $notifiable->id,
-                'error' => $e->getMessage()
+        // ✔ Log si erreur pour debug
+        if ($response->failed()) {
+            Log::error('FCM Error - NouveauEvenementParoisseNotification', [
+                'response' => $response->body(),
+                'payload'  => $payload,
             ]);
         }
+
+        return $response->json();
     }
 }

@@ -5,16 +5,17 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use App\Models\Messe;
 
 class MesseAnnuleeNotification extends Notification
 {
     use Queueable;
 
-    protected $messe;
+    protected Messe $messe;
 
     /**
-     * Constructeur.
+     * Constructeur
      */
     public function __construct(Messe $messe)
     {
@@ -30,7 +31,7 @@ class MesseAnnuleeNotification extends Notification
     }
 
     /**
-     * Données enregistrées dans la base
+     * Données enregistrées en base
      */
     public function toArray($notifiable)
     {
@@ -60,18 +61,40 @@ class MesseAnnuleeNotification extends Notification
 
         $serverKey = env('FIREBASE_SERVER_KEY');
 
+        $payload = [
+            'to' => $notifiable->fcm_token,
+
+            // --- 1. Bloc notification visuel ---
+            'notification' => [
+                'title' => $title,
+                'body'  => $body,
+                'sound' => 'default',
+            ],
+
+            // --- 2. Bloc DATA : utile pour Flutter ---
+            'data' => [
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                'type'         => 'messe_annulee',
+                'messe_id'     => (string) $this->messe->id,
+                'title'        => $title,
+                'body'         => $body,
+            ],
+
+            'priority' => 'high',
+        ];
+
         $response = Http::withHeaders([
             'Authorization' => 'key=' . $serverKey,
             'Content-Type'  => 'application/json',
-        ])->post('https://fcm.googleapis.com/fcm/send', [
-            'to' => $notifiable->fcm_token,
-            'data' => [
-                'title'     => $title,
-                'body'      => $body,
-                'type'      => 'messe_annulee',
-                'messe_id'  => $this->messe->id,
-            ],
-        ]);
+        ])->post('https://fcm.googleapis.com/fcm/send', $payload);
+
+        // Log si erreur FCM
+        if ($response->failed()) {
+            Log::error('FCM Error - MesseAnnuleeNotification', [
+                'response' => $response->body(),
+                'payload'  => $payload,
+            ]);
+        }
 
         return $response->json();
     }
