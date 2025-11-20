@@ -16,9 +16,7 @@ class FcmHttpChannel
 
         $payload = $notification->toFcmHttp($notifiable);
 
-        if (!$payload) {
-            return;
-        }
+        if (!$payload) return;
 
         $serverKey = env('FIREBASE_SERVER_KEY');
 
