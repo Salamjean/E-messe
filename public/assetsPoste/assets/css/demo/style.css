@@ -22885,7 +22885,7 @@ address p {
 
 /* Sidebar */
 .mdc-drawer {
-  /* position: fixed; */
+  position: fixed;
   background: #7ebac4 !important;
   color: #000 !important;
   font-weight: bold !important;
