@@ -2385,17 +2385,9 @@ svg.mdc-button__icon {
   right: initial;
   display: none;
   position: absolute;
-   background: #7ebac4;
 }
 
-/* .mdc-drawer {
-  position: fixed;
- 
-  color: #000 !important;
-  font-weight: bold !important;
-  border-radius: 12px !important;
-  
-} */
+
 [dir="rtl"] .mdc-drawer--dismissible, .mdc-drawer--dismissible[dir="rtl"] {
   /* @noflip */
   left: initial;
@@ -22893,8 +22885,8 @@ address p {
 
 /* Sidebar */
 .mdc-drawer {
-  position: fixed;
-  background: #7ebac4;
+  /* position: fixed; */
+  background: #7ebac4 !important;
   color: #000 !important;
   font-weight: bold !important;
   border-radius: 5px !important;
