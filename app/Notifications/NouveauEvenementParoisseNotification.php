@@ -4,9 +4,9 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use App\Models\Event;
+
+use App\Channels\FcmHttpChannel;
 
 class NouveauEvenementParoisseNotification extends Notification
 {
@@ -20,11 +20,11 @@ class NouveauEvenementParoisseNotification extends Notification
     }
 
     /**
-     * Canaux de notification : database + FCM HTTP
+     * Canaux : database + custom FCM channel
      */
     public function via($notifiable)
     {
-        return ['database', 'fcm_http'];
+        return ['database', FcmHttpChannel::class];
     }
 
     /**
@@ -40,12 +40,12 @@ class NouveauEvenementParoisseNotification extends Notification
             'body'          => "{$paroisseName} que vous suivez organise un événement : « {$this->event->titre} », prévu le " .
                                $this->event->date_debut->format('d/m/Y') . ".",
             'evenement_id'  => $this->event->id,
-            'paroisse_id'   => $this->event->created_by, // ✔ cohérent avec ton modèle
+            'paroisse_id'   => $this->event->created_by,
         ];
     }
 
     /**
-     * Envoi via FCM HTTP (correct et standardisé)
+     * Données pour FCM via HTTP
      */
     public function toFcmHttp($notifiable)
     {
@@ -59,19 +59,13 @@ class NouveauEvenementParoisseNotification extends Notification
         $title = 'Nouvel événement paroissial 🎊';
         $body  = "{$paroisseName} organise l'événement « {$this->event->titre} » le {$dateFormatted}.";
 
-        $serverKey = env('FIREBASE_SERVER_KEY');
-
-        $payload = [
+        return [
             'to' => $notifiable->fcm_token,
-
-            // 🔹 Notification visible (Android / iOS)
             'notification' => [
                 'title' => $title,
                 'body'  => $body,
                 'sound' => 'default'
             ],
-
-            // 🔹 Données techniques pour Flutter
             'data' => [
                 'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
                 'type'         => 'nouveau_evenement',
@@ -81,23 +75,7 @@ class NouveauEvenementParoisseNotification extends Notification
                 'title'        => $title,
                 'body'         => $body,
             ],
-
             'priority' => 'high',
         ];
-
-        $response = Http::withHeaders([
-            'Authorization' => 'key=' . $serverKey,
-            'Content-Type'  => 'application/json',
-        ])->post('https://fcm.googleapis.com/fcm/send', $payload);
-
-        // ✔ Log si erreur pour debug
-        if ($response->failed()) {
-            Log::error('FCM Error - NouveauEvenementParoisseNotification', [
-                'response' => $response->body(),
-                'payload'  => $payload,
-            ]);
-        }
-
-        return $response->json();
     }
 }
