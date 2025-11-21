@@ -20,24 +20,27 @@ class FcmService
         }
 
         try {
-            // 1. Client Guzzle sans vérification SSL
+            // 1. Client Guzzle sans vérification SSL (Pour ton environnement local Windows)
             $httpClient = new Client([
-                'verify' => false, // Désactive SSL pour le token
+                'verify' => false, 
             ]);
 
             // 2. Configuration Google Auth
             $scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
             $credentials = new ServiceAccountCredentials($scopes, $credentialsPath);
 
-            // 3. Le Handler CORRIGÉ (Ajout de " = []" pour rendre options facultatif)
+            // 3. Handler personnalisé pour injecter le client sans SSL
             $handler = function ($request, $options = []) use ($httpClient) {
                 return $httpClient->send($request, $options);
             };
 
-            // 4. Récupération du token avec le handler personnalisé
+            // 4. Récupération du token
             $accessToken = $credentials->fetchAuthToken($handler)['access_token'];
 
-            // 5. Envoi de la notification (SSL désactivé aussi ici)
+            // 5. Préparation du Payload (Format V1)
+            // Conversion des données en string pour éviter les erreurs Java/Android
+            $dataStrings = array_map(fn($v) => (string) $v, $data);
+
             $payload = [
                 'message' => [
                     'token' => $token,
@@ -45,21 +48,29 @@ class FcmService
                         'title' => $title,
                         'body'  => $body,
                     ],
-                    'data' => array_map(fn($v) => (string) $v, $data),
+                    'data' => $dataStrings,
                 ]
             ];
 
+            // 6. Envoi final
             $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
 
-            $response = Http::withoutVerifying() // Désactive SSL pour l'envoi final
+            $response = Http::withoutVerifying() // Désactive SSL
                 ->withToken($accessToken)
                 ->withHeaders(['Content-Type' => 'application/json'])
                 ->post($url, $payload);
 
+            // Log en cas d'échec
+            if ($response->failed()) {
+                Log::error('FCM Error V1', [
+                    'body' => $response->body(),
+                    'status' => $response->status()
+                ]);
+            }
+
             return $response->json();
 
         } catch (\Exception $e) {
-            // On log l'erreur exacte pour le debug
             Log::error('FCM Exception: ' . $e->getMessage());
             return ['error' => $e->getMessage()];
         }

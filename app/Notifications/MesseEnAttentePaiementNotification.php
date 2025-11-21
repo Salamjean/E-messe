@@ -4,10 +4,9 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use App\Models\Messe;
 use App\Notifications\Channels\FcmHttpChannel;
+use App\Services\FcmService;
 
 class MesseEnAttentePaiementNotification extends Notification
 {
@@ -41,34 +40,11 @@ class MesseEnAttentePaiementNotification extends Notification
 
         $title = 'Messe en attente de paiement';
         $body  = "Votre demande de messe pour « {$this->messe->motif_intention} » est en attente de paiement.";
-        $serverKey = env('FIREBASE_SERVER_KEY');
 
-        $payload = [
-            'to' => $notifiable->fcm_token,
-            'notification' => [
-                'title' => $title,
-                'body'  => $body,
-                'sound' => 'default',
-            ],
-            'data' => [
-                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                'type'         => 'messe_en_attente_paiement',
-                'messe_id'     => (string) $this->messe->id,
-                'title'        => $title,
-                'body'         => $body,
-            ],
-            'priority' => 'high',
-        ];
-
-        $response = Http::withHeaders([
-            'Authorization' => 'key=' . $serverKey,
-            'Content-Type'  => 'application/json',
-        ])->post('https://fcm.googleapis.com/fcm/send', $payload);
-
-        if ($response->failed()) {
-            Log::error('FCM Error - AttentePaiement', ['response' => $response->body()]);
-        }
-
-        return $response->json();
+        return (new FcmService())->send($notifiable->fcm_token, $title, $body, [
+            'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+            'type'         => 'messe_en_attente_paiement',
+            'messe_id'     => (string) $this->messe->id,
+        ]);
     }
 }
