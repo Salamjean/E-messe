@@ -48,61 +48,27 @@ class FcmService
 
         try {
             // Construction du payload FCM v1
-$payload = [
-    'message' => [
-        'token' => $token,
-        'notification' => [
-            'title' => $title,
-            'body' => $body,
-            'sound' => 'default', // Son pour les deux plateformes (fallback)
-        ],
-        'data' => $this->formatData($data),
-        
-        // Configuration Android spécifique
-        'android' => [
-            'priority' => 'high',
-            'notification' => [
-                'sound' => 'default',
-                'channel_id' => 'high_importance_channel', // Nécessaire pour Android 8+
-                'priority' => 'max', // Priorité maximale
-                'default_sound' => true,
-                'visibility' => 'public',
-                'notification_count' => 1,
-            ]
-        ],
-        
-        // Configuration iOS spécifique
-        'apns' => [
-            'headers' => [
-                'apns-priority' => '10', // 10 = notification immédiate avec son
-            ],
-            'payload' => [
-                'aps' => [
-                    'alert' => [
+            $payload = [
+                'message' => [
+                    'token' => $token,
+                    'notification' => [
                         'title' => $title,
-                        'body' => $body
+                        'body' => $body,
                     ],
-                    'sound' => 'default',
-                    'badge' => 1,
-                    'content-available' => 1 // Permet le traitement en background
-                ],
-                // Données custom pour iOS
-                'custom_data' => $this->formatData($data)
-            ]
-        ],
-        
-        // Configuration Web/Chrome
-        'webpush' => [
-            'headers' => [
-                'Urgency' => 'high'
-            ],
-            'notification' => [
-                'sound' => 'default',
-                'requireInteraction' => true
-            ]
-        ]
-    ]
-];
+                    'data' => $this->formatData($data),
+                    'android' => [
+                        'priority' => 'high'
+                    ],
+                    'apns' => [
+                        'payload' => [
+                            'aps' => [
+                                'sound' => 'default',
+                                'badge' => 1
+                            ]
+                        ]
+                    ]
+                ]
+            ];
 
             $url = "https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send";
 
