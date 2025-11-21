@@ -2,19 +2,21 @@
 
 namespace App\Notifications\Channels;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Notifications\Notification;
 
 class FcmHttpChannel
 {
+    /**
+     * Envoi de la notification via ce canal.
+     */
     public function send($notifiable, Notification $notification)
     {
-        // Vérifier si la notification a la méthode toFcmHttp
+        // Vérifie si la méthode toFcmHttp existe dans la classe de Notification
         if (!method_exists($notification, 'toFcmHttp')) {
-            throw new \Exception('Notification does not have toFcmHttp method');
+            return null;
         }
 
-        // Appeler la méthode toFcmHttp de la notification
+        // Appelle la méthode et retourne le résultat
         return $notification->toFcmHttp($notifiable);
     }
 }

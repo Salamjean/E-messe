@@ -7,6 +7,7 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\Paiement;
+use App\Notifications\Channels\FcmHttpChannel;
 
 class PaiementEchecNotification extends Notification
 {
@@ -19,17 +20,11 @@ class PaiementEchecNotification extends Notification
         $this->paiement = $paiement;
     }
 
-    /**
-     * Canaux utilisés
-     */
     public function via($notifiable)
     {
-        return ['database', 'fcm_http'];
+        return ['database', FcmHttpChannel::class];
     }
 
-    /**
-     * Données enregistrées en base
-     */
     public function toArray($notifiable)
     {
         $montant = $this->paiement->montant ?? 'montant inconnu';
@@ -43,41 +38,24 @@ class PaiementEchecNotification extends Notification
         ];
     }
 
-    /**
-     * Notification FCM via HTTP
-     */
     public function toFcmHttp($notifiable)
     {
-        if (!$notifiable->fcm_token) {
-            Log::warning('❌ Aucun token FCM pour cet utilisateur', [
-                'user_id' => $notifiable->id
-            ]);
-            return null;
-        }
+        if (!$notifiable->fcm_token) return null;
 
         $serverKey = env('FIREBASE_SERVER_KEY');
-        if (!$serverKey) {
-            Log::error('❌ Clé FIREBASE_SERVER_KEY manquante');
-            return null;
-        }
-
-        $montant = $this->paiement->montant ?? 'montant inconnu';
+        $montant = $this->paiement->montant ?? 'inconnu';
         $devise  = $this->paiement->devise  ?? '';
-
+        
         $title = 'Échec du Paiement';
-        $body  = "Votre paiement de {$montant} {$devise} a échoué. Veuillez réessayer.";
+        $body  = "Votre paiement de {$montant} {$devise} a échoué.";
 
         $payload = [
             'to' => $notifiable->fcm_token,
-
-            // --- 1. Bloc affichage ---
             'notification' => [
                 'title' => $title,
                 'body'  => $body,
                 'sound' => 'default',
             ],
-
-            // --- 2. Bloc DATA : utile pour Flutter ---
             'data' => [
                 'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
                 'type'         => 'paiement_echec',
@@ -85,42 +63,18 @@ class PaiementEchecNotification extends Notification
                 'title'        => $title,
                 'body'         => $body,
             ],
-
             'priority' => 'high',
         ];
 
-        try {
-            $response = Http::withHeaders([
-                'Authorization' => 'key=' . $serverKey,
-                'Content-Type'  => 'application/json',
-            ])->timeout(10)->post('https://fcm.googleapis.com/fcm/send', $payload);
+        $response = Http::withHeaders([
+            'Authorization' => 'key=' . $serverKey,
+            'Content-Type'  => 'application/json',
+        ])->post('https://fcm.googleapis.com/fcm/send', $payload);
 
-            $responseData = $response->json();
-
-            if ($response->successful()) {
-                Log::info('✅ Notification FCM Paiement Échec envoyée avec succès', [
-                    'user_id'     => $notifiable->id,
-                    'paiement_id' => $this->paiement->id,
-                    'response'    => $responseData,
-                ]);
-            } else {
-                Log::warning('❌ FCM a répondu avec une erreur', [
-                    'user_id'     => $notifiable->id,
-                    'paiement_id' => $this->paiement->id,
-                    'response'    => $responseData,
-                ]);
-            }
-
-            return $responseData;
-
-        } catch (\Exception $e) {
-            Log::error('💥 Exception lors de l’envoi FCM Paiement Échec', [
-                'user_id'     => $notifiable->id,
-                'paiement_id' => $this->paiement->id,
-                'error'       => $e->getMessage()
-            ]);
-
-            return null;
+        if ($response->failed()) {
+            Log::error('FCM Error - PaiementEchec', ['response' => $response->body()]);
         }
+
+        return $response->json();
     }
 }

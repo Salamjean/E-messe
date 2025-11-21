@@ -96,13 +96,13 @@ class EventController extends Controller
         $paroisse = Auth::guard('paroisse')->user();
 
         try {
-            // 1️⃣ Valider les données
+            // 1. Valider les données
             $validatedData = $this->validateEvent($request);
 
-            // 2️⃣ Commencer une transaction pour rollback automatique si erreur
+            // 2. Transaction
             DB::beginTransaction();
 
-            // 3️⃣ Gérer l'image si présente
+            // 3. Gestion Image
             if ($request->hasFile('image')) {
                 $validatedData['image'] = $request->file('image')->store('events_images', 'public');
             }
@@ -110,20 +110,20 @@ class EventController extends Controller
             $validatedData['statut'] = 'Prévu';
             $validatedData['created_by'] = $paroisse->id;
 
-            // 4️⃣ Créer l'événement
+            // 4. Création Event
             $event = Event::create($validatedData);
 
-            // 5️⃣ Notifications : récupérer les utilisateurs qui ont cette paroisse comme favori
-
+            // 5. Récupération des utilisateurs à notifier (Ceux qui ont un token FCM)
             $usersToNotify = User::whereHas('favoris', function($query) use ($paroisse) {
                 $query->where('paroisse_id', $paroisse->id);
-            })->whereNotNull('fcm_token')->get(); // 🔥 Filtrer les users avec token
+            })->whereNotNull('fcm_token')->get(); 
 
             if ($usersToNotify->isNotEmpty()) {
+                // Envoi de la notification
                 Notification::send($usersToNotify, new NouveauEvenementParoisseNotification($event));
-                \Log::info('Notification envoyée à ' . $usersToNotify->count() . ' utilisateurs avec token FCM');
+                Log::info('Notification envoyée à ' . $usersToNotify->count() . ' utilisateurs.');
             } else {
-                \Log::info('Aucun utilisateur avec token FCM à notifier pour la paroisse ID: ' . $paroisse->id);
+                Log::info('Aucun utilisateur avec token FCM trouvé pour cette paroisse.');
             }
 
             DB::commit();
@@ -131,8 +131,8 @@ class EventController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Erreur création événement: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Erreur lors de la création : ' . $e->getMessage());
+            Log::error('Erreur création événement: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
         }
     }
 

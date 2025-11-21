@@ -7,6 +7,8 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\Messe;
+// IMPORTANT : Import du canal personnalisé
+use App\Notifications\Channels\FcmHttpChannel;
 
 class MesseAnnuleeNotification extends Notification
 {
@@ -14,25 +16,19 @@ class MesseAnnuleeNotification extends Notification
 
     protected Messe $messe;
 
-    /**
-     * Constructeur
-     */
     public function __construct(Messe $messe)
     {
         $this->messe = $messe;
     }
 
     /**
-     * Canaux : database + FCM HTTP
+     * CORRECTION ICI : On appelle la classe du canal directement
      */
     public function via($notifiable)
     {
-        return ['database', 'fcm_http'];
+        return ['database', FcmHttpChannel::class];
     }
 
-    /**
-     * Données enregistrées en base
-     */
     public function toArray($notifiable)
     {
         $paroisse = $this->messe->paroisse->name ?? 'la paroisse';
@@ -45,9 +41,6 @@ class MesseAnnuleeNotification extends Notification
         ];
     }
 
-    /**
-     * Envoi FCM via HTTP + retour JSON
-     */
     public function toFcmHttp($notifiable)
     {
         if (empty($notifiable->fcm_token)) {
@@ -55,31 +48,34 @@ class MesseAnnuleeNotification extends Notification
         }
 
         $paroisse = $this->messe->paroisse->name ?? 'la paroisse';
-
         $title = 'Messe annulée';
         $body  = "Votre demande de messe à {$paroisse} a été annulée.";
 
+        return $this->sendToFirebase($notifiable->fcm_token, $title, $body, [
+            'type'     => 'messe_annulee',
+            'messe_id' => (string) $this->messe->id,
+        ]);
+    }
+
+    /**
+     * Helper privé pour éviter de répéter le code HTTP
+     */
+    private function sendToFirebase($token, $title, $body, $data = [])
+    {
         $serverKey = env('FIREBASE_SERVER_KEY');
-
+        
         $payload = [
-            'to' => $notifiable->fcm_token,
-
-            // --- 1. Bloc notification visuel ---
+            'to' => $token,
             'notification' => [
                 'title' => $title,
                 'body'  => $body,
                 'sound' => 'default',
             ],
-
-            // --- 2. Bloc DATA : utile pour Flutter ---
-            'data' => [
+            'data' => array_merge([
                 'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                'type'         => 'messe_annulee',
-                'messe_id'     => (string) $this->messe->id,
                 'title'        => $title,
                 'body'         => $body,
-            ],
-
+            ], $data),
             'priority' => 'high',
         ];
 
@@ -88,12 +84,8 @@ class MesseAnnuleeNotification extends Notification
             'Content-Type'  => 'application/json',
         ])->post('https://fcm.googleapis.com/fcm/send', $payload);
 
-        // Log si erreur FCM
         if ($response->failed()) {
-            Log::error('FCM Error - MesseAnnuleeNotification', [
-                'response' => $response->body(),
-                'payload'  => $payload,
-            ]);
+            Log::error('FCM Error', ['response' => $response->body()]);
         }
 
         return $response->json();
