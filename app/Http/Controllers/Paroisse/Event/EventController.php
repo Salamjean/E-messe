@@ -9,21 +9,18 @@ use Carbon\Carbon;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
-use App\Services\FirebaseNotificationService;
 use Illuminate\Support\Facades\Notification;
 use App\Models\User;
 use App\Notifications\NouveauEvenementParoisseNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-
-
+use App\Services\FcmService;
 
 class EventController extends Controller
 {
     public function index()
     {
         $types = Event::distinct()->pluck('type_event');
-
         return view('paroisse.event.index', compact('types'));
     }
 
@@ -41,27 +38,18 @@ class EventController extends Controller
             ->orderBy('date_debut', 'asc');
 
         return DataTables::of($events)
-            ->editColumn('date_debut', function ($event) {
-                return $event->date_debut
-                    ? Carbon::parse($event->date_debut)->format('d/m/Y H:i')
-                    : 'N/A';
-            })
-            ->editColumn('date_fin', function ($event) {
-                return $event->date_fin
-                    ? Carbon::parse($event->date_fin)->format('d/m/Y H:i')
-                    : 'N/A';
-            })
-            ->addColumn('actions', function($event){
-                return '
-                    <div class="btn-group" role="group">
-                        <button class="btn btn-sm btn-outline-warning editBtn" data-id="'.$event->id.'" title="Modifier">
-                            <i class="material-icons">edit</i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="'.$event->id.'" title="Supprimer">
-                            <i class="material-icons">delete</i>
-                        </button>
-                    </div>';
-            })
+            ->editColumn('date_debut', fn($event) => $event->date_debut ? Carbon::parse($event->date_debut)->format('d/m/Y H:i') : 'N/A')
+            ->editColumn('date_fin', fn($event) => $event->date_fin ? Carbon::parse($event->date_fin)->format('d/m/Y H:i') : 'N/A')
+            ->addColumn('actions', fn($event) => '
+                <div class="btn-group" role="group">
+                    <button class="btn btn-sm btn-outline-warning editBtn" data-id="'.$event->id.'" title="Modifier">
+                        <i class="material-icons">edit</i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger deleteBtn" data-id="'.$event->id.'" title="Supprimer">
+                        <i class="material-icons">delete</i>
+                    </button>
+                </div>'
+            )
             ->rawColumns(['actions', 'statut'])
             ->make(true);
     }
@@ -70,7 +58,7 @@ class EventController extends Controller
     {
         return response()->json($event);
     }
-    
+
     private function validateEvent(Request $request)
     {
         return $request->validate([
@@ -98,13 +86,12 @@ class EventController extends Controller
         $paroisse = Auth::guard('paroisse')->user();
 
         try {
-            // 1. Valider les données
+            // Validation
             $validatedData = $this->validateEvent($request);
 
-            // 2. Transaction
             DB::beginTransaction();
 
-            // 3. Gestion Image
+            // Gestion de l'image
             if ($request->hasFile('image')) {
                 $validatedData['image'] = $request->file('image')->store('events_images', 'public');
             }
@@ -112,17 +99,18 @@ class EventController extends Controller
             $validatedData['statut'] = 'Prévu';
             $validatedData['created_by'] = $paroisse->id;
 
-            // 4. Création Event
+            // Création de l'événement
             $event = Event::create($validatedData);
 
-            // 5. Récupération des utilisateurs à notifier (Ceux qui ont un token FCM)
-            $usersToNotify = User::whereHas('favoris', function($query) use ($paroisse) {
-                $query->where('paroisse_id', $paroisse->id);
-            })->whereNotNull('fcm_token')->get(); 
+            // Récupération des utilisateurs à notifier
+            $usersToNotify = User::whereHas('favoris', fn($query) => $query->where('paroisse_id', $paroisse->id))
+                ->whereNotNull('fcm_token')->get();
 
             if ($usersToNotify->isNotEmpty()) {
-                // Envoi de la notification
-                Notification::send($usersToNotify, new NouveauEvenementParoisseNotification($event));
+                // Envoi notification FCM
+                foreach ($usersToNotify as $user) {
+                    (new NouveauEvenementParoisseNotification($event))->sendFcm($user);
+                }
                 Log::info('Notification envoyée à ' . $usersToNotify->count() . ' utilisateurs.');
             } else {
                 Log::info('Aucun utilisateur avec token FCM trouvé pour cette paroisse.');
@@ -138,13 +126,24 @@ class EventController extends Controller
         }
     }
 
-    /**
-     * Méthode pour valider les données de l'événement
-     */
+    public function sendFcm($notifiable, Event $event)
+    {
+        if (empty($notifiable->fcm_token)) return null;
 
+        $paroisseName  = $event->paroisse->name ?? 'la paroisse';
+        $dateFormatted = $event->date_debut->format('d/m/Y');
 
+        $title = 'Nouvel événement paroissial 🎊';
+        $body  = "{$paroisseName} organise l'événement « {$event->titre} » le {$dateFormatted}.";
 
-
+        return (new FcmService())->send($notifiable->fcm_token, $title, $body, [
+            'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+            'type'         => 'nouveau_evenement',
+            'evenement_id' => (string) $event->id,
+            'paroisse_id'  => (string) $event->created_by,
+            'paroisse_name'=> $paroisseName,
+        ]);
+    }
 
     public function update(Request $request, Event $event)
     {
@@ -152,19 +151,15 @@ class EventController extends Controller
             $validatedData = $this->validateEvent($request);
 
             if ($request->hasFile('image')) {
-                // Supprimer l'ancienne image si elle existe
                 if ($event->image && Storage::disk('public')->exists($event->image)) {
                     Storage::disk('public')->delete($event->image);
                 }
-                $path = $request->file('image')->store('events_images', 'public');
-                $validatedData['image'] = $path;
+                $validatedData['image'] = $request->file('image')->store('events_images', 'public');
             }
 
             $event->update($validatedData);
 
-            return response()->json([
-                'message' => 'Événement mis à jour avec succès !'
-            ]);
+            return response()->json(['message' => 'Événement mis à jour avec succès !']);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -172,7 +167,7 @@ class EventController extends Controller
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
-            \Log::error('Erreur mise à jour événement: ' . $e->getMessage());
+            Log::error('Erreur mise à jour événement: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Erreur lors de la mise à jour de l\'événement: ' . $e->getMessage()
             ], 500);
@@ -182,25 +177,19 @@ class EventController extends Controller
     public function destroy(Event $event)
     {
         try {
-            // Supprimer l'image associée si elle existe
             if ($event->image && Storage::disk('public')->exists($event->image)) {
                 Storage::disk('public')->delete($event->image);
             }
-            
+
             $event->delete();
-            
-            return response()->json([
-                'message' => 'Événement supprimé avec succès !'
-            ]);
+
+            return response()->json(['message' => 'Événement supprimé avec succès !']);
 
         } catch (\Exception $e) {
-            \Log::error('Erreur suppression événement: ' . $e->getMessage());
+            Log::error('Erreur suppression événement: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Erreur lors de la suppression de l\'événement: ' . $e->getMessage()
             ], 500);
         }
     }
-
-
-
 }
