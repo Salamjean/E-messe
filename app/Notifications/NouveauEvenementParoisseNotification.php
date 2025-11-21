@@ -37,27 +37,32 @@ class NouveauEvenementParoisseNotification extends Notification
         ];
     }
 
+
     public function toFcmHttp($notifiable)
-    {
-        if (empty($notifiable->fcm_token)) {
-            \Log::info('FCM token manquant pour', ['user_id' => $notifiable->id]);
-            return null;
-        }
+{
+    if (empty($notifiable->fcm_token)) {
+        \Log::info('FCM token manquant pour', ['user_id' => $notifiable->id]);
+        return null;
+    }
 
-        $paroisseName  = $this->event->paroisse->name ?? 'la paroisse';
-        $dateFormatted = $this->event->date_debut->format('d/m/Y');
+    $paroisseName  = $this->event->paroisse->name ?? 'la paroisse';
+    $dateFormatted = $this->event->date_debut->format('d/m/Y');
 
-        $title = 'Nouvel événement paroissial 🎊';
-        $body  = "{$paroisseName} organise l'événement « {$this->event->titre} » le {$dateFormatted}.";
+    $title = 'Nouvel événement paroissial 🎊';
+    $body  = "{$paroisseName} organise l'événement « {$this->event->titre} » le {$dateFormatted}.";
 
-        return (new FcmService())->send($notifiable->fcm_token, $title, $body, [
+    return (new FcmService())->send(
+        $notifiable->fcm_token, 
+        $title, 
+        $body, 
+        [
             'click_action'  => 'FLUTTER_NOTIFICATION_CLICK',
             'type'          => 'nouveau_evenement',
             'evenement_id'  => (string) $this->event->id,
             'paroisse_id'   => (string) $this->event->created_by,
             'paroisse_name' => $paroisseName,
-            'title'         => $title,
-            'body'          => "Notification Event"
-        ]);
-    }
+        ],
+        $notifiable->id // ← Ajouter l'user ID pour le nettoyage
+    );
+}
 }
