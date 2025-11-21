@@ -6,7 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use App\Models\Event;
 use App\Services\FcmService;
-// Pas besoin de 'use' complexe car le Channel est maintenant dans le même dossier (namespace) !
+use App\Notifications\Channels\FcmHttpChannel; // Import correct
 
 class NouveauEvenementParoisseNotification extends Notification
 {
@@ -21,8 +21,8 @@ class NouveauEvenementParoisseNotification extends Notification
 
     public function via($notifiable)
     {
-        // On appelle la classe directement. Comme elle est dans le même dossier, ça marche à 100%.
-        return ['database', FcmHttpChannel::class];
+        // Utiliser le nom d'enregistrement du canal
+        return ['database', 'fcm_http'];
     }
 
     public function toArray($notifiable)
