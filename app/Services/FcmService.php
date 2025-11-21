@@ -2,40 +2,52 @@
 
 namespace App\Services;
 
+use Google\Client as Google_Client;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class FcmService
 {
     protected $projectId;
+    protected $accessToken;
 
     public function __construct()
     {
-        // S'assurer que projectId est bien défini
         $this->projectId = env('FIREBASE_PROJECT_ID');
-        
-        if (empty($this->projectId)) {
-            Log::error('FIREBASE_PROJECT_ID est vide dans .env');
-            throw new \Exception('FIREBASE_PROJECT_ID non configuré');
-        }
-        
-        Log::info('FcmService initialisé', ['project_id' => $this->projectId]);
+        $this->initializeAuth();
     }
 
-    public function send($token, $title, $body, $data = [], $userId = null)
+    protected function initializeAuth()
     {
-        // Valider que projectId est disponible
-        if (empty($this->projectId)) {
-            Log::error('Project ID manquant lors de l\'envoi FCM');
-            return null;
+        $credentialsPath = storage_path('app/firebase_credentials.json');
+        
+        if (!file_exists($credentialsPath)) {
+            throw new \Exception('Fichier de credentials Firebase manquant: ' . $credentialsPath);
         }
 
+        try {
+            $client = new Google_Client();
+            $client->setAuthConfig($credentialsPath);
+            $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
+            $client->fetchAccessTokenWithAssertion();
+            
+            $this->accessToken = $client->getAccessToken()['access_token'];
+            
+        } catch (\Exception $e) {
+            Log::error('Erreur d\'authentification FCM: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    public function send($token, $title, $body, $data = [])
+    {
         if (empty($token)) {
             Log::warning('Token FCM vide');
             return null;
         }
 
         try {
+            // Construction du payload FCM v1
             $payload = [
                 'message' => [
                     'token' => $token,
@@ -60,70 +72,32 @@ class FcmService
 
             $url = "https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send";
 
-            // Log cohérent avec le project_id
             Log::info('Envoi FCM', [
                 'url' => $url,
-                'project_id' => $this->projectId, // Utiliser $this->projectId directement
-                'token_length' => strlen($token),
-                'user_id' => $userId
+                'project_id' => $this->projectId,
+                'token_length' => strlen($token)
             ]);
 
-            $accessToken = $this->getAccessToken(); // Votre méthode d'authentification
-            
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $accessToken,
+                'Authorization' => 'Bearer ' . $this->accessToken,
                 'Content-Type' => 'application/json',
             ])->post($url, $payload);
 
             if ($response->failed()) {
-                $errorBody = $response->json();
-                
-                // Gérer spécifiquement les tokens invalides
-                if (isset($errorBody['error']['details'][0]['errorCode']) && 
-                    $errorBody['error']['details'][0]['errorCode'] === 'UNREGISTERED') {
-                    
-                    Log::warning('Token FCM invalid (UNREGISTERED)', [
-                        'token_prefix' => substr($token, 0, 20) . '...',
-                        'user_id' => $userId
-                    ]);
-                    
-                    if ($userId) {
-                        $this->handleInvalidToken($userId);
-                    }
-                    return ['error' => 'UNREGISTERED'];
-                }
-                
                 Log::error('Erreur FCM', [
                     'status' => $response->status(),
                     'body' => $response->body(),
-                    'project_id' => $this->projectId // Utiliser $this->projectId
+                    'project_id' => $this->projectId
                 ]);
                 return null;
             }
 
-            Log::info('Notification FCM envoyée avec succès', [
-                'project_id' => $this->projectId,
-                'user_id' => $userId
-            ]);
-            
+            Log::info('Notification FCM envoyée avec succès');
             return $response->json();
 
         } catch (\Exception $e) {
-            Log::error('Exception FCM: ' . $e->getMessage(), [
-                'project_id' => $this->projectId,
-                'user_id' => $userId
-            ]);
+            Log::error('Exception FCM: ' . $e->getMessage());
             return null;
-        }
-    }
-
-    protected function handleInvalidToken($userId)
-    {
-        try {
-            \App\Models\User::where('id', $userId)->update(['fcm_token' => null]);
-            Log::info('Token FCM invalid supprimé', ['user_id' => $userId]);
-        } catch (\Exception $e) {
-            Log::error('Erreur suppression token', ['user_id' => $userId, 'error' => $e->getMessage()]);
         }
     }
 
