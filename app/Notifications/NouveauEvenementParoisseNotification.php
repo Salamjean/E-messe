@@ -5,6 +5,7 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use App\Models\Event;
+use App\Notifications\Channels\FcmHttpChannel; // IMPORTANT
 use App\Services\FcmService;
 
 class NouveauEvenementParoisseNotification extends Notification
@@ -18,9 +19,12 @@ class NouveauEvenementParoisseNotification extends Notification
         $this->event = $event;
     }
 
+    /**
+     * On définit ici qu'on utilise la Base de données ET le canal FCM personnalisé
+     */
     public function via($notifiable)
     {
-        return ['database']; // On retire FcmHttpChannel
+        return ['database', FcmHttpChannel::class];
     }
 
     public function toArray($notifiable)
@@ -28,16 +32,18 @@ class NouveauEvenementParoisseNotification extends Notification
         $paroisseName = $this->event->paroisse->name ?? 'la paroisse';
 
         return [
-            'type' => 'nouveau_evenement',
-            'title' => 'Nouvel événement paroissial 🎊',
-            'body' => "{$paroisseName} organise : « {$this->event->titre} ».",
-            'evenement_id' => $this->event->id,
-            'paroisse_id' => $this->event->created_by,
+            'type'          => 'nouveau_evenement',
+            'title'         => 'Nouvel événement paroissial 🎊',
+            'body'          => "{$paroisseName} organise : « {$this->event->titre} ».",
+            'evenement_id'  => $this->event->id,
+            'paroisse_id'   => $this->event->created_by,
         ];
     }
 
-    // Méthode FCM personnalisée
-    public function sendFcm($notifiable)
+    /**
+     * Cette méthode est appelée automatiquement par FcmHttpChannel
+     */
+    public function toFcmHttp($notifiable)
     {
         if (empty($notifiable->fcm_token)) return null;
 
@@ -47,11 +53,12 @@ class NouveauEvenementParoisseNotification extends Notification
         $title = 'Nouvel événement paroissial 🎊';
         $body  = "{$paroisseName} organise l'événement « {$this->event->titre} » le {$dateFormatted}.";
 
+        // Appel du service
         return (new FcmService())->send($notifiable->fcm_token, $title, $body, [
-            'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-            'type' => 'nouveau_evenement',
-            'evenement_id' => (string) $this->event->id,
-            'paroisse_id' => (string) $this->event->created_by,
+            'click_action'  => 'FLUTTER_NOTIFICATION_CLICK',
+            'type'          => 'nouveau_evenement',
+            'evenement_id'  => (string) $this->event->id,
+            'paroisse_id'   => (string) $this->event->created_by,
             'paroisse_name' => $paroisseName,
         ]);
     }

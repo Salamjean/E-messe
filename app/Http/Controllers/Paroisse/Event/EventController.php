@@ -87,7 +87,7 @@ class EventController extends Controller
 
         try {
             // Validation
-            $validatedData = $this->validateEvent($request);
+            $validatedData = $this->validateEvent($request); // Assure-toi que cette méthode existe
 
             DB::beginTransaction();
 
@@ -102,16 +102,17 @@ class EventController extends Controller
             // Création de l'événement
             $event = Event::create($validatedData);
 
-            // Récupération des utilisateurs à notifier
-            $usersToNotify = User::whereHas('favoris', fn($query) => $query->where('paroisse_id', $paroisse->id))
-                ->whereNotNull('fcm_token')->get();
+            // Récupération des utilisateurs à notifier (ceux qui ont la paroisse en favori + un token)
+            $usersToNotify = User::whereHas('favoris', function($query) use ($paroisse) {
+                $query->where('paroisse_id', $paroisse->id);
+            })->whereNotNull('fcm_token')->get();
 
             if ($usersToNotify->isNotEmpty()) {
-                // Envoi notification FCM
-                foreach ($usersToNotify as $user) {
-                    (new NouveauEvenementParoisseNotification($event))->sendFcm($user);
-                }
-                Log::info('Notification envoyée à ' . $usersToNotify->count() . ' utilisateurs.');
+                // ✅ CORRECT : On utilise Notification::send
+                // Cela va déclencher via() -> toArray() (Database) ET toFcmHttp() (FCM)
+                Notification::send($usersToNotify, new NouveauEvenementParoisseNotification($event));
+                
+                Log::info('Notification "Nouvel Event" envoyée à ' . $usersToNotify->count() . ' utilisateurs.');
             } else {
                 Log::info('Aucun utilisateur avec token FCM trouvé pour cette paroisse.');
             }
@@ -124,7 +125,7 @@ class EventController extends Controller
             Log::error('Erreur création événement: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
         }
-    }
+    }   
 
     public function sendFcm($notifiable, Event $event)
     {
