@@ -23,32 +23,22 @@ use App\Http\Controllers\User\Event\EventController as UserEventController;
 use App\Http\Controllers\Api\Paiement\WaveController;
 use App\Http\Controllers\Redirectionpaiement\RedirectController;
 use App\Services\FcmService;
+use Google\Auth\Credentials\ServiceAccountCredentials;
+
 
 Route::get('/',[HomeController::class, 'home'])->name('home');
 
 
 
 
-Route::get('/debug-json', function () {
-    $path = storage_path('app/firebase_credentials.json');
+Route::get('/get-token', function () {
+    $credentialsPath = storage_path('app/firebase_credentials.json');
+    $scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
     
-    if (!file_exists($path)) {
-        return "Le fichier n'existe pas !";
-    }
-
-    $content = file_get_contents($path);
-    $json = json_decode($content);
-
-    if ($json === null) {
-        return [
-            'status' => 'ERREUR',
-            'message' => 'Le JSON est invalide',
-            'json_error' => json_last_error_msg(),
-            'contenu_recu' => $content // Tu verras ici ce qui est cassé
-        ];
-    }
-
-    return "✅ Le fichier JSON est valide !";
+    $credentials = new ServiceAccountCredentials($scopes, $credentialsPath);
+    $token = $credentials->fetchAuthToken()['access_token'];
+    
+    return $token;
 });
 
 Route::get('/forgot-password', [AuthenticateUser::class, 'showForgotPasswordForm'])->name('forgot-password.form');
