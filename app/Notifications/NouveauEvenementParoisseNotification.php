@@ -21,7 +21,7 @@ class NouveauEvenementParoisseNotification extends Notification
 
     public function via($notifiable)
     {
-        // Utiliser le nom d'enregistrement du canal
+        // Utiliser le nom enregistré, pas la classe
         return ['database', 'fcm_http'];
     }
 
@@ -39,7 +39,10 @@ class NouveauEvenementParoisseNotification extends Notification
 
     public function toFcmHttp($notifiable)
     {
-        if (empty($notifiable->fcm_token)) return null;
+        if (empty($notifiable->fcm_token)) {
+            \Log::info('FCM token manquant pour', ['user_id' => $notifiable->id]);
+            return null;
+        }
 
         $paroisseName  = $this->event->paroisse->name ?? 'la paroisse';
         $dateFormatted = $this->event->date_debut->format('d/m/Y');
