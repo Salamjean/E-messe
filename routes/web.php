@@ -22,10 +22,29 @@ use App\Http\Controllers\Paroisse\Event\EventController;
 use App\Http\Controllers\User\Event\EventController as UserEventController;
 use App\Http\Controllers\Api\Paiement\WaveController;
 use App\Http\Controllers\Redirectionpaiement\RedirectController;
-
+use App\Services\FcmService;
 
 Route::get('/',[HomeController::class, 'home'])->name('home');
 
+
+
+
+Route::get('/test-fcm', function () {
+    // 1. Un faux token (puisque tu n'as pas de téléphone connecté à ce projet test)
+    $fakeToken = "d1f_fake_token_example_ABC123_xyz"; 
+
+    // 2. Appel du service
+    $fcm = new FcmService();
+    $response = $fcm->send(
+        $fakeToken, 
+        "Test Laravel", 
+        "Ceci est un test backend", 
+        ['id' => '1']
+    );
+
+    // 3. Affichage du résultat brut
+    return response()->json($response);
+});
 
 Route::get('/forgot-password', [AuthenticateUser::class, 'showForgotPasswordForm'])->name('forgot-password.form');
 Route::post('/forgot-password', [AuthenticateUser::class, 'forgotPassword'])->name('forgot-password.send');
