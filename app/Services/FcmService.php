@@ -70,7 +70,7 @@ class FcmService
                 ]
             ];
 
-            $url = "https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send";
+            $url = "https://fcm.googleapis.com/v1/projects/emesse-c9236/messages:send";
 
             Log::info('Envoi FCM', [
                 'url' => $url,
