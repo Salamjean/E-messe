@@ -5,12 +5,12 @@ namespace App\Services;
 use Google\Auth\Credentials\ServiceAccountCredentials;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use GuzzleHttp\Client; // IMPORTANT
 
 class FcmService
 {
     public function send($token, $title, $body, $data = [])
     {
-        // 1. On charge la clé PRIVÉE du serveur (pas celle du frontend)
         $credentialsPath = storage_path('app/firebase_credentials.json');
         $projectId = env('FIREBASE_PROJECT_ID');
 
@@ -19,28 +19,51 @@ class FcmService
             return null;
         }
 
-        // 2. On demande à Google un token temporaire pour envoyer le message
-        $scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
-        $credentials = new ServiceAccountCredentials($scopes, $credentialsPath);
-        $accessToken = $credentials->fetchAuthToken()['access_token'];
+        try {
+            // 1. Configuration pour ignorer le SSL (POUR TEST LOCAL UNIQUEMENT)
+            // On crée un client HTTP qui ne vérifie pas les certificats
+            $httpClient = new Client([
+                'verify' => false
+            ]);
 
-        // 3. On envoie la requête
-        $payload = [
-            'message' => [
-                'token' => $token, // Le token reçu du Frontend
-                'notification' => [
-                    'title' => $title,
-                    'body'  => $body,
-                ],
-                // Conversion des données en string (obligatoire pour FCM v1)
-                'data' => array_map(fn($v) => (string) $v, $data),
-            ]
-        ];
+            // 2. On prépare l'authentification Google
+            $scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
+            $credentials = new ServiceAccountCredentials($scopes, $credentialsPath);
 
-        $response = Http::withToken($accessToken) // Utilisation du token serveur
-            ->withHeaders(['Content-Type' => 'application/json'])
-            ->post("https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send", $payload);
+            // 3. On force Google Auth à utiliser notre client "sans SSL"
+            // Cette fonction anonyme remplace le handler par défaut
+            $handler = function ($request, $options) use ($httpClient) {
+                return $httpClient->send($request, $options);
+            };
 
-        return $response->json();
+            // On récupère le token
+            $accessToken = $credentials->fetchAuthToken($handler)['access_token'];
+
+            // 4. Préparation du Payload
+            $payload = [
+                'message' => [
+                    'token' => $token,
+                    'notification' => [
+                        'title' => $title,
+                        'body'  => $body,
+                    ],
+                    'data' => array_map(fn($v) => (string) $v, $data),
+                ]
+            ];
+
+            // 5. Envoi de la requête finale (en désactivant aussi le SSL ici)
+            $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
+
+            $response = Http::withoutVerifying() // <--- Désactive SSL pour Laravel HTTP
+                ->withToken($accessToken)
+                ->withHeaders(['Content-Type' => 'application/json'])
+                ->post($url, $payload);
+
+            return $response->json();
+
+        } catch (\Exception $e) {
+            Log::error('FCM Exception: ' . $e->getMessage());
+            return ['error' => $e->getMessage()];
+        }
     }
 }
