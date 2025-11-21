@@ -5,7 +5,8 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use App\Models\Event;
-// use App\Notifications\Channels\FcmHttpChannel; // <-- ON RETIRE CA
+// 1. IMPORT DU CHANNEL
+use App\Notifications\Channels\FcmHttpChannel;
 use App\Services\FcmService;
 
 class NouveauEvenementParoisseNotification extends Notification
@@ -19,11 +20,10 @@ class NouveauEvenementParoisseNotification extends Notification
         $this->event = $event;
     }
 
-    // --- CORRECTION ICI ---
+    // 2. UTILISATION DE LA CLASSE DIRECTEMENT
     public function via($notifiable)
     {
-        // On utilise le nom 'fcm_http' qu'on a défini dans AppServiceProvider
-        return ['database', 'fcm_http']; 
+        return ['database', FcmHttpChannel::class];
     }
 
     public function toArray($notifiable)
@@ -55,7 +55,7 @@ class NouveauEvenementParoisseNotification extends Notification
             'paroisse_id'   => (string) $this->event->created_by,
             'paroisse_name' => $paroisseName,
             'title'         => $title,
-            'body'          => "Body hidden data"
+            'body'          => "Body data"
         ]);
     }
 }
