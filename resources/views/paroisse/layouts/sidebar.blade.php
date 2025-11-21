@@ -85,6 +85,9 @@
               </div>
             </div>
 
+            <div>
+              <img src="{{asset('assetsPoste/assets/images/dashboard/image_sidebar.png') }}" style="width: 50%; margin-left:50px" alt="logo">
+            </div>
           </nav>
         </div>
       </div>
