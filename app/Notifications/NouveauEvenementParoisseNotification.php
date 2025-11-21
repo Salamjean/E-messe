@@ -19,15 +19,17 @@ class NouveauEvenementParoisseNotification extends Notification
         $this->event = $event;
     }
 
+    // ✅ On précise ici qu'on veut utiliser la Base de données ET notre canal personnalisé
     public function via($notifiable)
     {
         return ['database', FcmHttpChannel::class];
     }
 
+    // Pour la base de données interne
     public function toArray($notifiable)
     {
-        // Notification DB interne
         $paroisseName = $this->event->paroisse->name ?? 'la paroisse';
+
         return [
             'type'          => 'nouveau_evenement',
             'title'         => 'Nouvel événement paroissial 🎊',
@@ -37,6 +39,7 @@ class NouveauEvenementParoisseNotification extends Notification
         ];
     }
 
+    // ✅ Cette méthode est appelée automatiquement par FcmHttpChannel
     public function toFcmHttp($notifiable)
     {
         if (empty($notifiable->fcm_token)) return null;
@@ -47,7 +50,7 @@ class NouveauEvenementParoisseNotification extends Notification
         $title = 'Nouvel événement paroissial 🎊';
         $body  = "{$paroisseName} organise l'événement « {$this->event->titre} » le {$dateFormatted}.";
 
-        // Ces données seront converties en string par le Service
+        // On appelle le service pour envoyer via l'API V1
         return (new FcmService())->send($notifiable->fcm_token, $title, $body, [
             'click_action'  => 'FLUTTER_NOTIFICATION_CLICK',
             'type'          => 'nouveau_evenement',
@@ -55,7 +58,7 @@ class NouveauEvenementParoisseNotification extends Notification
             'paroisse_id'   => (string) $this->event->created_by,
             'paroisse_name' => $paroisseName,
             'title'         => $title,
-            'body'          => "Ceci est le body data invisible" // Comme dans ton Postman
+            'body'          => "Ceci est le body data invisible" 
         ]);
     }
-}   
+}

@@ -9,12 +9,12 @@ use Carbon\Carbon;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Notification; // Import Notification Facade
 use App\Models\User;
 use App\Notifications\NouveauEvenementParoisseNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Services\FcmService;
+// Plus besoin de App\Services\FcmService ici, c'est géré dans la Notification
 
 class EventController extends Controller
 {
@@ -87,7 +87,7 @@ class EventController extends Controller
 
         try {
             // Validation
-            $validatedData = $this->validateEvent($request); // Assure-toi que cette méthode existe
+            $validatedData = $this->validateEvent($request);
 
             DB::beginTransaction();
 
@@ -102,17 +102,17 @@ class EventController extends Controller
             // Création de l'événement
             $event = Event::create($validatedData);
 
-            // Récupération des utilisateurs à notifier (ceux qui ont la paroisse en favori + un token)
+            // Récupération des utilisateurs à notifier
             $usersToNotify = User::whereHas('favoris', function($query) use ($paroisse) {
                 $query->where('paroisse_id', $paroisse->id);
             })->whereNotNull('fcm_token')->get();
 
             if ($usersToNotify->isNotEmpty()) {
-                // ✅ CORRECT : On utilise Notification::send
-                // Cela va déclencher via() -> toArray() (Database) ET toFcmHttp() (FCM)
+                // ✅ CORRECTION : Utilisation de la Facade Notification
+                // Cela enverra automatiquement via Database ET FCM grâce à ta classe Notification
                 Notification::send($usersToNotify, new NouveauEvenementParoisseNotification($event));
                 
-                Log::info('Notification "Nouvel Event" envoyée à ' . $usersToNotify->count() . ' utilisateurs.');
+                Log::info('Notification envoyée à ' . $usersToNotify->count() . ' utilisateurs.');
             } else {
                 Log::info('Aucun utilisateur avec token FCM trouvé pour cette paroisse.');
             }
@@ -125,26 +125,9 @@ class EventController extends Controller
             Log::error('Erreur création événement: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
         }
-    }   
-
-    public function sendFcm($notifiable, Event $event)
-    {
-        if (empty($notifiable->fcm_token)) return null;
-
-        $paroisseName  = $event->paroisse->name ?? 'la paroisse';
-        $dateFormatted = $event->date_debut->format('d/m/Y');
-
-        $title = 'Nouvel événement paroissial 🎊';
-        $body  = "{$paroisseName} organise l'événement « {$event->titre} » le {$dateFormatted}.";
-
-        return (new FcmService())->send($notifiable->fcm_token, $title, $body, [
-            'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-            'type'         => 'nouveau_evenement',
-            'evenement_id' => (string) $event->id,
-            'paroisse_id'  => (string) $event->created_by,
-            'paroisse_name'=> $paroisseName,
-        ]);
     }
+
+    // ❌ J'ai supprimé la méthode sendFcm() car elle est maintenant dans la classe Notification (toFcmHttp)
 
     public function update(Request $request, Event $event)
     {
