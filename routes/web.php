@@ -29,21 +29,26 @@ Route::get('/',[HomeController::class, 'home'])->name('home');
 
 
 
-Route::get('/test-fcm', function () {
-    // 1. Un faux token (puisque tu n'as pas de téléphone connecté à ce projet test)
-    $fakeToken = "d1f_fake_token_example_ABC123_xyz"; 
+Route::get('/debug-json', function () {
+    $path = storage_path('app/firebase_credentials.json');
+    
+    if (!file_exists($path)) {
+        return "Le fichier n'existe pas !";
+    }
 
-    // 2. Appel du service
-    $fcm = new FcmService();
-    $response = $fcm->send(
-        $fakeToken, 
-        "Test Laravel", 
-        "Ceci est un test backend", 
-        ['id' => '1']
-    );
+    $content = file_get_contents($path);
+    $json = json_decode($content);
 
-    // 3. Affichage du résultat brut
-    return response()->json($response);
+    if ($json === null) {
+        return [
+            'status' => 'ERREUR',
+            'message' => 'Le JSON est invalide',
+            'json_error' => json_last_error_msg(),
+            'contenu_recu' => $content // Tu verras ici ce qui est cassé
+        ];
+    }
+
+    return "✅ Le fichier JSON est valide !";
 });
 
 Route::get('/forgot-password', [AuthenticateUser::class, 'showForgotPasswordForm'])->name('forgot-password.form');
