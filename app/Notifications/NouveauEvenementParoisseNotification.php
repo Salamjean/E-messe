@@ -5,7 +5,7 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use App\Models\Event;
-use App\Notifications\Channels\FcmHttpChannel; // IMPORTANT
+use App\Notifications\Channels\FcmHttpChannel;
 use App\Services\FcmService;
 
 class NouveauEvenementParoisseNotification extends Notification
@@ -19,9 +19,6 @@ class NouveauEvenementParoisseNotification extends Notification
         $this->event = $event;
     }
 
-    /**
-     * On définit ici qu'on utilise la Base de données ET le canal FCM personnalisé
-     */
     public function via($notifiable)
     {
         return ['database', FcmHttpChannel::class];
@@ -29,8 +26,8 @@ class NouveauEvenementParoisseNotification extends Notification
 
     public function toArray($notifiable)
     {
+        // Notification DB interne
         $paroisseName = $this->event->paroisse->name ?? 'la paroisse';
-
         return [
             'type'          => 'nouveau_evenement',
             'title'         => 'Nouvel événement paroissial 🎊',
@@ -40,9 +37,6 @@ class NouveauEvenementParoisseNotification extends Notification
         ];
     }
 
-    /**
-     * Cette méthode est appelée automatiquement par FcmHttpChannel
-     */
     public function toFcmHttp($notifiable)
     {
         if (empty($notifiable->fcm_token)) return null;
@@ -53,13 +47,15 @@ class NouveauEvenementParoisseNotification extends Notification
         $title = 'Nouvel événement paroissial 🎊';
         $body  = "{$paroisseName} organise l'événement « {$this->event->titre} » le {$dateFormatted}.";
 
-        // Appel du service
+        // Ces données seront converties en string par le Service
         return (new FcmService())->send($notifiable->fcm_token, $title, $body, [
             'click_action'  => 'FLUTTER_NOTIFICATION_CLICK',
             'type'          => 'nouveau_evenement',
             'evenement_id'  => (string) $this->event->id,
             'paroisse_id'   => (string) $this->event->created_by,
             'paroisse_name' => $paroisseName,
+            'title'         => $title,
+            'body'          => "Ceci est le body data invisible" // Comme dans ton Postman
         ]);
     }
-}
+}   
