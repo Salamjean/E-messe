@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Notification;
 use App\Models\User;
 use App\Notifications\NouveauEvenementParoisseNotification;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
 
 
 class EventController extends Controller
