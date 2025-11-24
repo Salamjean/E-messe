@@ -17,6 +17,11 @@ return new class extends Migration
             $table->morphs('notifiable');
             $table->text('data');
             $table->timestamp('read_at')->nullable();
+
+            $table->string('title')->nullable();
+            $table->text('body')->nullable();
+            $table->unsignedBigInteger('messe_id')->nullable();
+
             $table->timestamps();
         });
     }
