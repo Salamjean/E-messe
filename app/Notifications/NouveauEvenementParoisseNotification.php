@@ -19,12 +19,11 @@ class NouveauEvenementParoisseNotification extends Notification
         $this->event = $event;
     }
 
+
     public function via($notifiable)
     {
-        // Utiliser le nom enregistré, pas la classe
-        return ['database', 'fcm_http'];
+        return ['database', FcmHttpChannel::class];
     }
-
     public function toArray($notifiable)
     {
         $paroisseName = $this->event->paroisse->name ?? 'la paroisse';
