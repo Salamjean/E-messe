@@ -57,7 +57,10 @@ class FcmService
                     ],
                     'data' => $this->formatData($data),
                     'android' => [
-                        'priority' => 'high'
+                        'priority' => 'high',
+                        'notification' => [
+                            'sound' => 'default'
+                        ]
                     ],
                     'apns' => [
                         'payload' => [
