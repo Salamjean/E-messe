@@ -40,8 +40,8 @@
                 <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">dashboard</i>
                 Retrait 
                   
-                <i class="mdc-drawer-arrow material-icons">chevron_right</i>
-                @if($pendingWithdrawalsCount > 0)
+                  <i class="mdc-drawer-arrow material-icons">chevron_right</i>
+                  @if($pendingWithdrawalsCount > 0)
                       <span class="badge badge-pill ms-2" style="left:100px">{{ $pendingWithdrawalsCount }}</span>
                   @endif
               </a>

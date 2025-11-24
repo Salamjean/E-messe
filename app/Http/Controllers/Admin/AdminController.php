@@ -7,6 +7,7 @@ use App\Models\Paroisse;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Withdrawal;
 use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
@@ -19,6 +20,7 @@ class AdminController extends Controller
     $totalOffrandes = Paroisse::sum('montant_offrande');
     $connectedUsersCount = User::where('actif', 1)->count();
     
+    $pendingWithdrawalsCount = Withdrawal::where('status', 'pending')->count();
     // Données pour le graphique des offrandes (30 derniers jours) - INCHANGÉ
     $offrandesData = [];
     $offrandesLabels = [];
@@ -60,7 +62,8 @@ class AdminController extends Controller
         'paroissesStatsLabels',
         'paroissesStatsData',
         'recentUsers',
-        'recentParoisses'
+        'recentParoisses',
+        'pendingWithdrawalsCount'
     ));
 }
 
