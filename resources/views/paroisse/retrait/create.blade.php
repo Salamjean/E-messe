@@ -6,8 +6,8 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <style>
     :root {
-        --primary: #f35525;
-        --dark: #181824;
+        --primary: #c49d54;
+        --dark: #5ea7b5;
         --light: #ffffff;
         --gray: #f8f9fa;
         --border-radius: 12px;
@@ -28,7 +28,7 @@
     }
     
     .retrait-header {
-        background: linear-gradient(135deg, var(--dark) 0%, #2d2d42 100%);
+        background: linear-gradient(135deg, var(--dark));
         color: var(--light);
         border-radius: var(--border-radius);
         padding: 25px 30px;
@@ -80,7 +80,7 @@
     }
     
     .card-header-modern {
-        background: linear-gradient(135deg, var(--primary) 0%, #ff774c 100%);
+        background: linear-gradient(135deg, var(--primary));
         color: white;
         padding: 18px 25px;
         font-weight: 600;
@@ -93,7 +93,7 @@
     }
     
     .solde-card {
-        background: linear-gradient(135deg, #2d2d42 0%, var(--dark) 100%);
+        background: linear-gradient( var(--dark) 100%);
         color: white;
         border-radius: var(--border-radius);
         padding: 20px;
@@ -182,7 +182,7 @@
     }
     
     .btn-soumettre {
-        background: linear-gradient(135deg, var(--primary) 0%, #ff774c 100%);
+        background: linear-gradient(135deg, var(--primary));
         color: white;
         border: none;
         border-radius: 10px;
@@ -239,7 +239,7 @@
             <p>Gérez vos retraits de fonds, {{ Auth::guard('paroisse')->user()->name }}!</p>
         </div>
         <div class="user-profile">
-            <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('paroisse')->user()->name) }}&background=f35525&color=fff" alt="Profile">
+            <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('paroisse')->user()->name) }}" alt="Profile">
         </div>
     </div>
 

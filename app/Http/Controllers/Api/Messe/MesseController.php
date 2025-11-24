@@ -298,19 +298,28 @@ public function en_cours(Request $request): JsonResponse
 
             // --- Envoi de la notification ---
 
+            // if ($messe->user) {
+            //     try {
+            //         // Notification en base
+            //         $messe->user->notify(new MesseEnAttentePaiementNotification($messe));
+
+            //         // Envoi FCM via HTTP
+            //         $notification = new MesseEnAttentePaiementNotification($messe);
+            //         $notification->toFcmHttp($messe->user);
+
+            //     } catch (\Exception $e) {
+            //         Log::error('Échec de l\'envoi de la notificationen attente de paiement pour la messe #' . $messe->id . ': ' . $e->getMessage());
+            //     }
+            // }
+
             if ($messe->user) {
                 try {
-                    // Notification en base
                     $messe->user->notify(new MesseEnAttentePaiementNotification($messe));
-
-                    // Envoi FCM via HTTP
-                    $notification = new MesseEnAttentePaiementNotification($messe);
-                    $notification->toFcmHttp($messe->user);
-
                 } catch (\Exception $e) {
-                    Log::error('Échec de l\'envoi de la notificationen attente de paiement pour la messe #' . $messe->id . ': ' . $e->getMessage());
+                    Log::error('Échec de l\'envoi de la notification en attente de paiement pour la messe #' . $messe->id . ': ' . $e->getMessage());
                 }
             }
+
 
             $reference = 'MESSE_API_' . time() . '_' . $messe->id;
 
