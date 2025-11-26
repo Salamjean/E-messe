@@ -50,6 +50,10 @@ Route::post('/verify-otp', [AuthenticateUser::class, 'verifyOtp'])->name('verify
 Route::get('/reset-password', [AuthenticateUser::class, 'showResetPasswordForm'])->name('reset-password.form');
 Route::post('/reset-password', [AuthenticateUser::class, 'resetPassword'])->name('reset-password.update');
 
+Route::prefix('paiement/cinetpay')->group(function () {
+    Route::get('/success', [PaymentRedirectController::class, 'success'])->name('cinetpay.success');
+    Route::get('/cancel', [PaymentRedirectController::class, 'cancel'])->name('cinetpay.cancel');
+});
 
 
 // ✅ Routes pour redirection après paiement

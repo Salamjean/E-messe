@@ -150,85 +150,80 @@ class WaveController extends Controller
         }
     }
 
-
-
-
-
-
-public function initier(Request $request): JsonResponse
-{
-    $request->validate([
-        'messe_id' => 'required|exists:messes,id',
-        'montant' => 'required|numeric|min:100',
-        'telephone' => 'required|string|min:8',
-    ]);
-
-    $user = $request->user();
-    $messe = Messe::findOrFail($request->messe_id);
-
-    $reference = 'MESSE_WAVE_' . time() . '_' . $user->id;
-
-    try {
-        // 1️⃣ Crée le paiement localement
-        $paiement = Paiement::create([
-            'messe_id' => $messe->id,
-            'user_id' => $user->id,
-            'reference' => $reference,
-            'montant' => $request->montant,
-            'devise' => 'XOF',
-            'methode' => 'wave',
-            'statut' => 'en_attente',
+    public function initier(Request $request): JsonResponse
+    {
+        $request->validate([
+            'messe_id' => 'required|exists:messes,id',
+            'montant' => 'required|numeric|min:100',
+            'telephone' => 'required|string|min:8',
         ]);
 
-        // 2️⃣ Préparer les URLs
-        $successUrl = route('wave.success', ['ref' => $reference]);
-        $errorUrl   = route('wave.error', ['ref' => $reference]);   // redirection en cas d'échec
+        $user = $request->user();
+        $messe = Messe::findOrFail($request->messe_id);
 
-        // 3️⃣ Appel API Wave
-        $response = Http::withOptions(['verify' => false])
-            ->withHeaders([
-                'Authorization' => 'Bearer ' . env('WAVE_API_KEY'),
-                'Content-Type' => 'application/json',
-            ])
-            ->post('https://api.wave.com/v1/checkout/sessions', [
-                'amount' => (string) $request->montant,
-                'currency' => 'XOF',
-                'success_url' => $successUrl,
-                'error_url' => $errorUrl,
-                'metadata' => [
-                    'messe_id' => $messe->id,
-                    'user_id' => $user->id,
-                    'reference' => $reference,
-                ],
+        $reference = 'MESSE_WAVE_' . time() . '_' . $user->id;
+
+        try {
+            // 1️⃣ Crée le paiement localement
+            $paiement = Paiement::create([
+                'messe_id' => $messe->id,
+                'user_id' => $user->id,
+                'reference' => $reference,
+                'montant' => $request->montant,
+                'devise' => 'XOF',
+                'methode' => 'wave',
+                'statut' => 'en_attente',
             ]);
 
-        $data = $response->json();
+            // 2️⃣ Préparer les URLs
+            $successUrl = route('wave.success', ['ref' => $reference]);
+            $errorUrl   = route('wave.error', ['ref' => $reference]);   // redirection en cas d'échec
 
-        // 4️⃣ Sauvegarde des infos Wave en base
-        $paiement->update([
-            'transaction_id' => $data['id'] ?? null,
-            'donnees_transaction' => $data,
-        ]);
+            // 3️⃣ Appel API Wave
+            $response = Http::withOptions(['verify' => false])
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . env('WAVE_API_KEY'),
+                    'Content-Type' => 'application/json',
+                ])
+                ->post('https://api.wave.com/v1/checkout/sessions', [
+                    'amount' => (string) $request->montant,
+                    'currency' => 'XOF',
+                    'success_url' => $successUrl,
+                    'error_url' => $errorUrl,
+                    'metadata' => [
+                        'messe_id' => $messe->id,
+                        'user_id' => $user->id,
+                        'reference' => $reference,
+                    ],
+                ]);
 
-        // 5️⃣ Retour JSON au front-end
-        return response()->json([
-            'message' => 'Paiement initié avec succès',
-            'paiement' => $paiement,
-            'wave' => [
-                'checkout_url' => $data['checkout_url'] ?? null,
-                'success_url'  => $successUrl,
-                'error_url'    => $errorUrl,
-            ],
-        ], 200);
+            $data = $response->json();
 
-    } catch (\Exception $e) {
-        Log::error('Erreur Wave : ' . $e->getMessage());
-        return response()->json([
-            'message' => 'Erreur lors de l’initiation du paiement',
-            'error' => $e->getMessage(),
-        ], 500);
+            // 4️⃣ Sauvegarde des infos Wave en base
+            $paiement->update([
+                'transaction_id' => $data['id'] ?? null,
+                'donnees_transaction' => $data,
+            ]);
+
+            // 5️⃣ Retour JSON au front-end
+            return response()->json([
+                'message' => 'Paiement initié avec succès',
+                'paiement' => $paiement,
+                'wave' => [
+                    'checkout_url' => $data['checkout_url'] ?? null,
+                    'success_url'  => $successUrl,
+                    'error_url'    => $errorUrl,
+                ],
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur Wave : ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Erreur lors de l’initiation du paiement',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
-}
 
 
     /**

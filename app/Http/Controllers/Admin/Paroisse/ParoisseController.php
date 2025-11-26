@@ -63,11 +63,12 @@ class ParoisseController extends Controller
     
     public function store(Request $request)
     {
-        // Validation des données
+        // Validation des données  
         $request->validate([
         'name' => 'required|string|max:255|unique:paroisses,name',
         'email' => 'required|email|unique:paroisses,email',
         'contact' => 'required|string|min:10',
+        'tel' => 'required|string|min:10',
         'commune_id' => 'required|exists:communes,id',
         'profile_picture' => 'nullable|image|max:2048',
         ],[
@@ -78,6 +79,8 @@ class ParoisseController extends Controller
             'email.unique' => 'Cette adresse e-mail est déjà associée à un compte.',
             'contact.required' => 'Le contact est obligatoire.',
             'contact.min' => 'Le contact doit avoir au moins 10 chiffres.',
+            'tel.required' => 'Le contact est obligatoire.',
+            'tel.min' => 'Le contact doit avoir au moins 10 chiffres.',
             'profile_picture.image' => 'Le fichier doit être une image.',
             'profile_picture.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou svg.',
             'profile_picture.max' => 'L\'image ne doit pas dépasser 2048 KB.',
@@ -95,10 +98,11 @@ class ParoisseController extends Controller
             $paroisse->name = $request->name;
             $paroisse->email = $request->email;
             $paroisse->contact = $request->contact;
+            $paroisse->tel = $request->tel;
             $paroisse->commune_id = $request->commune_id;
             $paroisse->password = Hash::make('default');
 
-            // Stockage de l'image dans storage/app/public/paroisses
+            // Stockage de l'image dans storage/app/public/paroisses 
             if ($request->hasFile('profile_picture')) {
                 $paroisse->profile_picture = $request->file('profile_picture')->store('profile_picture', 'public');
             }
@@ -123,7 +127,6 @@ class ParoisseController extends Controller
             return redirect()->back()->withErrors(['error' => 'Une erreur est survenue : ' . $e->getMessage()]);
         }
     }
-
 
     public function edit($id)
     {
@@ -195,7 +198,7 @@ class ParoisseController extends Controller
                 ->withInput();
         }
     }
-
+    
     public function destroy($id)
     {
         try {

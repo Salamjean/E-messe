@@ -205,7 +205,7 @@ class ParoisseController extends Controller
             $villes = Ville::orderBy('nom_ville')->get();
             return view('admin.paroisse.edit', compact('paroisse','villes'));
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return redirect()->route('paroisse.index') // Correction ici aussi
+            return redirect()->route('paroisse.index')
                 ->with('error', 'Paroisse non trouvée.');
         }
     }

@@ -127,8 +127,6 @@ class EventController extends Controller
         }
     }
 
-    // ❌ J'ai supprimé la méthode sendFcm() car elle est maintenant dans la classe Notification (toFcmHttp)
-
     public function update(Request $request, Event $event)
     {
         try {

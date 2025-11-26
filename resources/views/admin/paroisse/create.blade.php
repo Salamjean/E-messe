@@ -1,8 +1,7 @@
 @extends('admin.layouts.template')
 @section('content')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
   :root {
@@ -244,17 +243,13 @@
   }
 
   /* Section en deux colonnes */
-  .two-columns {
-    display: grid;
-    width: 100%;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
 
-  .column {
+
+
+  /* .column {
     display: flex;
     flex-direction: column;
-  }
+  } */
 
   /* Responsive adjustments */
   @media (max-width: 768px) {
@@ -271,9 +266,7 @@
       font-size: 1.5rem;
     }
 
-    .two-columns {
-      grid-template-columns: 1fr;
-    }
+
 
     .profile-upload-container {
       flex-direction: column;
@@ -314,10 +307,9 @@
             @csrf
             @method('POST')
 
-            <div class="two-columns">
               <!-- Première colonne -->
-              <div class="column">
-                <div class="mb-3">
+              <div class="row">
+                <div class="col-md-4 mb-3">
                   <label for="validationCustom001" class="form-label">
                     <i class="fas fa-church"></i> Paroisse
                   </label>
@@ -329,11 +321,23 @@
                   @enderror
                 </div>
 
-                <div class="mb-3">
+                <div class="col-md-4 mb-3">
                   <label for="validationCustom004" class="form-label">
-                    <i class="fas fa-phone"></i> Contact de la paroisse
+                    <i class="fas fa-phone"></i> Contact 1 de la paroisse
                   </label>
-                  <input type="text" class="form-control" name="contact" id="validationCustom004" placeholder="Numéro de téléphone" required>
+                  <input type="text" class="form-control" name="contact" id="validationCustom004" placeholder="Prémier numéro de téléphone" required>
+                  @error('contact')
+                  <div class="invalid-feedback d-block">
+                    {{ $message }}
+                  </div>
+                  @enderror
+                </div>
+
+                <div class="col-md-4 mb-3">
+                  <label for="validationCustom004" class="form-label">
+                    <i class="fas fa-phone"></i> Contact 2
+                  </label>
+                  <input type="text" class="form-control" name="tel" placeholder="Deuxième numéro de téléphone" required>
                   @error('contact')
                   <div class="invalid-feedback d-block">
                     {{ $message }}
@@ -341,10 +345,9 @@
                   @enderror
                 </div>
               </div>
-
               <!-- Deuxième colonne -->
-              <div class="column">
-                <div class="mb-3">
+              <div class="row">
+                <div class="col-md-4 mb-3">
                   <label for="validationCustom003" class="form-label">
                     <i class="fas fa-envelope"></i> Email de la paroisse
                   </label>
@@ -355,8 +358,7 @@
                   </div>
                   @enderror
                 </div>
-
-                <div class="mb-3">
+                <div class="col-md-4 mb-3">
                   <label for="ville_id" class="form-label">
                     <i class="fas fa-city"></i> Ville
                   </label>
@@ -367,8 +369,7 @@
                     @endforeach
                   </select>
                 </div>
-
-                <div class="mb-3">
+                <div class="col-md-4 mb-3">
                   <label for="commune_id" class="form-label">
                     <i class="fas fa-map-marker-alt"></i> Commune
                   </label>
@@ -382,133 +383,133 @@
                   @enderror
                 </div>
               </div>
-            </div>
-
-            <!-- Section Photo de Profil -->
-            <div class="profile-picture-section">
-              <label class="profile-picture-label">
-                <i class="fas fa-camera me-2"></i> Photo de la paroisse
-              </label>
-              
-              <div class="profile-upload-container">
-                <div class="profile-preview">
-                  <div class="placeholder">
-                    <i class="fas fa-church"></i>
-                  </div>
-                </div>
+              <!-- Section Photo de Profil -->
+              <div class="profile-picture-section">
+                <label class="profile-picture-label">
+                  <i class="fas fa-camera me-2"></i> Photo de la paroisse
+                </label>
                 
-                <div>
-                  <label for="profile_picture" class="profile-upload-btn">
-                    <i class="fas fa-upload"></i> Choisir une image
-                  </label>
-                  <input type="file" id="profile_picture" name="profile_picture" class="d-none" accept="image/*">
-                  <div class="profile-info">
-                    Formats acceptés: JPG, PNG, GIF • Taille max: 2MB
-                  </div>
-                  @error('profile_picture')
-                    <div class="invalid-feedback d-block">
-                      {{ $message }}
+                <div class="profile-upload-container">
+                  <div class="profile-preview">
+                    <div class="placeholder">
+                      <i class="fas fa-church"></i>
                     </div>
-                  @enderror
+                  </div>
+                  
+                  <div>
+                    <label for="profile_picture" class="profile-upload-btn">
+                      <i class="fas fa-upload"></i> Choisir une image
+                    </label>
+                    <input type="file" id="profile_picture" name="profile_picture" class="d-none" accept="image/*">
+                    <div class="profile-info">
+                      Formats acceptés: JPG, PNG, GIF • Taille max: 2MB
+                    </div>
+                    @error('profile_picture')
+                      <div class="invalid-feedback d-block">
+                        {{ $message }}
+                      </div>
+                    @enderror
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="wave-decoration"></div>
+              <div class="wave-decoration"></div>
 
-            <div class="d-grid mt-4">
-              <button class="btn btn-primary" type="submit">
-                <i class="fas fa-plus-circle me-2"></i> Créer le compte
-              </button>
-            </div>
+              <div class="d-grid mt-4">
+                <button class="btn btn-primary" type="submit">
+                  <i class="fas fa-plus-circle me-2"></i> Créer le compte
+                </button>
+              </div>
           </form>
         </div>
       </div>
     </div>
   </div>
 </div>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Validation du formulaire
+    (function() {
+      'use strict';
+      const forms = document.querySelectorAll('.needs-validation');
+      
+      Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+    })();
 
-<script>
-  // Validation du formulaire
-  (function() {
-    'use strict';
-    const forms = document.querySelectorAll('.needs-validation');
-    
-    Array.from(forms).forEach(form => {
-      form.addEventListener('submit', event => {
-        if (!form.checkValidity()) {
-          event.preventDefault();
-          event.stopPropagation();
+    // Gestion des messages flash avec SweetAlert
+    @if(Session::has('success'))
+      Swal.fire({
+        icon: 'success',
+        title: 'Succès',
+        text: '{{ Session::get('success') }}',
+        confirmButtonColor: '#f9cf03',
+        background: '#ffffff',
+        timer: 3000
+      });
+    @endif
+
+    @if(Session::has('error'))
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: '{{ Session::get('error') }}',
+        confirmButtonColor: '#f9cf03',
+        background: '#ffffff'
+      });
+    @endif
+
+    // Gestion de l'aperçu de l'image de profil
+    document.getElementById('profile_picture').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const preview = document.querySelector('.profile-preview');
+          preview.innerHTML = `<img src="${e.target.result}" alt="Aperçu de la photo">`;
         }
-        form.classList.add('was-validated');
-      }, false);
-    });
-  })();
-
-  // Gestion des messages flash avec SweetAlert
-  @if(Session::has('success'))
-    Swal.fire({
-      icon: 'success',
-      title: 'Succès',
-      text: '{{ Session::get('success') }}',
-      confirmButtonColor: '#f9cf03',
-      background: '#ffffff',
-      timer: 3000
-    });
-  @endif
-
-  @if(Session::has('error'))
-    Swal.fire({
-      icon: 'error',
-      title: 'Erreur',
-      text: '{{ Session::get('error') }}',
-      confirmButtonColor: '#f9cf03',
-      background: '#ffffff'
-    });
-  @endif
-
-  // Gestion de l'aperçu de l'image de profil
-  document.getElementById('profile_picture').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const preview = document.querySelector('.profile-preview');
-        preview.innerHTML = `<img src="${e.target.result}" alt="Aperçu de la photo">`;
+        reader.readAsDataURL(file);
       }
-      reader.readAsDataURL(file);
-    }
-  });
+    });
 
-  // Gestion de la sélection des communes en fonction de la ville
-  document.addEventListener('DOMContentLoaded', function () {
-    const villeSelect = document.getElementById('ville_id');
-    const communeSelect = document.getElementById('commune_id');
+    // Gestion de la sélection des communes en fonction de la ville
+    document.addEventListener('DOMContentLoaded', function () {
+      const villeSelect = document.getElementById('ville_id');
+      const communeSelect = document.getElementById('commune_id');
 
-    villeSelect.addEventListener('change', function() {
-      const villeId = this.value;
-      communeSelect.innerHTML = '<option value="">Chargement...</option>';
-      communeSelect.disabled = true;
+      villeSelect.addEventListener('change', function() {
+        const villeId = this.value;
+        communeSelect.innerHTML = '<option value="">Chargement...</option>';
+        communeSelect.disabled = true;
 
-      if (!villeId) {
-        communeSelect.innerHTML = '<option value="">Sélectionnez d\'abord une ville</option>';
-        return;
-      }
+        if (!villeId) {
+          communeSelect.innerHTML = '<option value="">Sélectionnez d\'abord une ville</option>';
+          return;
+        }
 
-      fetch(`/admin/get-communes/${villeId}`)
-        .then(response => response.json())
-        .then(data => {
-          communeSelect.innerHTML = '<option value="">Sélectionnez une commune</option>';
-          data.forEach(commune => {
-            communeSelect.innerHTML += `<option value="${commune.id}">${commune.nom_commune}</option>`;
+        fetch(`/admin/get-communes/${villeId}`)
+          .then(response => response.json())
+          .then(data => {
+            communeSelect.innerHTML = '<option value="">Sélectionnez une commune</option>';
+            data.forEach(commune => {
+              communeSelect.innerHTML += `<option value="${commune.id}">${commune.nom_commune}</option>`;
+            });
+            communeSelect.disabled = false;
+          })
+          .catch(error => {
+            console.error('Erreur:', error);
+            communeSelect.innerHTML = '<option value="">Erreur de chargement</option>';
           });
-          communeSelect.disabled = false;
-        })
-        .catch(error => {
-          console.error('Erreur:', error);
-          communeSelect.innerHTML = '<option value="">Erreur de chargement</option>';
-        });
+      });
     });
-  });
-</script>
+  </script>
 @endsection
