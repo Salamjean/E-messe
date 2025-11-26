@@ -16,7 +16,7 @@ class PaiementController extends Controller
     public function initierPaiement(Request $request)
     {
         $request->validate([
-            // 'messe_id' => 'required|exists:messes,id',
+            'messe_id' => 'required|exists:messes,id',
             'montant'  => 'required|numeric|min:100',
         ]);
 
@@ -27,7 +27,7 @@ class PaiementController extends Controller
         $reference = 'MESSE_CINET_' . time() . '_' . $user->id;
 
         try {
-            // 1. Création en base de données
+            // 2. Création locale
             $paiement = Paiement::create([
                 'messe_id' => $messe->id,
                 'user_id'  => $user->id,
@@ -38,37 +38,46 @@ class PaiementController extends Controller
                 'statut'   => 'en_attente',
             ]);
 
-            // 2. Définition des URLs de retour (Web) et de notification (API)
-            // Note: On passe la ref en paramètre GET pour le retour navigateur
+            // 3. URLs
             $returnUrl = route('cinetpay.success', ['transaction_id' => $reference]);
             $cancelUrl = route('cinetpay.cancel', ['transaction_id' => $reference]);
-            $notifyUrl = route('cinetpay.webhook'); // Doit être accessible publiquement (pas de localhost)
+            $notifyUrl = route('cinetpay.webhook');
 
-            // 3. Appel API CinetPay
-            $response = Http::post('https://api-checkout.cinetpay.com/v2/payment', [
-                'apikey'         => env('CINETPAY_API_KEY'),
-                'site_id'        => env('CINETPAY_SITE_ID'),
-                'transaction_id' => $reference,
-                'amount'         => $request->montant,
-                'currency'       => 'XOF',
-                'description'    => 'Offrande de Messe',
-                'return_url'     => $returnUrl,
-                'cancel_url'     => $cancelUrl,
-                'notify_url'     => $notifyUrl,
-                'customer_name'  => $user->name, // Prénom Nom
-                'customer_surname'=> $user->name, // CinetPay demande parfois les deux
-                'customer_email' => $user->email,
-                'channels'       => 'ALL'
+            // 4. Appel CinetPay avec Sécurités (Protection données vides)
+            $response = Http::withOptions(['verify' => false])
+                ->post('https://api-checkout.cinetpay.com/v2/payment', [
+                'apikey'          => env('CINETPAY_API_KEY'),
+                'site_id'         => env('CINETPAY_SITE_ID'),
+                'transaction_id'  => $reference,
+                'amount'          => (int)$request->montant,
+                'currency'        => 'XOF',
+                'description'     => 'Offrande de Messe',
+                'return_url'      => $returnUrl,
+                'cancel_url'      => $cancelUrl,
+                'notify_url'      => $notifyUrl,
+                // Fallbacks si l'utilisateur n'a pas de nom ou email
+                'customer_name'   => $user->name ?? 'Fidele', 
+                'customer_surname'=> $user->name ?? 'Fidele',
+                'customer_email'  => $user->email ?? 'no-reply@sancta-missa.com',
+                'channels'        => 'ALL'
             ]);
 
             $data = $response->json();
 
+            // 5. GESTION D'ERREUR PRÉCISE
             if (!isset($data['data']['payment_url'])) {
                 Log::error("Erreur Init CinetPay", ['response' => $data]);
-                return response()->json(['message' => "Erreur lors de l'initialisation CinetPay"], 400);
+                
+                // Mettre à jour le paiement en échec
+                $paiement->update(['statut' => 'echec', 'donnees_transaction' => $data]);
+
+                return response()->json([
+                    'message' => "Erreur CinetPay: " . ($data['description'] ?? 'Erreur inconnue'),
+                    'details' => $data // AFFICHE CECI DANS POSTMAN
+                ], 400);
             }
 
-            // Mise à jour avec les infos de transaction initiales
+            // Succès
             $paiement->update(['donnees_transaction' => $data]);
 
             return response()->json([
