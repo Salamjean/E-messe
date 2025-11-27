@@ -15,26 +15,34 @@ class PaiementController extends Controller
 {
 public function initierPaiement(Request $request)
 {
-    Log::info("Début initierPaiement", ['request' => $request->all()]);
-
+    Log::info('=== DÉBUT INITIATION PAIEMENT CINETPAY ===');
+    
     $request->validate([
         'messe_id' => 'required|exists:messes,id',
         'montant'  => 'required|numeric|min:100',
     ]);
 
+    Log::info('✅ Validation des données réussie', [
+        'messe_id' => $request->messe_id,
+        'montant' => $request->montant
+    ]);
+
     $user = $request->user();
     $messe = Messe::findOrFail($request->messe_id);
 
-    Log::info("Validation OK, utilisateur et messe récupérés", [
+    Log::info('✅ Utilisateur et messe récupérés', [
         'user_id' => $user->id,
-        'messe_id' => $messe->id
+        'messe_id' => $messe->id,
+        'messe_titre' => $messe->titre
     ]);
 
     // Référence unique
     $reference = 'MESSE_CINET_' . time() . '_' . $user->id;
-    Log::info("Référence de paiement générée", ['reference' => $reference]);
+    Log::info('🎫 Référence de transaction générée', ['reference' => $reference]);
 
     try {
+        Log::info('🔄 Début de la création du paiement en base de données');
+        
         // 2. Création locale
         $paiement = Paiement::create([
             'messe_id' => $messe->id,
@@ -46,45 +54,70 @@ public function initierPaiement(Request $request)
             'statut'   => 'en_attente',
         ]);
 
-        Log::info("Paiement créé localement", ['paiement_id' => $paiement->id]);
+        Log::info('✅ Paiement créé en base de données', [
+            'paiement_id' => $paiement->id,
+            'statut' => $paiement->statut
+        ]);
 
         // 3. URLs
         $returnUrl = route('cinetpay.success', ['transaction_id' => $reference]);
         $cancelUrl = route('cinetpay.cancel', ['transaction_id' => $reference]);
-        $notifyUrl = route('cinetpay.webhook']);
+        $notifyUrl = route('cinetpay.webhook');
 
-        Log::info("URLs de paiement générées", [
-            'returnUrl' => $returnUrl,
-            'cancelUrl' => $cancelUrl,
-            'notifyUrl' => $notifyUrl
+        Log::info('🔗 URLs de callback générées', [
+            'return_url' => $returnUrl,
+            'cancel_url' => $cancelUrl,
+            'notify_url' => $notifyUrl
         ]);
 
-        // 4. Appel CinetPay
+        // 4. Appel CinetPay avec Sécurités (Protection données vides)
+        Log::info('🔄 Préparation de la requête vers CinetPay', [
+            'montant' => (int)$request->montant,
+            'devise' => 'XOF',
+            'description' => 'Offrande de Messe'
+        ]);
+
         $response = Http::withOptions(['verify' => false])
             ->post('https://api-checkout.cinetpay.com/v2/payment', [
-                'apikey'          => env('CINETPAY_API_KEY'),
-                'site_id'         => env('CINETPAY_SITE_ID'),
-                'transaction_id'  => $reference,
-                'amount'          => (int)$request->montant,
-                'currency'        => 'XOF',
-                'description'     => 'Offrande de Messe',
-                'return_url'      => $returnUrl,
-                'cancel_url'      => $cancelUrl,
-                'notify_url'      => $notifyUrl,
-                'customer_name'   => $user->name ?? 'Fidele', 
-                'customer_surname'=> $user->name ?? 'Fidele',
-                'customer_email'  => $user->email ?? 'no-reply@sancta-missa.com',
-                'channels'        => 'ALL'
-            ]);
+            'apikey'          => env('CINETPAY_API_KEY'),
+            'site_id'         => env('CINETPAY_SITE_ID'),
+            'transaction_id'  => $reference,
+            'amount'          => (int)$request->montant,
+            'currency'        => 'XOF',
+            'description'     => 'Offrande de Messe',
+            'return_url'      => $returnUrl,
+            'cancel_url'      => $cancelUrl,
+            'notify_url'      => $notifyUrl,
+            // Fallbacks si l'utilisateur n'a pas de nom ou email 
+            'customer_name'   => $user->name ?? 'Fidele', 
+            'customer_surname'=> $user->name ?? 'Fidele',
+            'customer_email'  => $user->email ?? 'no-reply@sancta-missa.com',
+            'channels'        => 'ALL'
+        ]);
+
+        Log::info('📡 Réponse reçue de CinetPay', [
+            'status_code' => $response->status(),
+            'headers' => $response->headers()
+        ]);
 
         $data = $response->json();
-        Log::info("Réponse CinetPay reçue", ['response' => $data]);
+        Log::info('📊 Données de réponse CinetPay', ['data_complete' => $data]);
 
-        // 5. Gestion d'erreur
+        // 5. GESTION D'ERREUR PRÉCISE
         if (!isset($data['data']['payment_url'])) {
-            Log::error("Erreur Init CinetPay", ['response' => $data]);
-
+            Log::error('❌ Erreur CinetPay - URL de paiement manquante', [
+                'reference' => $reference,
+                'response_complete' => $data,
+                'erreur_description' => $data['description'] ?? 'Non spécifiée'
+            ]);
+            
+            // Mettre à jour le paiement en échec
             $paiement->update(['statut' => 'echec', 'donnees_transaction' => $data]);
+
+            Log::warning('📝 Paiement marqué comme échec en base de données', [
+                'paiement_id' => $paiement->id,
+                'nouveau_statut' => 'echec'
+            ]);
 
             return response()->json([
                 'message' => "Erreur CinetPay: " . ($data['description'] ?? 'Erreur inconnue'),
@@ -92,9 +125,19 @@ public function initierPaiement(Request $request)
             ], 400);
         }
 
+        Log::info('✅ URL de paiement CinetPay reçue avec succès', [
+            'payment_url' => $data['data']['payment_url'],
+            'reference' => $reference
+        ]);
+
         // Succès
         $paiement->update(['donnees_transaction' => $data]);
-        Log::info("Paiement mis à jour avec succès", ['paiement_id' => $paiement->id]);
+        Log::info('📝 Données de transaction sauvegardées en base');
+
+        Log::info('🎉 Paiement initié avec succès - Prêt pour redirection', [
+            'reference' => $reference,
+            'checkout_url' => $data['data']['payment_url']
+        ]);
 
         return response()->json([
             'statut'       => 'success',
@@ -103,13 +146,23 @@ public function initierPaiement(Request $request)
         ]);
 
     } catch (\Exception $e) {
-        Log::error("Exception CinetPay: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+        Log::error('💥 Exception capturée lors de l\'initiation du paiement', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+            'reference' => $reference ?? 'non_générée'
+        ]);
+        
         return response()->json([
-            'message' => 'Erreur serveur', 
+            'message' => 'Erreur serveur lors de l\'initiation du paiement',
             'error' => $e->getMessage()
         ], 500);
+    } finally {
+        Log::info('=== FIN INITIATION PAIEMENT CINETPAY ===');
     }
 }
+
 
 
     /**
