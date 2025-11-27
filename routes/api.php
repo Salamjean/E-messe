@@ -159,8 +159,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('paiement/cinetpay')->group(function () {
         Route::post('/initier', [PaiementController::class, 'initierPaiement']);
+        Route::post('/webhook/cinetpay', [PaiementController::class, 'handleWebhook'])->name('cinetpay.webhook');
+        Route::get('/success', [PaiementController::class, 'success'])->name('cinetpay.success');
+        Route::get('/cancel', [PaiementController::class, 'cancel'])->name('cinetpay.cancel');
         
-        Route::post('/webhook', [PaiementController::class, 'handleWebhook'])->name('cinetpay.webhook');
     });
 
     //Route pour les évènements
