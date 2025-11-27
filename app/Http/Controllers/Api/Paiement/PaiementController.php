@@ -13,39 +13,55 @@ use App\Notifications\PaiementEchecNotification;
 
 class PaiementController extends Controller
 {
-    public function initierPaiement(Request $request)
-    {
-        $request->validate([
-            'messe_id' => 'required|exists:messes,id',
-            'montant'  => 'required|numeric|min:100',
+public function initierPaiement(Request $request)
+{
+    Log::info("Début initierPaiement", ['request' => $request->all()]);
+
+    $request->validate([
+        'messe_id' => 'required|exists:messes,id',
+        'montant'  => 'required|numeric|min:100',
+    ]);
+
+    $user = $request->user();
+    $messe = Messe::findOrFail($request->messe_id);
+
+    Log::info("Validation OK, utilisateur et messe récupérés", [
+        'user_id' => $user->id,
+        'messe_id' => $messe->id
+    ]);
+
+    // Référence unique
+    $reference = 'MESSE_CINET_' . time() . '_' . $user->id;
+    Log::info("Référence de paiement générée", ['reference' => $reference]);
+
+    try {
+        // 2. Création locale
+        $paiement = Paiement::create([
+            'messe_id' => $messe->id,
+            'user_id'  => $user->id,
+            'reference'=> $reference,
+            'montant'  => $request->montant,
+            'devise'   => 'XOF',
+            'methode'  => 'cinetpay',
+            'statut'   => 'en_attente',
         ]);
 
-        $user = $request->user();
-        $messe = Messe::findOrFail($request->messe_id);
+        Log::info("Paiement créé localement", ['paiement_id' => $paiement->id]);
 
-        // Référence unique
-        $reference = 'MESSE_CINET_' . time() . '_' . $user->id;
+        // 3. URLs
+        $returnUrl = route('cinetpay.success', ['transaction_id' => $reference]);
+        $cancelUrl = route('cinetpay.cancel', ['transaction_id' => $reference]);
+        $notifyUrl = route('cinetpay.webhook']);
 
-        try {
-            // 2. Création locale
-            $paiement = Paiement::create([
-                'messe_id' => $messe->id,
-                'user_id'  => $user->id,
-                'reference'=> $reference,
-                'montant'  => $request->montant,
-                'devise'   => 'XOF',
-                'methode'  => 'cinetpay',
-                'statut'   => 'en_attente',
-            ]);
+        Log::info("URLs de paiement générées", [
+            'returnUrl' => $returnUrl,
+            'cancelUrl' => $cancelUrl,
+            'notifyUrl' => $notifyUrl
+        ]);
 
-            // 3. URLs
-            $returnUrl = route('cinetpay.success', ['transaction_id' => $reference]);
-            $cancelUrl = route('cinetpay.cancel', ['transaction_id' => $reference]);
-            $notifyUrl = route('cinetpay.webhook');
-
-            // 4. Appel CinetPay avec Sécurités (Protection données vides)
-            $response = Http::withOptions(['verify' => false])
-                ->post('https://api-checkout.cinetpay.com/v2/payment', [
+        // 4. Appel CinetPay
+        $response = Http::withOptions(['verify' => false])
+            ->post('https://api-checkout.cinetpay.com/v2/payment', [
                 'apikey'          => env('CINETPAY_API_KEY'),
                 'site_id'         => env('CINETPAY_SITE_ID'),
                 'transaction_id'  => $reference,
@@ -55,42 +71,46 @@ class PaiementController extends Controller
                 'return_url'      => $returnUrl,
                 'cancel_url'      => $cancelUrl,
                 'notify_url'      => $notifyUrl,
-                // Fallbacks si l'utilisateur n'a pas de nom ou email
                 'customer_name'   => $user->name ?? 'Fidele', 
                 'customer_surname'=> $user->name ?? 'Fidele',
                 'customer_email'  => $user->email ?? 'no-reply@sancta-missa.com',
                 'channels'        => 'ALL'
             ]);
 
-            $data = $response->json();
+        $data = $response->json();
+        Log::info("Réponse CinetPay reçue", ['response' => $data]);
 
-            // 5. GESTION D'ERREUR PRÉCISE
-            if (!isset($data['data']['payment_url'])) {
-                Log::error("Erreur Init CinetPay", ['response' => $data]);
-                
-                // Mettre à jour le paiement en échec
-                $paiement->update(['statut' => 'echec', 'donnees_transaction' => $data]);
+        // 5. Gestion d'erreur
+        if (!isset($data['data']['payment_url'])) {
+            Log::error("Erreur Init CinetPay", ['response' => $data]);
 
-                return response()->json([
-                    'message' => "Erreur CinetPay: " . ($data['description'] ?? 'Erreur inconnue'),
-                    'details' => $data
-                ], 400);
-            }
-
-            // Succès
-            $paiement->update(['donnees_transaction' => $data]);
+            $paiement->update(['statut' => 'echec', 'donnees_transaction' => $data]);
 
             return response()->json([
-                'statut'       => 'success',
-                'reference'    => $reference,
-                'checkout_url' => $data['data']['payment_url'],
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error("Exception CinetPay: " . $e->getMessage());
-            return response()->json(['message' => 'Erreur serveur', 'error' => $e->getMessage()], 500);
+                'message' => "Erreur CinetPay: " . ($data['description'] ?? 'Erreur inconnue'),
+                'details' => $data
+            ], 400);
         }
+
+        // Succès
+        $paiement->update(['donnees_transaction' => $data]);
+        Log::info("Paiement mis à jour avec succès", ['paiement_id' => $paiement->id]);
+
+        return response()->json([
+            'statut'       => 'success',
+            'reference'    => $reference,
+            'checkout_url' => $data['data']['payment_url'],
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error("Exception CinetPay: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+        return response()->json([
+            'message' => 'Erreur serveur', 
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
 
     /**
      * Webhook appelé par CinetPay (Server-to-Server)
