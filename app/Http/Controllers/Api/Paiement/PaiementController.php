@@ -82,8 +82,7 @@ class PaiementController extends Controller
                 Log::warning('⚠️ ATTENTION: Vous utilisez une URL locale (localhost) pour le Webhook CinetPay. CinetPay ne pourra pas vous notifier. Utilisez Ngrok ou un serveur en ligne.');
             }
 
-            $response = Http::withOptions(['verify' => false])
-                ->post('https://api-checkout.cinetpay.com/v2/payment', [
+            $paymentData = [
                 'apikey'          => env('CINETPAY_API_KEY'),
                 'site_id'         => env('CINETPAY_SITE_ID'),
                 'transaction_id'  => $reference,
@@ -93,14 +92,22 @@ class PaiementController extends Controller
                 'return_url'      => $returnUrl,
                 'cancel_url'      => $cancelUrl,
                 'notify_url'      => $notifyUrl,
-                // Fallbacks si l'utilisateur n'a pas de nom ou email 
+                'mode'            => 'PRODUCTION',
+                'channels'        => 'ALL',
+                
+                // Customer info complet (comme dans l'exemple)
                 'customer_name'   => $user->name ?? 'Fidele', 
                 'customer_surname'=> $user->name ?? 'Fidele',
                 'customer_email'  => $user->email ?? 'no-reply@sancta-missa.com',
-                'customer_city'   => 'Abidjan', // Requis par certains gateways
-                'customer_country'=> 'CI',      // Requis par certains gateways
-                'channels'        => 'ALL'
-            ]);
+                'customer_phone_number' => $user->phone ?? '0000000000', // Ajouté
+                'customer_address' => $user->adresse ?? 'Abidjan',       // Ajouté
+                'customer_city'   => $user->ville ?? 'Abidjan',          // Ajouté
+                'customer_country'=> 'CI',                               // Ajouté
+                'customer_zip_code'=> '00225',                           // Ajouté
+            ];
+
+            // Utilisation de withoutVerifying() comme dans l'exemple
+            $response = Http::withoutVerifying()->post('https://api-checkout.cinetpay.com/v2/payment', $paymentData);
 
             Log::info('📡 Réponse reçue de CinetPay', [
                 'status_code' => $response->status(),
@@ -110,9 +117,9 @@ class PaiementController extends Controller
             $data = $response->json();
             Log::info('📊 Données de réponse CinetPay', ['data_complete' => $data]);
 
-            // 5. GESTION D'ERREUR PRÉCISE
-            if (!isset($data['data']['payment_url'])) {
-                Log::error('❌ Erreur CinetPay - URL de paiement manquante', [
+            // 5. GESTION D'ERREUR PRÉCISE (Code 201 attendu)
+            if ($response->failed() || ($data['code'] ?? '') !== '201') {
+                Log::error('❌ Erreur CinetPay - Initialisation échouée', [
                     'reference' => $reference,
                     'response_complete' => $data,
                     'erreur_description' => $data['description'] ?? 'Non spécifiée'
@@ -120,11 +127,6 @@ class PaiementController extends Controller
                 
                 // Mettre à jour le paiement en échec
                 $paiement->update(['statut' => 'echec', 'donnees_transaction' => $data]);
-
-                Log::warning('📝 Paiement marqué comme échec en base de données', [
-                    'paiement_id' => $paiement->id,
-                    'nouveau_statut' => 'echec'
-                ]);
 
                 return response()->json([
                     'message' => "Erreur CinetPay: " . ($data['description'] ?? 'Erreur inconnue'),
