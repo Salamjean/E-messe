@@ -22,6 +22,7 @@ use App\Http\Controllers\Paroisse\Event\EventController;
 use App\Http\Controllers\User\Event\EventController as UserEventController;
 use App\Http\Controllers\Api\Paiement\WaveController;
 use App\Http\Controllers\Redirectionpaiement\RedirectController;
+use App\Http\Controllers\Redirectionpaiement\PaymentRedirectController;
 use App\Services\FcmService;
 use Google\Auth\Credentials\ServiceAccountCredentials;
 
