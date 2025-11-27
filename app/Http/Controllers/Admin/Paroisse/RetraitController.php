@@ -16,6 +16,7 @@ class RetraitController extends Controller
                     ->paginate(10);
         return view('admin.retrait.index', compact('retraits'));
     }
+    
     public function history(){
          // Récupérer les retraits de la paroisse
         $retraits = ParoisseRetrait::orderBy('created_at', 'desc')

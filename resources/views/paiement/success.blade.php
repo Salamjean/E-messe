@@ -9,7 +9,7 @@
         .btn { background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
     </style>
     <script>
-        // Tentative de redirection automatique vers l'app
+        // Tentative de redirection automatique vers l'app 
         setTimeout(function() {
             window.location.href = "{{ $redirectUrl }}";
         }, 1000);

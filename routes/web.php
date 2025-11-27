@@ -135,6 +135,14 @@ Route::middleware('paroisse')->prefix('parish')->group(function(){
     Route::post('/parish/offrande', [OffrandeController::class, 'storeOffrande'])->name('paroisse.offrande.store');
     Route::get('/request/historys',[OffrandeController::class,'history'])->name('demandes.messes.history');
 
+
+Route::prefix('reversement')->name('reversement.')->group(function () {
+    Route::get('/', [ParoissePaiement::class, 'list_reversement'])->name('list_reversement');
+    Route::get('/data', [ParoissePaiement::class, 'getData'])->name('data');
+    Route::post('/store', [ParoissePaiement::class, 'store'])->name('store');
+});
+
+
     Route::prefix('event')->name('event.')->group(function () {
         Route::get('/', [EventController::class, 'index'])->name('index');
         Route::get('/data', [EventController::class, 'data'])->name('data');

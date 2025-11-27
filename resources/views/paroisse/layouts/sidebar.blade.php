@@ -62,7 +62,15 @@
                 Historique
               </a>
             </div>
-
+            
+            <!-- Faire un reversement -->
+            <div class="mdc-list-item mdc-drawer-item">
+              <a class="mdc-drawer-link" href="{{ route('reversement.list_reversement') }}">
+                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon">history</i>
+                Reversement
+              </a>
+            </div>
+            
             <!-- Retraits -->
             <div class="mdc-list-item mdc-drawer-item">
               <a class="mdc-expansion-panel-link" href="#" data-toggle="expansionPanel" data-target="ui-sub-menu">
@@ -86,7 +94,7 @@
             </div>
 
             <div>
-              <img src="{{asset('assetsPoste/assets/images/sidebar/image_emesse.svg') }}" style="width: 50%; margin-left:50px" alt="logo">
+              <img src="{{asset('assetsPoste/assets/images/sidebar/logo.svg') }}" style="width: 50%; margin-left:50px" alt="logo">
             </div>
           </nav>
         </div>

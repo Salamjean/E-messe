@@ -73,7 +73,7 @@ class PaiementController extends Controller
 
                 return response()->json([
                     'message' => "Erreur CinetPay: " . ($data['description'] ?? 'Erreur inconnue'),
-                    'details' => $data // AFFICHE CECI DANS POSTMAN
+                    'details' => $data
                 ], 400);
             }
 
