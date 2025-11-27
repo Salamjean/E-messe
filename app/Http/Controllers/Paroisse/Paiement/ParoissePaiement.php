@@ -217,7 +217,9 @@ public function store(Request $request)
     try {
         // --- ÉTAPE 1 : AUTHENTIFICATION (Récupérer le Token) ---
         // Note: Si vous avez toujours l'erreur SSL, ajoutez ->withoutVerifying() avant ->post()
-        $loginResponse = Http::post('https://client.cinetpay.com/v1/auth/login', [
+        
+        // IMPORTANT: CinetPay Transfer API requiert x-www-form-urlencoded
+        $loginResponse = Http::asForm()->post('https://client.cinetpay.com/v1/auth/login', [
             'apikey'   => env('CINETPAY_API_KEY'),
             'password' => env('CINETPAY_PASSWORD') // Indispensable pour le transfert
         ]);
@@ -227,7 +229,8 @@ public function store(Request $request)
         // Vérification si le login a échoué
         if (!$loginResponse->successful() || !isset($loginResult['data']['token'])) {
              Log::error("CinetPay Login Failed", $loginResult);
-             return response()->json(['error' => 'Erreur d\'authentification avec la banque.'], 500);
+             $reversement->update(['statut' => 'failed']);
+             return response()->json(['error' => 'Erreur d\'authentification avec la banque. Vérifiez les configurations.'], 500);
         }
 
         $token = $loginResult['data']['token'];
@@ -246,7 +249,8 @@ public function store(Request $request)
             // 'apikey' ne doit PAS être ici
         ];
 
-        $response = Http::timeout(30)->post($transferUrl, $payload);
+        // IMPORTANT: Envoyer aussi en form-data pour cohérence
+        $response = Http::asForm()->timeout(30)->post($transferUrl, $payload);
         $result = $response->json();
 
         // Sauvegarde de la réponse brute pour debug
