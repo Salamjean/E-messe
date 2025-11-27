@@ -205,6 +205,7 @@ public function store(Request $request)
 
     $reference = 'REV_' . time() . '_' . rand(1000, 9999);
 
+    // 1. Création en base de données (Statut Pending)
     $reversement = Reversement::create([
         'reference'           => $reference,
         'numero_destinataire' => $request->telephone,
@@ -214,23 +215,44 @@ public function store(Request $request)
     ]);
 
     try {
-        $apiUrl = 'https://client.cinetpay.com/v1/transfer/money/send/contact';
+        // --- ÉTAPE 1 : AUTHENTIFICATION (Récupérer le Token) ---
+        // Note: Si vous avez toujours l'erreur SSL, ajoutez ->withoutVerifying() avant ->post()
+        $loginResponse = Http::post('https://client.cinetpay.com/v1/auth/login', [
+            'apikey'   => env('CINETPAY_API_KEY'),
+            'password' => env('CINETPAY_PASSWORD') // Indispensable pour le transfert
+        ]);
+
+        $loginResult = $loginResponse->json();
+
+        // Vérification si le login a échoué
+        if (!$loginResponse->successful() || !isset($loginResult['data']['token'])) {
+             Log::error("CinetPay Login Failed", $loginResult);
+             return response()->json(['error' => 'Erreur d\'authentification avec la banque.'], 500);
+        }
+
+        $token = $loginResult['data']['token'];
+
+        // --- ÉTAPE 2 : EFFECTUER LE TRANSFERT ---
+        // Le token doit être passé dans l'URL : ?token=...
+        $transferUrl = 'https://client.cinetpay.com/v1/transfer/money/send/contact?token=' . $token;
         
         $payload = [
-            'apikey'                => env('CINETPAY_API_KEY'),
-            'site_id'               => env('CINETPAY_SITE_ID'),
             'prefix'                => $request->prefix,
             'phone'                 => $request->telephone,
             'amount'                => $request->montant,
             'client_transaction_id' => $reference,
-            'notify_url'            => url('/reversement/notification'), // URL dédiée pour les notifications
+            'notify_url'            => url('/reversement/notification'),
+            // 'site_id' n'est généralement pas requis ici, le token contient déjà l'info
+            // 'apikey' ne doit PAS être ici
         ];
 
-        $response = Http::timeout(30)->post($apiUrl, $payload);
+        $response = Http::timeout(30)->post($transferUrl, $payload);
         $result = $response->json();
 
+        // Sauvegarde de la réponse brute pour debug
         $reversement->update(['donnees_api' => $result]);
 
+        // Vérification du succès (Code 0 = Succès chez CinetPay)
         if ($response->successful() && isset($result['code']) && $result['code'] === '0') {
             $reversement->update([
                 'statut'               => 'success',
@@ -242,11 +264,13 @@ public function store(Request $request)
                 'message' => 'Transfert effectué avec succès.'
             ]);
         } else {
+            // Echec
             $reversement->update(['statut' => 'failed']);
+            $message = $result['message'] ?? 'Erreur lors du transfert.';
             
             return response()->json([
                 'success' => false, 
-                'message' => $result['message'] ?? 'Erreur lors du transfert.'
+                'message' => $message
             ], 400);
         }
 
