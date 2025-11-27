@@ -147,13 +147,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/wave/checkout-url', [WaveController::class, 'checkoutUrl']);
         Route::post('/wave/initier', [WaveController::class, 'initier']);
 
-        Route::prefix('cinetpay')->group(function () {
-            Route::post('/initier', [PaiementController::class, 'initierCinetPay']);
-            Route::post('/checkout-url', [PaiementController::class, 'checkoutUrlCinetPay']);
-            Route::post('/webhook', [PaiementController::class, 'webhookCinetPay']);
-            Route::get('/success', [PaiementController::class, 'retourCinetPaySuccess']);
-            Route::get('/cancel', [PaiementController::class, 'retourCinetPayCancel']);
-        });
+
 
     });
 

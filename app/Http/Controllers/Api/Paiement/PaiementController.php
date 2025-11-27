@@ -77,6 +77,11 @@ class PaiementController extends Controller
                 'description' => 'Offrande de Messe'
             ]);
 
+            // Vérification Localhost
+            if (str_contains($notifyUrl, 'localhost') || str_contains($notifyUrl, '127.0.0.1')) {
+                Log::warning('⚠️ ATTENTION: Vous utilisez une URL locale (localhost) pour le Webhook CinetPay. CinetPay ne pourra pas vous notifier. Utilisez Ngrok ou un serveur en ligne.');
+            }
+
             $response = Http::withOptions(['verify' => false])
                 ->post('https://api-checkout.cinetpay.com/v2/payment', [
                 'apikey'          => env('CINETPAY_API_KEY'),
@@ -92,6 +97,8 @@ class PaiementController extends Controller
                 'customer_name'   => $user->name ?? 'Fidele', 
                 'customer_surname'=> $user->name ?? 'Fidele',
                 'customer_email'  => $user->email ?? 'no-reply@sancta-missa.com',
+                'customer_city'   => 'Abidjan', // Requis par certains gateways
+                'customer_country'=> 'CI',      // Requis par certains gateways
                 'channels'        => 'ALL'
             ]);
 
