@@ -140,6 +140,7 @@ Route::prefix('reversement')->name('reversement.')->group(function () {
     Route::get('/', [ParoissePaiement::class, 'list_reversement'])->name('list_reversement');
     Route::get('/data', [ParoissePaiement::class, 'getData'])->name('data');
     Route::post('/store', [ParoissePaiement::class, 'store'])->name('store');
+    Route::post('/notification', [ParoissePaiement::class, 'handleNotification'])->name('notification');
 });
 
 

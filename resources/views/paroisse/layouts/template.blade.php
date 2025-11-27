@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+      <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Espace - Parish</title>
 
-  <!-- Bootstrap 5 CSS -->
-  <link rel="stylesheet" href="{{ asset('bootstrap5.0.2/css/bootstrap.min.css') }}">
+  <!-- Bootstrap 5 CSS (CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
 
   <!-- DataTables CSS -->
-  <link rel="stylesheet" href="{{ asset('DataTables/css/dataTables.bootstrap5.min.css') }}">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 
-  <!-- Plugins et icônes -->
+  <!-- Plugins CSS -->
   <link rel="stylesheet" href="{{ asset('assetsPoste/assets/vendors/mdi/css/materialdesignicons.min.css') }}">
   <link rel="stylesheet" href="{{ asset('assetsPoste/assets/vendors/css/vendor.bundle.base.css') }}">
   <link rel="stylesheet" href="{{ asset('assetsPoste/assets/vendors/flag-icon-css/css/flag-icon.min.css') }}">
@@ -21,13 +22,11 @@
   <!-- Styles personnalisés -->
   <link rel="stylesheet" href="{{ asset('assetsPoste/assets/css/demo/style.css') }}">
   <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
-  {{-- <link rel="stylesheet" href="{{ asset('css/dashboard_paroisse.css') }}"> --}}
 
-  <link rel="shortcut icon" href="{{ asset('assets/assets/images/logo E-messe.jpeg') }}" />
-
-  <!-- Styles spécifiques aux pages -->
   @stack('css')
+
 </head>
+
 <body>
 
 <script src="{{ asset('assetsPoste/assets/js/preloader.js') }}"></script>
@@ -45,19 +44,22 @@
 </div>
 
 <!-- jQuery (DOIT ÊTRE LE PREMIER) -->
-<script src="{{ asset('DataTables/js/jquery-3.7.0.min.js') }}"></script>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 
-<!-- JS -->
+<!-- Bootstrap 5 JS (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- DataTables JS (CDN) -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+<!-- Select2 -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<!-- Bootstrap 5 JS bundle (Popper inclus) -->
-<script src="{{ asset('bootstrap5.0.2/js/bootstrap.bundle.min.js') }}"></script>
-
-<!-- DataTables JS (DOIT ÊTRE APRÈS jQuery) -->
-<script src="{{ asset('DataTables/dataTables.js') }}"></script>
-<script src="{{ asset('DataTables/dataTables.min.js') }}"></script>
+<!-- SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <!-- Plugins JS -->
 <script src="{{ asset('assetsPoste/assets/vendors/js/vendor.bundle.base.js') }}"></script>
@@ -68,11 +70,8 @@
 <!-- Inject JS -->
 <script src="{{ asset('assetsPoste/assets/js/material.js') }}"></script>
 <script src="{{ asset('assetsPoste/assets/js/misc.js') }}"></script>
-
-<!-- Custom JS -->
 <script src="{{ asset('assetsPoste/assets/js/dashboard.js') }}"></script>
 
-<!-- Scripts spécifiques aux pages -->
 @stack('js')
 
 </body>

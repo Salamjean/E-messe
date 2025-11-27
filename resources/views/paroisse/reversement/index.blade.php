@@ -1,187 +1,174 @@
 @extends('paroisse.layouts.template')
 
 @section('styles')
-    <!-- CSS Bootstrap + DataTables -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
-    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 
+<style>
+.dataTables_processing {
+    background: rgba(255,255,255,0.9);
+    z-index: 100;
+}
+</style>
 @endsection
-
 
 @section('content')
 <div class="container mt-5">
-
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Gestion des Reversements</h2>
-
-        <!-- Bouton nouvel enregistrement -->
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalReversement">
-            <i class="fa fa-plus"></i> Nouveau Reversement
+            <i class="fas fa-plus"></i> Nouveau Reversement
         </button>
     </div>
 
-    <!-- Tableau -->
-    <div class="card shadow">
+    <div class="card shadow border-0">
         <div class="card-body">
-            <table id="table-reversements" class="table table-bordered table-striped w-100">
-                <thead>
-                    <tr>
-                        <th>Référence</th>
-                        <th>Date</th>
-                        <th>Destinataire</th>
-                        <th>Montant</th>
-                        <th>Statut</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+            <div class="table-responsive">
+                <table id="table-reversements" class="table table-striped table-hover align-middle" style="width:100%">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Référence</th>
+                            <th>Date</th>
+                            <th>Destinataire</th>
+                            <th>Montant</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
-
 <!-- Modal Ajout Reversement -->
-<div class="modal fade" id="modalReversement" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalReversement" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog">
         <div class="modal-content">
-
             <form id="form-reversement">
                 @csrf
-
                 <div class="modal-header">
-                    <h5 class="modal-title">Effectuer un transfert</h5>
+                    <h5 class="modal-title">Effectuer un transfert Mobile Money</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-
                 <div class="modal-body">
-
                     <div id="alert-msg"></div>
-
                     <div class="mb-3">
-                        <label class="form-label">Montant (FCFA)</label>
-                        <input type="number" class="form-control" name="montant" min="100" required>
+                        <label class="form-label fw-bold">Montant (FCFA)</label>
+                        <input type="number" class="form-control" name="montant" min="100" placeholder="Ex: 5000" required>
                     </div>
-
-                    <div class="row">
+                    <div class="row g-2">
                         <div class="col-4">
-                            <label class="form-label">Indicatif</label>
-                            <select class="form-control" name="prefix">
+                            <label class="form-label fw-bold">Pays</label>
+                            <select class="form-select" name="prefix">
                                 <option value="225">CI (+225)</option>
                                 <option value="221">SN (+221)</option>
                                 <option value="226">BF (+226)</option>
                             </select>
                         </div>
-
                         <div class="col-8">
-                            <label class="form-label">Téléphone</label>
+                            <label class="form-label fw-bold">Numéro Téléphone</label>
                             <input type="text" class="form-control" name="telephone" placeholder="0707070707" required>
+                            <small class="text-muted">Sans l'indicatif pays</small>
                         </div>
                     </div>
-
                 </div>
-
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-primary" id="btn-submit">
-                        <span class="spinner-border spinner-border-sm d-none"></span>
-                        Envoyer
+                        <span class="spinner-border spinner-border-sm d-none me-1"></span>
+                        Transférer
                     </button>
                 </div>
-
             </form>
-
         </div>
     </div>
 </div>
-
 @endsection
 
-
-
-@section('scripts')
-<!-- JS Librairies -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+@push('js')
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-
 <script>
-$(function() {
+$(document).ready(function() {
+    $.ajaxSetup({
+        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')}
+    });
 
-    // Initialisation DataTable
-    let table = $('#table-reversements').DataTable({
+    // Initialisation DataTable avec gestion d'erreurs
+    var table = $('#table-reversements').DataTable({
         processing: true,
         serverSide: true,
-        ajax: "{{ route('reversement.data') }}",
-        columns: [
-            { data: 'reference' },
-            { data: 'created_at' },
-            {
-                data: null,
-                render: function(row) {
-                    return '(+' + row.prefix_pays + ') ' + row.numero_destinataire;
-                }
-            },
-            { data: 'montant' },
-            { data: 'statut' }
-        ],
-        language: {
-            url: "//cdn.datatables.net/plug-ins/1.11.5/i18n/fr-FR.json"
+        responsive: true,
+        ajax: {
+            url: "{{ route('reversement.data') }}",
+            error: function(xhr, error, thrown) {
+                console.error('Erreur DataTable:', error, thrown);
+                alert('Erreur lors du chargement des données');
+            }
         },
-        order: [[1, 'desc']]
+        columns: [
+            { data: 'reference', name: 'reference' },
+            { data: 'created_at', name: 'created_at' },
+            { data: 'numero_destinataire', name: 'numero_destinataire', render: function(data, type, row) {
+                return '(+' + row.prefix_pays + ') ' + data;
+            }},
+            { data: 'montant', name: 'montant', render: $.fn.dataTable.render.number(' ', ',', 0, '', ' FCFA') },
+            { data: 'statut', name: 'statut', orderable: false, searchable: false }
+        ],
+        order: [[1, 'desc']],
+        language: {
+            processing: "Traitement en cours...",
+            zeroRecords: "Aucun reversement trouvé",
+            emptyTable: "Aucun reversement disponible"
+        }
     });
 
-
-    // Envoi Ajax Formulaire
-    $('#form-reversement').submit(function(e) {
+    // Formulaire avec meilleure gestion d'erreurs
+    $('#form-reversement').on('submit', function(e) {
         e.preventDefault();
-
+        let form = $(this);
         let btn = $('#btn-submit');
         let spinner = btn.find('.spinner-border');
+        let alertBox = $('#alert-msg');
+        
+        btn.prop('disabled', true); 
+        spinner.removeClass('d-none'); 
+        alertBox.html('');
 
-        btn.prop('disabled', true);
-        spinner.removeClass('d-none');
-        $('#alert-msg').html('');
-
-        $.post("{{ route('reversement.store') }}", $(this).serialize())
-        .done(function(res) {
-
-            $('#modalReversement').modal('hide');
-            $('#form-reversement')[0].reset();
-            table.ajax.reload();
-
-            Swal.fire({
-                icon: 'success',
-                title: 'Succès',
-                text: res.message
-            });
-        })
-        .fail(function(xhr) {
-
-            let message = 'Une erreur est survenue';
-            if (xhr.responseJSON?.message) {
-                message = xhr.responseJSON.message;
+        $.ajax({
+            url: "{{ route('reversement.store') }}",
+            method: 'POST',
+            data: form.serialize(),
+            success: function(response) {
+                $('#modalReversement').modal('hide');
+                form[0].reset();
+                table.ajax.reload(null, false);
+                Swal.fire({
+                    icon: 'success', 
+                    title: 'Transfert Réussi', 
+                    text: response.message || ''
+                });
+            },
+            error: function(xhr) {
+                let errorMsg = "Une erreur est survenue.";
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                } else if (xhr.status === 500) {
+                    errorMsg = "Erreur interne du serveur. Veuillez réessayer.";
+                }
+                alertBox.html('<div class="alert alert-danger alert-dismissible fade show">' + errorMsg + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+            },
+            complete: function() {
+                btn.prop('disabled', false); 
+                spinner.addClass('d-none');
             }
-
-            $('#alert-msg').html(`
-                <div class="alert alert-danger">${message}</div>
-            `);
-
-        })
-        .always(function() {
-            btn.prop('disabled', false);
-            spinner.addClass('d-none');
         });
     });
-
 });
 </script>
-@endsection
+@endpush

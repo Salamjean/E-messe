@@ -7,6 +7,10 @@ use App\Models\ParoisseRetrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\Reversement;
+use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ParoissePaiement extends Controller
 {
@@ -155,109 +159,107 @@ class ParoissePaiement extends Controller
 
     public function list_reversement()
     {
-        return view('paroisse.reversement.index');
+        // Vérifiez que le chemin de la vue est correct
+        return view('paroisse.reversement.index'); 
     }
 
-    // 2. Données pour DataTables (JSON)
-    public function getData()
-    {
-        $reversements = Reversement::orderBy('created_at', 'desc')->get();
 
-        return datatables()->of($reversements)
-            ->editColumn('created_at', function($row){
+public function getData(Request $request)
+{
+    try {
+        $query = Reversement::query()->select(['reference', 'created_at', 'numero_destinataire', 'prefix_pays', 'montant', 'statut']);
+
+        return DataTables::of($query)
+            ->editColumn('created_at', function($row) {
                 return $row->created_at->format('d/m/Y H:i');
             })
-            ->editColumn('montant', function($row){
+            ->editColumn('numero_destinataire', function($row) {
+                return '(+' . $row->prefix_pays . ') ' . $row->numero_destinataire;
+            })
+            ->editColumn('montant', function($row) {
                 return number_format($row->montant, 0, ',', ' ') . ' FCFA';
             })
-            ->editColumn('statut', function($row){
+            ->editColumn('statut', function($row) {
                 if($row->statut == 'success') return '<span class="badge bg-success">Succès</span>';
                 if($row->statut == 'failed') return '<span class="badge bg-danger">Échec</span>';
-                return '<span class="badge bg-warning">En attente</span>';
+                return '<span class="badge bg-warning text-dark">En attente</span>';
             })
             ->rawColumns(['statut'])
             ->make(true);
+            
+    } catch (\Exception $e) {
+        dd($e);
+        \Log::error('Erreur DataTables: ' . $e->getMessage());
+        return response()->json(['error' => 'Erreur lors du chargement des données'], 500);
     }
+}
 
-    // 3. Logique du Reversement (Transfert)
-    public function store(Request $request)
-    {
-        // Validation
-        $request->validate([
-            'montant' => 'required|numeric|min:100',
-            'telephone' => 'required|numeric', // Sans indicatif, ex: 0707070707
-            'prefix' => 'required' // Ex: 225
-        ]);
 
-        // Génération référence unique
-        $reference = 'REV_' . time() . '_' . rand(1000, 9999);
+public function store(Request $request)
+{
+    $request->validate([
+        'montant'   => 'required|numeric|min:100',
+        'telephone' => 'required|numeric',
+        'prefix'    => 'required'
+    ]);
 
-        // Enregistrement local (État initial)
-        $reversement = Reversement::create([
-            'reference' => $reference,
-            'numero_destinataire' => $request->telephone,
-            'prefix_pays' => $request->prefix,
-            'montant' => $request->montant,
-            'statut' => 'pending'
-        ]);
+    $reference = 'REV_' . time() . '_' . rand(1000, 9999);
 
-        try {
-            // URL API Transfert CinetPay (Vérifiez la documentation pour la V1 ou V2 Transfert)
-            // Pour l'exemple, j'utilise l'endpoint standard de demande de transfert
-            $apiUrl = 'https://client.cinetpay.com/v1/transfer/money/send/contact';
+    $reversement = Reversement::create([
+        'reference'           => $reference,
+        'numero_destinataire' => $request->telephone,
+        'prefix_pays'         => $request->prefix,
+        'montant'             => $request->montant,
+        'statut'              => 'pending'
+    ]);
+
+    try {
+        $apiUrl = 'https://client.cinetpay.com/v1/transfer/money/send/contact';
+        
+        $payload = [
+            'apikey'                => env('CINETPAY_API_KEY'),
+            'site_id'               => env('CINETPAY_SITE_ID'),
+            'prefix'                => $request->prefix,
+            'phone'                 => $request->telephone,
+            'amount'                => $request->montant,
+            'client_transaction_id' => $reference,
+            'notify_url'            => url('/reversement/notification'), // URL dédiée pour les notifications
+        ];
+
+        $response = Http::timeout(30)->post($apiUrl, $payload);
+        $result = $response->json();
+
+        $reversement->update(['donnees_api' => $result]);
+
+        if ($response->successful() && isset($result['code']) && $result['code'] === '0') {
+            $reversement->update([
+                'statut'               => 'success',
+                'cinetpay_transfer_id' => $result['data']['transfer_id'] ?? null
+            ]);
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Transfert effectué avec succès.'
+            ]);
+        } else {
+            $reversement->update(['statut' => 'failed']);
             
-            // NOTE: Pour les transferts, il faut souvent s'authentifier pour avoir un TOKEN d'abord.
-            // Si votre API Key suffit (dépend de votre config CinetPay), voici la structure :
-            
-            $payload = [
-                'apikey' => env('CINETPAY_API_KEY'),
-                'site_id' => env('CINETPAY_SITE_ID'), // Ou password selon le cas
-                'prefix' => $request->prefix,
-                'phone' => $request->telephone,
-                'amount' => $request->montant,
-                'client_transaction_id' => $reference,
-                'notify_url' => route('cinetpay.notify'), // Route à définir
-                // 'treatment_status' => 'instant' // Optionnel
-            ];
-
-            // Appel API
-            $response = Http::withOptions(['verify' => false])->post($apiUrl, $payload);
-            $result = $response->json();
-
-            // Mise à jour avec la réponse
-            $reversement->donnees_api = $result;
-            $reversement->save();
-
-            // Analyse de la réponse (Adaptez selon la réponse réelle de l'API Transfert)
-            if ($response->successful() && isset($result['code']) && $result['code'] == '0') {
-                
-                $reversement->update([
-                    'statut' => 'success', // Ou 'pending' si le traitement est asynchrone
-                    'cinetpay_transfer_id' => $result['data']['transfer_id'] ?? null
-                ]);
-
-                return response()->json([
-                    'success' => true, 
-                    'message' => 'Reversement initié avec succès.'
-                ]);
-            } else {
-                // Échec API
-                $reversement->update(['statut' => 'failed']);
-                
-                return response()->json([
-                    'success' => false, 
-                    'message' => 'Erreur CinetPay: ' . ($result['message'] ?? 'Erreur inconnue'),
-                    'details' => $result
-                ], 400);
-            }
-
-        } catch (\Exception $e) {
-            Log::error("Erreur Reversement: " . $e->getMessage());
-            $reversement->update(['statut' => 'failed', 'donnees_api' => ['error' => $e->getMessage()]]);
-            
-            return response()->json(['success' => false, 'message' => 'Erreur serveur interne.'], 500);
+            return response()->json([
+                'success' => false, 
+                'message' => $result['message'] ?? 'Erreur lors du transfert.'
+            ], 400);
         }
+
+    } catch (\Exception $e) {
+        Log::error("Erreur Reversement: " . $e->getMessage());
+        $reversement->update(['statut' => 'failed']);
+        
+        return response()->json([
+            'success' => false, 
+            'message' => 'Erreur serveur interne : ' . $e->getMessage()
+        ], 500);
     }
+}
 
 
 }
