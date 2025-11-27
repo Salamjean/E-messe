@@ -173,9 +173,6 @@ public function getData(Request $request)
             ->editColumn('created_at', function($row) {
                 return $row->created_at->format('d/m/Y H:i');
             })
-            ->editColumn('numero_destinataire', function($row) {
-                return '(+' . $row->prefix_pays . ') ' . $row->numero_destinataire;
-            })
             ->editColumn('montant', function($row) {
                 return number_format($row->montant, 0, ',', ' ') . ' FCFA';
             })
@@ -198,9 +195,10 @@ public function getData(Request $request)
 public function store(Request $request)
 {
     $request->validate([
-        'montant'   => 'required|numeric|min:100',
-        'telephone' => 'required|numeric',
-        'prefix'    => 'required'
+        'montant'        => 'required|numeric|min:100',
+        'telephone'      => 'required|numeric',
+        'prefix'         => 'required',
+        'payment_method' => 'nullable|string|in:MTN,MOOV,ORANGE,WAVE'
     ]);
 
     $reference = 'REV_' . time() . '_' . rand(1000, 9999);

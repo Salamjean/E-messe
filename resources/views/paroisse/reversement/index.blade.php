@@ -57,6 +57,17 @@
                         <label class="form-label fw-bold">Montant (FCFA)</label>
                         <input type="number" class="form-control" name="montant" min="100" placeholder="Ex: 5000" required>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Méthode de Paiement</label>
+                        <select class="form-select" name="payment_method">
+                            <option value="">-- Choisir (Optionnel) --</option>
+                            <option value="MTN">MTN Mobile Money</option>
+                            <option value="MOOV">Moov Money</option>
+                            <option value="ORANGE">Orange Money</option>
+                            <option value="WAVE">Wave</option>
+                        </select>
+                        <small class="text-muted">Laissez vide pour laisser le destinataire choisir</small>
+                    </div>
                     <div class="row g-2">
                         <div class="col-4">
                             <label class="form-label fw-bold">Pays</label>
