@@ -231,6 +231,7 @@ class ParoissePaiement extends Controller
             ->sum('montant');
 
         $totalReversementsApi = Reversement::where('paroisse_id', $paroisse->id)
+
             ->whereIn('statut', ['success', 'pending'])
             ->sum('montant');
 
