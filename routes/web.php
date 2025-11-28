@@ -2,43 +2,36 @@
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AuthenticateAdmin;
-use App\Http\Controllers\Paroisse\ParoisseController;
 use App\Http\Controllers\Admin\Paroisse\RetraitController;
 use App\Http\Controllers\Admin\User\AdminUserController;
 use App\Http\Controllers\Home\HomeController;
 use App\Http\Controllers\Paroisse\AuthenticateParoisse;
 use App\Http\Controllers\Paroisse\Demande\DemandeController;
+use App\Http\Controllers\Paroisse\Event\EventController;
 use App\Http\Controllers\Paroisse\Offrande\OffrandeController;
 use App\Http\Controllers\Paroisse\Paiement\ParoissePaiement;
+use App\Http\Controllers\Paroisse\ParoisseController;
 use App\Http\Controllers\Paroisse\ParoisseDashboard;
+use App\Http\Controllers\Redirectionpaiement\PaymentRedirectController;
+use App\Http\Controllers\Redirectionpaiement\RedirectController;
 use App\Http\Controllers\User\AuthenticateUser;
+use App\Http\Controllers\User\Event\EventController as UserEventController;
 use App\Http\Controllers\User\Messe\MesseController;
 use App\Http\Controllers\User\Messe\PaiementController;
 use App\Http\Controllers\User\Messe\PaiementStripeController;
-use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\UserDashboard;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Paroisse\Event\EventController;
-use App\Http\Controllers\User\Event\EventController as UserEventController;
-use App\Http\Controllers\Api\Paiement\WaveController;
-use App\Http\Controllers\Redirectionpaiement\RedirectController;
-use App\Http\Controllers\Redirectionpaiement\PaymentRedirectController;
-use App\Services\FcmService;
 use Google\Auth\Credentials\ServiceAccountCredentials;
+use Illuminate\Support\Facades\Route;
 
-
-Route::get('/',[HomeController::class, 'home'])->name('home');
-
-
-
+Route::get('/', [HomeController::class, 'home'])->name('home');
 
 Route::get('/get-token', function () {
     $credentialsPath = storage_path('app/firebase_credentials.json');
     $scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
-    
+
     $credentials = new ServiceAccountCredentials($scopes, $credentialsPath);
     $token = $credentials->fetchAuthToken()['access_token'];
-    
+
     return $token;
 });
 
@@ -51,17 +44,21 @@ Route::post('/verify-otp', [AuthenticateUser::class, 'verifyOtp'])->name('verify
 Route::get('/reset-password', [AuthenticateUser::class, 'showResetPasswordForm'])->name('reset-password.form');
 Route::post('/reset-password', [AuthenticateUser::class, 'resetPassword'])->name('reset-password.update');
 
-Route::prefix('paiement/cinetpay')->group(function () {
-    Route::get('/success', [PaymentRedirectController::class, 'success'])->name('cinetpay.success');
-    Route::get('/cancel', [PaymentRedirectController::class, 'cancel'])->name('cinetpay.cancel');
-});
+// Route::prefix('paiement/cinetpay')->group(function () {
+//     Route::get('/success', [PaymentRedirectController::class, 'success'])->name('cinetpay.success');
+//     Route::get('/cancel', [PaymentRedirectController::class, 'cancel'])->name('cinetpay.cancel');
+// });
 
+Route::prefix('paiement/cinetpay')->group(function () {
+    Route::match(['get', 'post'], '/success', [PaymentRedirectController::class, 'success'])->name('cinetpay.success');
+    Route::match(['get', 'post'], '/cancel', [PaymentRedirectController::class, 'cancel'])->name('cinetpay.cancel');
+});
 
 // ✅ Routes pour redirection après paiement
 Route::get('/paiement/wave/success', [RedirectController::class, 'success'])->name('wave.success');
 Route::get('/paiement/wave/error', [RedirectController::class, 'error'])->name('wave.error');
 
-//Les routes de l'administrateur @admin
+// Les routes de l'administrateur @admin
 Route::prefix('admin')->group(function () {
     Route::get('/login', [AuthenticateAdmin::class, 'login'])->name('admin.login');
     Route::post('/login', [AuthenticateAdmin::class, 'handleLogin'])->name('admin.handleLogin');
@@ -71,58 +68,58 @@ Route::middleware('admin')->prefix('admin')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/logout', [AdminController::class, 'logout'])->name('admin.logout');
 
-    //Les routes de destion des utilisateurs par l'admin 
+    // Les routes de destion des utilisateurs par l'admin
     Route::prefix('users')->group(function () {
         Route::get('/indexed', [AdminUserController::class, 'index'])->name('admin.user.index');
         Route::delete('/{user}/archive', [AdminUserController::class, 'archive'])->name('users.archive');
         Route::get('/archived', [AdminUserController::class, 'archived'])->name('users.archived');
         Route::post('/{user}/restore', [AdminUserController::class, 'restore'])->name('users.restore');
         Route::delete('/{user}/force-delete', [AdminUserController::class, 'forceDelete'])->name('users.force-delete');
-    });  
-    //Les routes de gestion de la paroisse par l'admin 
-     Route::prefix('parish')->group(function () {
+    });
+    // Les routes de gestion de la paroisse par l'admin
+    Route::prefix('parish')->group(function () {
         Route::get('/indexparish', [ParoisseController::class, 'index'])->name('paroisse.index');
         Route::get('/createed', [ParoisseController::class, 'create'])->name('paroisse.create');
         Route::post('/createed', [ParoisseController::class, 'store'])->name('paroisse.store');
         Route::get('/{paroisse}/edit', [ParoisseController::class, 'edit'])->name('admin.paroisses.edit');
-         Route::put('/{paroisse}', [ParoisseController::class, 'update'])->name('paroisse.update'); 
+        Route::put('/{paroisse}', [ParoisseController::class, 'update'])->name('paroisse.update');
         Route::delete('/{paroisse}', [ParoisseController::class, 'destroy'])->name('admin.paroisses.destroy');
     });
 
-    //Les routes de gestions de retraits par l'admin 
+    // Les routes de gestions de retraits par l'admin
     Route::prefix('withdrawal')->group(function () {
         Route::get('/request/parishe', [RetraitController::class, 'request'])->name('admin.paroisse.index');
         Route::get('/parish/history', [RetraitController::class, 'history'])->name('admin.paroisse.history');
         Route::post('/{id}/confirmer', [RetraitController::class, 'confirmer'])->name('admin.retraits.confirmer');
-         Route::post('/{id}/rejeter', [RetraitController::class, 'rejeter'])->name('admin.retraits.rejeter');
+        Route::post('/{id}/rejeter', [RetraitController::class, 'rejeter'])->name('admin.retraits.rejeter');
     });
     Route::get('/get-communes/{ville_id}', [ParoisseController::class, 'getCommunesByVille'])->name('admin.get.communes');
 });
 
-//Les routes des @paroisses 
-Route::prefix('parish')->group(function() {
+// Les routes des @paroisses
+Route::prefix('parish')->group(function () {
     Route::get('/login', [AuthenticateParoisse::class, 'login'])->name('paroisse.login');
     Route::post('/login', [AuthenticateParoisse::class, 'handleLogin'])->name('paroisse.handleLogin');
 });
 
-Route::middleware('paroisse')->prefix('parish')->group(function(){
+Route::middleware('paroisse')->prefix('parish')->group(function () {
     Route::get('/dahboard', [ParoisseDashboard::class, 'dashboard'])->name('paroisse.dashboard');
     Route::get('/logout', [ParoisseDashboard::class, 'logout'])->name('paroisse.logout');
 
-    //retraits
+    // retraits
     Route::post('/retrait/request', [ParoissePaiement::class, 'requestRetrait'])->name('paroisse.retrait.request');
     Route::get('/request/create', [ParoissePaiement::class, 'create'])->name('paroisse.retrait.create');
     Route::get('/retraits', [ParoissePaiement::class, 'index'])->name('paroisse.retraits');
     Route::get('/historye', [ParoissePaiement::class, 'history'])->name('paroisse.history');
     Route::delete('/retrait/{id}/annuler', [ParoissePaiement::class, 'annuler'])->name('paroisse.retrait.annuler');
 
-     //Les routes pour modifier des informations de la paroisse 
-    Route::get('/profile',[AuthenticateParoisse::class,'editProfile'])->name('paroisse.profile');
+    // Les routes pour modifier des informations de la paroisse
+    Route::get('/profile', [AuthenticateParoisse::class, 'editProfile'])->name('paroisse.profile');
     Route::put('/profile/update', [AuthenticateParoisse::class, 'updateProfile'])->name('paroisse.update');
 
-    //Routes de gestion des demandes de messes 
-    Route::get('/index',[DemandeController::class,'index'])->name('demandes.messes.index');
-    Route::get('/validate',[DemandeController::class,'validate'])->name('demandes.messes.validate');
+    // Routes de gestion des demandes de messes
+    Route::get('/index', [DemandeController::class, 'index'])->name('demandes.messes.index');
+    Route::get('/validate', [DemandeController::class, 'validate'])->name('demandes.messes.validate');
     Route::get('/mes-messes/{messe}', [DemandeController::class, 'show'])->name('paroisse.messe.show');
     Route::post('/mes-messes/export-pdf', [DemandeController::class, 'exportPdf'])->name('paroisse.messe.export-pdf');
     Route::post('/mes-messes/{messe}/cancel', [DemandeController::class, 'cancel'])->name('paroisse.messe.cancel');
@@ -131,19 +128,17 @@ Route::middleware('paroisse')->prefix('parish')->group(function(){
     Route::post('/messess/bulk-confirm', [DemandeController::class, 'bulkConfirm'])->name('paroisse.messe.bulk-confirm');
     Route::post('/messess/bulk-cancel', [DemandeController::class, 'bulkCancel'])->name('paroisse.messe.bulk-cancel');
 
-    //Routes de gestion des offrandes 
-    Route::get('/offerings',[OffrandeController::class,'create'])->name('paroisse.offrande');
+    // Routes de gestion des offrandes
+    Route::get('/offerings', [OffrandeController::class, 'create'])->name('paroisse.offrande');
     Route::post('/parish/offrande', [OffrandeController::class, 'storeOffrande'])->name('paroisse.offrande.store');
-    Route::get('/request/historys',[OffrandeController::class,'history'])->name('demandes.messes.history');
+    Route::get('/request/historys', [OffrandeController::class, 'history'])->name('demandes.messes.history');
 
-
-Route::prefix('reversement')->name('reversement.')->group(function () {
-    Route::get('/', [ParoissePaiement::class, 'list_reversement'])->name('list_reversement');
-    Route::get('/data', [ParoissePaiement::class, 'getData'])->name('data');
-    Route::post('/store', [ParoissePaiement::class, 'store'])->name('store');
-    Route::post('/notification', [ParoissePaiement::class, 'handleNotification'])->name('notification');
-});
-
+    Route::prefix('reversement')->name('reversement.')->group(function () {
+        Route::get('/', [ParoissePaiement::class, 'list_reversement'])->name('list_reversement');
+        Route::get('/data', [ParoissePaiement::class, 'getData'])->name('data');
+        Route::post('/store', [ParoissePaiement::class, 'store'])->name('store');
+        Route::post('/notification', [ParoissePaiement::class, 'handleNotification'])->name('notification');
+    });
 
     Route::prefix('event')->name('event.')->group(function () {
         Route::get('/', [EventController::class, 'index'])->name('index');
@@ -154,48 +149,47 @@ Route::prefix('reversement')->name('reversement.')->group(function () {
         Route::delete('/{event}', [EventController::class, 'destroy'])->name('destroy');
     });
 
-
 });
-//Les routes des @utilisateurs (@fideles)
-Route::prefix('user')->group(function(){
-    Route::get('/login',[AuthenticateUser::class,'login'])->name('login');
-    Route::post('/login',[AuthenticateUser::class,'handleLogin'])->name('handleLogin');
-    Route::get('/register',[AuthenticateUser::class,'register'])->name('register');
-    Route::post('/register',[AuthenticateUser::class,'handleRegister'])->name('handleRegister');
+// Les routes des @utilisateurs (@fideles)
+Route::prefix('user')->group(function () {
+    Route::get('/login', [AuthenticateUser::class, 'login'])->name('login');
+    Route::post('/login', [AuthenticateUser::class, 'handleLogin'])->name('handleLogin');
+    Route::get('/register', [AuthenticateUser::class, 'register'])->name('register');
+    Route::post('/register', [AuthenticateUser::class, 'handleRegister'])->name('handleRegister');
 });
-Route::middleware('auth')->prefix('user')->group(function(){
-     Route::get('/dashboard',[UserDashboard::class,'dashboard'])->name('user.dashboard');
-     Route::get('/logout', [UserDashboard::class, 'logout'])->name('user.logout');
+Route::middleware('auth')->prefix('user')->group(function () {
+    Route::get('/dashboard', [UserDashboard::class, 'dashboard'])->name('user.dashboard');
+    Route::get('/logout', [UserDashboard::class, 'logout'])->name('user.logout');
 
-     //Les routes pour modifier le profil d'utilisateur
-      Route::get('/profile',[AuthenticateUser::class,'editProfile'])->name('user.profile');
-      Route::put('/profile/update', [AuthenticateUser::class, 'updateProfile'])->name('profile.update');
+    // Les routes pour modifier le profil d'utilisateur
+    Route::get('/profile', [AuthenticateUser::class, 'editProfile'])->name('user.profile');
+    Route::put('/profile/update', [AuthenticateUser::class, 'updateProfile'])->name('profile.update');
 
-     //Les demandes de messes 
-     Route::get('/index',[MesseController::class,'index'])->name('user.messe.index');
-     Route::get('/create/massess',[MesseController::class,'create'])->name('user.messe.create');
-     Route::post('/create/mass',[MesseController::class,'store'])->name('user.messe.store');
-     Route::get('/mes-messes/{messe}', [MesseController::class, 'show'])->name('user.messe.show');
-     Route::get('/masses/history',[MesseController::class,'history'])->name('user.messe.history');
-     Route::delete('/mes-messes/{messe}', [MesseController::class, 'destroy'])->name('user.messe.destroy');
-     Route::get('/mes-messes/{messe}/receipt', [MesseController::class, 'downloadReceipt'])->name('user.messe.receipt');
+    // Les demandes de messes
+    Route::get('/index', [MesseController::class, 'index'])->name('user.messe.index');
+    Route::get('/create/massess', [MesseController::class, 'create'])->name('user.messe.create');
+    Route::post('/create/mass', [MesseController::class, 'store'])->name('user.messe.store');
+    Route::get('/mes-messes/{messe}', [MesseController::class, 'show'])->name('user.messe.show');
+    Route::get('/masses/history', [MesseController::class, 'history'])->name('user.messe.history');
+    Route::delete('/mes-messes/{messe}', [MesseController::class, 'destroy'])->name('user.messe.destroy');
+    Route::get('/mes-messes/{messe}/receipt', [MesseController::class, 'downloadReceipt'])->name('user.messe.receipt');
 
-     // Routes pour le paiement
+    // Routes pour le paiement
     Route::get('/messe/paiement/{reference}', [PaiementController::class, 'showPaiementForm'])->name('user.messe.paiement');
     Route::post('/messe/paiement/{reference}/initier', [PaiementController::class, 'initierPaiement'])->name('user.messe.initier-paiement');
-    Route::get('/messe/paiement/{reference}/verification', [PaiementController::class, 'verifierPaiement'])->name('user.messe.verification-paiement'); 
+    Route::get('/messe/paiement/{reference}/verification', [PaiementController::class, 'verifierPaiement'])->name('user.messe.verification-paiement');
     Route::post('/messe/paiement/{reference}/verifier', [PaiementController::class, 'verifierManuellement'])->name('user.messe.verifier-manuellement');
 
-    //Les routes de paiement par stripe
+    // Les routes de paiement par stripe
     Route::post('/paiement/{reference}/stripe', [PaiementStripeController::class, 'initierPaiementStripe'])
         ->name('user.messe.initier-paiement-stripe');
-    
+
     Route::get('/paiement/{reference}/stripe/success', [PaiementStripeController::class, 'successPaiementStripe'])
         ->name('user.messe.paiement-stripe.success');
-    
+
     Route::get('/paiement/{reference}/stripe/cancel', [PaiementStripeController::class, 'cancelPaiementStripe'])
         ->name('user.messe.paiement-stripe.cancel');
-    
+
     Route::post('/paiement/{reference}/stripe/verifier', [PaiementStripeController::class, 'verifierPaiementStripe'])
         ->name('user.messe.paiement-stripe.verifier');
 
@@ -207,13 +201,13 @@ Route::middleware('auth')->prefix('user')->group(function(){
         Route::put('/{event}', [UserEventController::class, 'update'])->name('update');
         Route::delete('/{event}', [UserEventController::class, 'destroy'])->name('destroy');
     });
-    
+
 });
 // NOUVEL EMPLACEMENT CORRECT POUR LES ROUTES DE DONNÉES
 // J'ai aussi retiré /api car votre JS ne l'utilise pas.
 Route::get('/get-communes/{ville_id}', [MesseController::class, 'getCommunes'])->name('get.communes');
 Route::get('/get-paroisses/{commune_id}', [MesseController::class, 'getParoisses'])->name('get.paroisses');
 
-//Les routes definition du accès 
+// Les routes definition du accès
 Route::get('/validate-parish-account/{email}', [AuthenticateParoisse::class, 'defineAccess']);
 Route::post('/validate-parish-account/{email}', [AuthenticateParoisse::class, 'submitDefineAccess'])->name('paroisse.validate');
