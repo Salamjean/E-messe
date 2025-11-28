@@ -215,80 +215,77 @@ class ParoissePaiement extends Controller
             'montant' => 'required|numeric|min:100',
             'telephone' => 'required|numeric',
             'prefix' => 'required',
-            'payment_method' => 'nullable|string|in:MTN,MOOV,ORANGE,WAVE',
         ]);
 
         $paroisse = Auth::guard('paroisse')->user();
 
-        // -----------------------------------------------------------
-        // 1. LOGIQUE DE VÉRIFICATION DU SOLDE (AJOUTÉ)
-        // -----------------------------------------------------------
-
-        // Calcul du total des paiements entrants
         $totalPaiements = DB::table('paiements')
             ->join('messes', 'paiements.messe_id', '=', 'messes.id')
             ->where('messes.paroisse_id', $paroisse->id)
             ->where('paiements.statut', 'paye')
             ->sum('paiements.montant');
 
-        // Calcul du total des sorties (Retraits classiques + Reversements API déjà effectués)
-        // Note: Assurez-vous d'inclure les reversements précédents dans le calcul du solde si ce n'est pas fait dans "paroisse_retraits"
         $totalRetraits = DB::table('paroisse_retraits')
             ->where('paroisse_id', $paroisse->id)
             ->where('statut', '!=', 'rejete')
             ->sum('montant');
 
-        // Si vous stockez les reversements API dans une table séparée, il faut aussi les soustraire !
-        // Supposons pour l'instant que vous calculiez le solde ainsi :
-        $soldeDisponible = ($totalPaiements / 1.01) - $totalRetraits;
+        $totalReversementsApi = Reversement::where('paroisse_id', $paroisse->id)
+            ->whereIn('statut', ['success', 'pending'])
+            ->sum('montant');
 
-        // VÉRIFICATION STRICTE
+        $soldeDisponible = ($totalPaiements / 1.01) - $totalRetraits - $totalReversementsApi;
+
         if ($request->montant > $soldeDisponible) {
             return response()->json([
-                'message' => 'Solde insuffisant. Votre solde disponible est de '.number_format($soldeDisponible, 0, ',', ' ').' FCFA.',
-            ], 422); // 422 Unprocessable Entity
+                'message' => 'Solde insuffisant. Disponible : '.number_format($soldeDisponible, 0, ',', ' ').' FCFA.',
+            ], 422);
         }
-
-        // -----------------------------------------------------------
-        // FIN LOGIQUE
-        // -----------------------------------------------------------
 
         $reference = 'REV_'.time().'_'.rand(1000, 9999);
 
-        // Création en base de données (Statut Pending)
-        // ATTENTION : Pensez à lier ce reversement à la paroisse si possible
+        // Création BDD
         $reversement = Reversement::create([
             'reference' => $reference,
             'numero_destinataire' => $request->telephone,
             'prefix_pays' => $request->prefix,
             'montant' => $request->montant,
             'statut' => 'pending',
-            // 'paroisse_id' => $paroisse->id // Si votre table a cette colonne, décommentez ceci
+            'paroisse_id' => $paroisse->id, // Important de lier à la paroisse
         ]);
 
-        // Important : Dès qu'on initie, on devrait théoriquement bloquer les fonds
-        // ou créer un enregistrement "paroisse_retrait" temporaire pour éviter les doubles dépenses
-        // pendant que l'API tourne. Pour l'instant, on continue avec la logique API.
-
         try {
-            // --- AUTHENTIFICATION CINETPAY ---
+            // 1. AUTHENTIFICATION
+            // On utilise env() mais il est recommandé d'utiliser config() en production
+            $apiKey = env('CINETPAY_API_KEY');
+            $password = env('CINETPAY_PASSWORD');
+
+            Log::info("Tentative de connexion CinetPay pour le transfert $reference");
+
             $loginResponse = Http::asForm()->post('https://client.cinetpay.com/v1/auth/login', [
-                'apikey' => env('CINETPAY_API_KEY'),
-                'password' => env('CINETPAY_PASSWORD'),
+                'apikey' => $apiKey,
+                'password' => $password,
             ]);
 
             $loginResult = $loginResponse->json();
 
+            // Vérification stricte du token
             if (! $loginResponse->successful() || ! isset($loginResult['data']['token'])) {
-                Log::error('CinetPay Login Failed', $loginResult);
+                Log::error('CinetPay Login Error', ['response' => $loginResult]);
+
                 $reversement->update(['statut' => 'failed']);
 
-                return response()->json(['message' => 'Erreur technique (Auth Banque). Veuillez réessayer plus tard.'], 500);
+                // Message d'erreur plus clair pour le développeur
+                $msg = $loginResult['message'] ?? 'Erreur inconnue';
+                $desc = $loginResult['description'] ?? '';
+
+                return response()->json([
+                    'message' => "Échec authentification bancaire: $msg ($desc). Vérifiez vos identifiants dans le .env",
+                ], 500);
             }
 
             $token = $loginResult['data']['token'];
 
-            // --- TRANSFERT ---
             $transferUrl = 'https://client.cinetpay.com/v1/transfer/money/send/contact?token='.$token;
 
             $payload = [
@@ -296,39 +293,58 @@ class ParoissePaiement extends Controller
                 'phone' => $request->telephone,
                 'amount' => $request->montant,
                 'client_transaction_id' => $reference,
-                'notify_url' => url('/reversement/notification'),
+                'notify_url' => url('/api/reversement/notification'),
             ];
 
-            $response = Http::asForm()->timeout(30)->post($transferUrl, $payload);
+            Log::info('Envoi demande transfert', $payload);
+
+            $response = Http::asForm()->timeout(60)->post($transferUrl, $payload);
             $result = $response->json();
 
-            $reversement->update(['donnees_api' => $result]);
+            $reversement->update(['donnees_api' => json_encode($result)]);
 
             if ($response->successful() && isset($result['code']) && $result['code'] === '0') {
+
+                $transferId = $result['data']['transfer_id'] ?? null;
+
                 $reversement->update([
                     'statut' => 'success',
-                    'cinetpay_transfer_id' => $result['data']['transfer_id'] ?? null,
+                    'cinetpay_transfer_id' => $transferId,
                 ]);
 
-                // OPTIONNEL : Créer ici une entrée dans 'paroisse_retraits' pour déduire le solde officiellement
-                // ParoisseRetrait::create([...]);
+                DB::table('paroisse_retraits')->insert([
+                    'paroisse_id' => $paroisse->id,
+                    'montant' => $request->montant,
+                    'statut' => 'valide',
+                    'motif' => 'Reversement mobile money ref: '.$reference,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Transfert effectué avec succès.',
+                    'message' => 'Transfert initié avec succès.',
+                    'data' => $result['data'],
                 ]);
+
             } else {
                 $reversement->update(['statut' => 'failed']);
-                $message = $result['message'] ?? 'Erreur lors du transfert.';
 
-                return response()->json(['message' => $message], 400);
+                $errorMessage = $result['message'] ?? 'Erreur lors du traitement CinetPay';
+                $description = $result['description'] ?? '';
+
+                Log::error("Echec Transfert CinetPay: $errorMessage - $description");
+
+                return response()->json([
+                    'message' => "Le transfert a échoué : $errorMessage. $description",
+                ], 400);
             }
 
         } catch (\Exception $e) {
-            Log::error('Erreur Reversement: '.$e->getMessage());
+            Log::critical('Exception Reversement: '.$e->getMessage());
             $reversement->update(['statut' => 'failed']);
 
-            return response()->json(['message' => 'Erreur serveur : '.$e->getMessage()], 500);
+            return response()->json(['message' => 'Erreur serveur critique. Veuillez contacter le support.'], 500);
         }
     }
 }

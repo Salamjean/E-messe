@@ -35,6 +35,30 @@ Route::get('/get-token', function () {
     return $token;
 });
 
+    Route::get('/test-cinetpay', function () {
+        // On force la récupération des valeurs sans cache pour le test
+        $apiKey = env('CINETPAY_API_KEY');
+        $password = env('CINETPAY_PASSWORD');
+        
+        // On masque le mot de passe pour l'affichage
+        $hiddenPass = substr($password, 0, 2) . '******' . substr($password, -2);
+
+        echo "<h3>Test de connexion CinetPay</h3>";
+        echo "API Key utilisée : $apiKey <br>";
+        echo "Mot de passe utilisé : $hiddenPass <br><hr>";
+
+        $response = Http::asForm()->post('https://client.cinetpay.com/v1/auth/login', [
+            'apikey' => $apiKey,
+            'password' => $password,
+        ]);
+
+        $result = $response->json();
+
+        echo "<strong>Code HTTP :</strong> " . $response->status() . "<br>";
+        echo "<strong>Réponse API :</strong><br>";
+        dd($result);
+    });
+
 Route::get('/forgot-password', [AuthenticateUser::class, 'showForgotPasswordForm'])->name('forgot-password.form');
 Route::post('/forgot-password', [AuthenticateUser::class, 'forgotPassword'])->name('forgot-password.send');
 
