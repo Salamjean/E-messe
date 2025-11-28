@@ -106,6 +106,7 @@ class PaiementController extends Controller
                 'customer_zip_code'=> '00225',                           // Ajouté
             ];
 
+            dd($paymentData);
             // Utilisation de withoutVerifying() comme dans l'exemple
             $response = Http::withoutVerifying()->post('https://api-checkout.cinetpay.com/v2/payment', $paymentData);
 
