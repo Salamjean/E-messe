@@ -9,7 +9,6 @@ use App\Models\Messe;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Notifications\PaiementSuccessNotification;
-use App\Notifications\PaiementEchecNotification;
 
 class PaiementController extends Controller
 {
@@ -25,11 +24,24 @@ class PaiementController extends Controller
         $user = $request->user();
         $messe = Messe::findOrFail($request->messe_id);
 
-        // Référence unique
-        $reference = 'MESSE_CINET_' . time() . '_' . $user->id;
+        // Référence unique avec timestamp pour éviter les doublons
+        $reference = 'MESSE_' . time() . '_' . $user->id;
 
         try {
-            // 1. Création locale du paiement
+            // 1. URLs de callback
+            // NOTE : CinetPay n'accepte pas localhost pour le notify_url.
+            // En local, on met une URL bidon si on n'a pas Ngrok, sinon l'API rejette la requête.
+            $baseUrl = config('app.url'); // Ton URL publique ou Ngrok
+            $isLocal = str_contains($baseUrl, 'localhost') || str_contains($baseUrl, '127.0.0.1');
+            
+            $notifyUrl = $isLocal 
+                ? 'https://google.com' // Placeholder pour passer la validation API en dev local sans Ngrok
+                : route('cinetpay.webhook');
+
+            $returnUrl = route('cinetpay.success'); // Route VueJS ou API de retour
+            $cancelUrl = route('cinetpay.cancel');
+
+            // 2. Création locale du paiement
             $paiement = Paiement::create([
                 'messe_id' => $messe->id,
                 'user_id'  => $user->id,
@@ -40,172 +52,175 @@ class PaiementController extends Controller
                 'statut'   => 'en_attente',
             ]);
 
-            // 2. URLs de callback
-            $returnUrl = route('cinetpay.success', ['transaction_id' => $reference]);
-            $cancelUrl = route('cinetpay.cancel', ['transaction_id' => $reference]);
-            $notifyUrl = route('cinetpay.webhook');
-
-            // Vérification Localhost (Warning)
-            if (str_contains($notifyUrl, 'localhost') || str_contains($notifyUrl, '127.0.0.1')) {
-                Log::warning('⚠️ ATTENTION: Webhook en localhost détecté. Utilisez Ngrok pour que CinetPay puisse vous notifier.');
+            // 3. Formatage Téléphone (International sans +)
+            $phone = $user->phone ?? '0707070707';
+            $phone = preg_replace('/[^0-9]/', '', $phone); // Garde que les chiffres
+            // Si le numéro est ivoirien (10 chiffres), on ajoute 225
+            if (strlen($phone) === 10) {
+                $phone = '225' . $phone;
             }
-
-            // 3. NETTOYAGE ET FORMATAGE DU TÉLÉPHONE (CRITIQUE)
-            $prefixPays = '225'; // Par défaut Côte d'Ivoire
-            $rawPhone = $user->phone ?? '0707070707'; // Numéro par défaut valide si inexistant
             
-            // Enlever tout ce qui n'est pas un chiffre
-            $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
-            
-            // Si le numéro fait 10 chiffres (ex: 0707070707), on ajoute 225
-            if (strlen($cleanPhone) === 10) {
-                $cleanPhone = $prefixPays . $cleanPhone;
-            }
-            // Si le numéro est vide ou invalide, on met un numéro générique de test
-            if (strlen($cleanPhone) < 8) {
-                $cleanPhone = '2250707070707';
-            }
-
-            // 4. Préparation des données pour CinetPay
+            // 4. Préparation payload CinetPay V2
             $paymentData = [
                 'apikey'          => env('CINETPAY_API_KEY'),
                 'site_id'         => env('CINETPAY_SITE_ID'),
                 'transaction_id'  => $reference,
                 'amount'          => (int)$request->montant,
                 'currency'        => 'XOF',
-                'description'     => 'Offrande de Messe',
-                'return_url'      => $returnUrl,
-                'cancel_url'      => $cancelUrl,
+                'description'     => 'Offrande de Messe #' . $messe->id,
                 'notify_url'      => $notifyUrl,
-                // Utilisation de la variable d'environnement ou TEST par défaut
-                'mode'            => env('CINETPAY_MODE', 'TEST'),
+                'return_url'      => $returnUrl,
                 'channels'        => 'ALL',
+                'metadata'        => strval($messe->id), // Utile pour retrouver l'info
                 
                 // Informations Client
-                'customer_name'   => $user->name ?? 'Fidele', 
-                'customer_surname'=> $user->name ?? 'Messe',
-                'customer_email'  => $user->email ?? 'no-reply@sancta-missa.com',
-                // 'customer_phone_number' => $cleanPhone,
-                'customer_address' => $user->adresse ?? 'Abidjan',
+                'customer_name'   => $user->nom ?? 'Fidele', // Nom séparé
+                'customer_surname'=> $user->prenoms ?? 'E-messe', // Prénoms
+                'customer_email'  => $user->email ?? 'client@emesse.com',
+                'customer_phone_number' => $phone,
+                'customer_address'=> $user->adresse ?? 'Abidjan',
                 'customer_city'   => $user->ville ?? 'Abidjan',
                 'customer_country'=> 'CI',
+                'customer_state'  => 'CI',
                 'customer_zip_code'=> '00225',
             ];
 
+            // 5. Appel API
+            $response = Http::withoutVerifying() // Désactivé ssl verify temporairement (attention en prod)
+                ->withHeaders(['Content-Type' => 'application/json'])
+                ->post('https://api-checkout.cinetpay.com/v2/payment', $paymentData);
+            
+            $result = $response->json();
 
-
-            Log::info('📤 Envoi Données CinetPay', $paymentData);
-
-            // 5. Appel API CinetPay
-            $response = Http::withoutVerifying()->post('https://api-checkout.cinetpay.com/v2/payment', $paymentData);
-            $data = $response->json();
-
-            // 6. Gestion du retour
-            if ($response->failed() || ($data['code'] ?? '') !== '201') {
-                Log::error('❌ Erreur CinetPay', ['response' => $data]);
+            // 6. Vérification Réponse
+            if ($response->successful() && isset($result['code']) && $result['code'] == '201') {
                 
-                $paiement->update(['statut' => 'echec', 'donnees_transaction' => $data]);
+                $paiement->update(['donnees_transaction' => $result]);
 
                 return response()->json([
-                    'message' => "Erreur lors de l'initialisation du paiement.",
-                    'error_cinetpay' => $data['description'] ?? 'Erreur inconnue',
-                    'debug' => $data // Utile pour voir l'erreur exacte
+                    'statut'       => 'success',
+                    'reference'    => $reference,
+                    'payment_url'  => $result['data']['payment_url'], // URL de paiement
+                    'api_response' => $result // Pour debug
+                ]);
+            } else {
+                Log::error('Erreur CinetPay Init', ['response' => $result]);
+                return response()->json([
+                    'message' => 'Erreur initialisation CinetPay',
+                    'details' => $result['description'] ?? 'Erreur inconnue'
                 ], 400);
             }
 
-            // Succès : Mise à jour avec les infos reçues
-            $paiement->update(['donnees_transaction' => $data]);
-
-            return response()->json([
-                'statut'       => 'success',
-                'reference'    => $reference,
-                'checkout_url' => $data['data']['payment_url'],
-            ]);
-
         } catch (\Exception $e) {
-            Log::error('💥 Exception Paiement', [
-                'message' => $e->getMessage(),
-                'line' => $e->getLine()
-            ]);
-            
-            return response()->json([
-                'message' => 'Erreur serveur interne',
-                'error' => $e->getMessage()
-            ], 500);
+            Log::error('Exception Paiement: ' . $e->getMessage());
+            return response()->json(['message' => 'Erreur Serveur', 'error' => $e->getMessage()], 500);
         }
     }
 
     /**
-     * Webhook appelé par CinetPay
+     * Webhook (Notification)
+     * CinetPay envoie une requête POST sur cette route quand le paiement change d'état
      */
     public function handleWebhook(Request $request)
     {
-        $transactionId = $request->input('cpm_trans_id') ?? $request->input('transaction_id');
+        // CinetPay envoie cpm_trans_id en POST (x-www-form-urlencoded)
+        $transactionId = $request->input('cpm_trans_id');
+        $siteId = $request->input('cpm_site_id');
 
-        if (!$transactionId) {
-            return response()->json(['message' => 'Transaction ID manquant'], 400);
+        Log::info('Webhook CinetPay Reçu', $request->all());
+
+        if (!$transactionId || !$siteId) {
+            return response()->json(['message' => 'Données manquantes'], 400);
+        }
+
+        // Vérification que le Site ID correspond au nôtre (Sécurité basique)
+        if ($siteId != env('CINETPAY_SITE_ID')) {
+             return response()->json(['message' => 'Site ID invalide'], 400);
         }
 
         $paiement = Paiement::where('reference', $transactionId)->first();
 
         if (!$paiement) {
-            return response()->json(['message' => 'Transaction inconnue'], 404);
+            Log::warning("Webhook: Paiement introuvable pour REF: $transactionId");
+            return response()->json(['message' => 'Transaction introuvable'], 404);
         }
 
-        // Vérification statut API
-        $statusData = $this->verifyCinetPayStatus($transactionId, $paiement->site_id ?? env('CINETPAY_SITE_ID'));
+        // On vérifie le statut réel auprès de l'API CinetPay (Plus sûr que de se fier juste au POST)
+        $verification = $this->verifyCinetPayStatus($transactionId, $siteId);
 
-        // Mise à jour si succès
-        if (($statusData['status'] ?? '') === 'ACCEPTED') {
+        if ($verification['status'] === 'ACCEPTED') {
+            // Paiement validé
             if ($paiement->statut !== 'paye') {
                 $paiement->update([
                     'statut' => 'paye',
                     'date_paiement' => now(),
-                    'donnees_transaction' => array_merge($paiement->donnees_transaction ?? [], $statusData),
+                    'donnees_transaction' => array_merge($paiement->donnees_transaction ?? [], $verification['details'])
                 ]);
 
+                // Mise à jour de la messe
                 if ($paiement->messe) {
-                    $paiement->messe->update(['statut' => 'en attente']);
+                    $paiement->messe->update(['statut' => 'payee']); // ou 'en_attente' selon ta logique
                 }
 
+                // Notification User
                 try {
                     if ($paiement->user) {
                         $paiement->user->notify(new PaiementSuccessNotification($paiement));
                     }
                 } catch (\Exception $e) {
-                    Log::error("Erreur Notification: " . $e->getMessage());
+                    Log::error("Erreur notif mail: " . $e->getMessage());
                 }
             }
-            return response()->json(['message' => 'Paiement validé']);
-        } 
-        elseif (($statusData['status'] ?? '') === 'REFUSED') {
-            $paiement->update(['statut' => 'echec', 'donnees_transaction' => $statusData]);
+            return response()->json(['message' => 'Paiement validé avec succès']);
+
+        } elseif ($verification['status'] === 'REFUSED') {
+            $paiement->update(['statut' => 'echec']);
             return response()->json(['message' => 'Paiement échoué']);
         }
 
-        return response()->json(['message' => 'Statut reçu: ' . ($statusData['status'] ?? 'Inconnu')]);
+        return response()->json(['message' => 'Statut reçu: ' . $verification['status']]);
     }
 
-    /**
-     * Helper Vérification
-     */
-    public static function verifyCinetPayStatus($transactionId, $siteId)
+    // Helper de vérification
+    private function verifyCinetPayStatus($transactionId, $siteId)
     {
         try {
             $response = Http::withoutVerifying()->post('https://api-checkout.cinetpay.com/v2/payment/check', [
                 'apikey'         => env('CINETPAY_API_KEY'),
                 'site_id'        => $siteId,
-                'transaction_id' => $transactionId,
+                'transaction_id' => $transactionId
             ]);
-            
-            $data = $response->json();
-            return [
-                'status' => $data['data']['status'] ?? 'UNKNOWN',
-                'details' => $data
-            ];
+
+            $result = $response->json();
+
+            // Log de vérification
+            Log::info("Verification CinetPay $transactionId", ['result' => $result]);
+
+            if (isset($result['code']) && $result['code'] == '00') {
+                $data = $result['data'];
+                // status peut être : ACCEPTED, REFUSED, PENDING
+                return [
+                    'status' => $data['status'],
+                    'details' => $data
+                ];
+            }
+
+            return ['status' => 'ERROR', 'details' => $result];
+
         } catch (\Exception $e) {
-            Log::error("Erreur Check CinetPay: " . $e->getMessage());
             return ['status' => 'ERROR', 'details' => $e->getMessage()];
         }
+    }
+
+    // Route de retour (Success)
+    public function paymentSuccess(Request $request) {
+        // Cette route est appelée par le navigateur du client
+        // On renvoie juste un JSON ou on redirige vers le frontend
+        return response()->json(['message' => 'Retour paiement détecté. En attente de validation webhook.']);
+    }
+    
+    // Route de retour (Cancel)
+    public function paymentCancel(Request $request) {
+         return response()->json(['message' => 'Paiement annulé par l\'utilisateur.']);
     }
 }
