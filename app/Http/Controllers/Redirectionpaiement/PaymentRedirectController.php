@@ -16,6 +16,8 @@ class PaymentRedirectController extends Controller
      */
     public function success(Request $request)
     {
+        // 1. Récupération de l'ID de transaction (envoyé en POST ou GET)
+        // CinetPay V2 utilise souvent 'transaction_id' dans le body du POST
         $transactionId = $request->input('transaction_id')
                          ?? $request->input('cpm_trans_id')
                          ?? $request->input('ref');
@@ -24,15 +26,19 @@ class PaymentRedirectController extends Controller
             return view('paiement.erreur', ['message' => 'Référence de transaction manquante.']);
         }
 
+        // 2. Recherche du paiement en base
         $paiement = Paiement::with('messe')->where('reference', $transactionId)->first();
 
         if (! $paiement) {
             return view('paiement.erreur', ['message' => 'Paiement introuvable.']);
         }
 
+        // 3. Vérification et Mise à jour
+        // Si le paiement n'est pas encore marqué 'paye', on vérifie auprès de l'API CinetPay
         if ($paiement->statut !== 'paye') {
 
             try {
+                // Appel direct à l'API de vérification CinetPay pour sécuriser la transaction
                 $response = Http::withoutVerifying()->post('https://api-checkout.cinetpay.com/v2/payment/check', [
                     'apikey' => env('CINETPAY_API_KEY'),
                     'site_id' => env('CINETPAY_SITE_ID'),
@@ -48,7 +54,7 @@ class PaymentRedirectController extends Controller
                     $paiement->update([
                         'statut' => 'paye',
                         'date_paiement' => now(),
-                        'donnees_transaction' => $result['data'] ?? [],
+                        'donnees_transaction' => $result['data'] ?? [], // On sauvegarde la réponse API
                     ]);
 
                     // B. Mise à jour de la Messe liée
