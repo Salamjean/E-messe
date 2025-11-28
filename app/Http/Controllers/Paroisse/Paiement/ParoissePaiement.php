@@ -211,6 +211,7 @@ class ParoissePaiement extends Controller
 
     public function store(Request $request)
     {
+        // 1️⃣ Validation des champs
         $request->validate([
             'montant' => 'required|numeric|min:100',
             'telephone' => 'required|numeric',
@@ -219,6 +220,7 @@ class ParoissePaiement extends Controller
 
         $paroisse = Auth::guard('paroisse')->user();
 
+        // 2️⃣ Calcul du solde disponible
         $totalPaiements = DB::table('paiements')
             ->join('messes', 'paiements.messe_id', '=', 'messes.id')
             ->where('messes.paroisse_id', $paroisse->id)
@@ -231,7 +233,6 @@ class ParoissePaiement extends Controller
             ->sum('montant');
 
         $totalReversementsApi = Reversement::where('paroisse_id', $paroisse->id)
-
             ->whereIn('statut', ['success', 'pending'])
             ->sum('montant');
 
@@ -243,21 +244,21 @@ class ParoissePaiement extends Controller
             ], 422);
         }
 
+        // 3️⃣ Génération référence unique
         $reference = 'REV_'.time().'_'.rand(1000, 9999);
 
-        // Création BDD
+        // 4️⃣ Création du reversement en BDD
         $reversement = Reversement::create([
             'reference' => $reference,
             'numero_destinataire' => $request->telephone,
             'prefix_pays' => $request->prefix,
             'montant' => $request->montant,
             'statut' => 'pending',
-            'paroisse_id' => $paroisse->id, // Important de lier à la paroisse
+            'paroisse_id' => $paroisse->id,
         ]);
 
         try {
-            // 1. AUTHENTIFICATION
-            // On utilise env() mais il est recommandé d'utiliser config() en production
+            // 5️⃣ Authentification CinetPay
             $apiKey = env('CINETPAY_API_KEY');
             $password = env('CINETPAY_PASSWORD');
 
@@ -270,13 +271,10 @@ class ParoissePaiement extends Controller
 
             $loginResult = $loginResponse->json();
 
-            // Vérification stricte du token
             if (! $loginResponse->successful() || ! isset($loginResult['data']['token'])) {
                 Log::error('CinetPay Login Error', ['response' => $loginResult]);
-
                 $reversement->update(['statut' => 'failed']);
 
-                // Message d'erreur plus clair pour le développeur
                 $msg = $loginResult['message'] ?? 'Erreur inconnue';
                 $desc = $loginResult['description'] ?? '';
 
@@ -286,9 +284,9 @@ class ParoissePaiement extends Controller
             }
 
             $token = $loginResult['data']['token'];
-
             $transferUrl = 'https://client.cinetpay.com/v1/transfer/money/send/contact?token='.$token;
 
+            // 6️⃣ Préparation payload reversement
             $payload = [
                 'prefix' => $request->prefix,
                 'phone' => $request->telephone,
@@ -304,6 +302,7 @@ class ParoissePaiement extends Controller
 
             $reversement->update(['donnees_api' => json_encode($result)]);
 
+            // 7️⃣ Vérification succès CinetPay
             if ($response->successful() && isset($result['code']) && $result['code'] === '0') {
 
                 $transferId = $result['data']['transfer_id'] ?? null;
@@ -313,6 +312,7 @@ class ParoissePaiement extends Controller
                     'cinetpay_transfer_id' => $transferId,
                 ]);
 
+                // 8️⃣ Enregistrement retrait paroisse
                 DB::table('paroisse_retraits')->insert([
                     'paroisse_id' => $paroisse->id,
                     'montant' => $request->montant,
@@ -345,7 +345,9 @@ class ParoissePaiement extends Controller
             Log::critical('Exception Reversement: '.$e->getMessage());
             $reversement->update(['statut' => 'failed']);
 
-            return response()->json(['message' => 'Erreur serveur critique. Veuillez contacter le support.'], 500);
+            return response()->json([
+                'message' => 'Erreur serveur critique. Veuillez contacter le support.',
+            ], 500);
         }
     }
 }
