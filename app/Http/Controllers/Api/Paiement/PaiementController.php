@@ -85,16 +85,14 @@ class PaiementController extends Controller
                 'customer_name'   => $user->name ?? 'Fidele', 
                 'customer_surname'=> $user->name ?? 'Messe',
                 'customer_email'  => $user->email ?? 'no-reply@sancta-missa.com',
-                'customer_phone_number' => $cleanPhone,
+                // 'customer_phone_number' => $cleanPhone,
                 'customer_address' => $user->adresse ?? 'Abidjan',
                 'customer_city'   => $user->ville ?? 'Abidjan',
                 'customer_country'=> 'CI',
                 'customer_zip_code'=> '00225',
             ];
 
-            return response()->json([
-                    'Data' => $paymentData,
-                ]);
+
 
             Log::info('📤 Envoi Données CinetPay', $paymentData);
 
