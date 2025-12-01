@@ -12,16 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('reversements', function (Blueprint $table) {
-        $table->id();
-        $table->string('reference')->unique();
-        $table->string('numero_destinataire');
-        $table->string('prefix_pays')->default('225');
-        $table->decimal('montant', 12, 2);
-        $table->string('statut')->default('pending');
-        $table->string('cinetpay_transfer_id')->nullable();
-        $table->json('donnees_api')->nullable();
-        $table->timestamps();
-    });
+            $table->id();
+            $table->foreignId('paroisse_id')->nullable()->constrained('paroisses');
+            $table->string('reference')->unique();
+            $table->string('numero_destinataire');
+            $table->string('prefix_pays')->default('225');
+            $table->decimal('montant', 12, 2);
+            $table->string('statut')->default('pending');
+            $table->string('cinetpay_transfer_id')->nullable();
+            $table->json('donnees_api')->nullable();
+            $table->timestamps();
+        });
     }
 
     /**

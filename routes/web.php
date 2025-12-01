@@ -19,6 +19,7 @@ use App\Http\Controllers\User\Event\EventController as UserEventController;
 use App\Http\Controllers\User\Messe\MesseController;
 use App\Http\Controllers\User\Messe\PaiementController;
 use App\Http\Controllers\User\Messe\PaiementStripeController;
+use App\Http\Controllers\Paroisse\Paroissien\ParoissienController;
 use App\Http\Controllers\User\UserDashboard;
 use Google\Auth\Credentials\ServiceAccountCredentials;
 use Illuminate\Support\Facades\Route;
@@ -35,29 +36,29 @@ Route::get('/get-token', function () {
     return $token;
 });
 
-    Route::get('/test-cinetpay', function () {
-        // On force la récupération des valeurs sans cache pour le test
-        $apiKey = env('CINETPAY_API_KEY');
-        $password = env('CINETPAY_PASSWORD');
-        
-        // On masque le mot de passe pour l'affichage
-        $hiddenPass = substr($password, 0, 2) . '******' . substr($password, -2);
+Route::get('/test-cinetpay', function () {
+    // On force la récupération des valeurs sans cache pour le test
+    $apiKey = env('CINETPAY_API_KEY');
+    $password = env('CINETPAY_PASSWORD');
 
-        echo "<h3>Test de connexion CinetPay</h3>";
-        echo "API Key utilisée : $apiKey <br>";
-        echo "Mot de passe utilisé : $hiddenPass <br><hr>";
+    // On masque le mot de passe pour l'affichage
+    $hiddenPass = substr($password, 0, 2).'******'.substr($password, -2);
 
-        $response = Http::asForm()->post('https://client.cinetpay.com/v1/auth/login', [
-            'apikey' => $apiKey,
-            'password' => $password,
-        ]);
+    echo '<h3>Test de connexion CinetPay</h3>';
+    echo "API Key utilisée : $apiKey <br>";
+    echo "Mot de passe utilisé : $hiddenPass <br><hr>";
 
-        $result = $response->json();
+    $response = Http::asForm()->post('https://client.cinetpay.com/v1/auth/login', [
+        'apikey' => $apiKey,
+        'password' => $password,
+    ]);
 
-        echo "<strong>Code HTTP :</strong> " . $response->status() . "<br>";
-        echo "<strong>Réponse API :</strong><br>";
-        dd($result);
-    });
+    $result = $response->json();
+
+    echo '<strong>Code HTTP :</strong> '.$response->status().'<br>';
+    echo '<strong>Réponse API :</strong><br>';
+    dd($result);
+});
 
 Route::get('/forgot-password', [AuthenticateUser::class, 'showForgotPasswordForm'])->name('forgot-password.form');
 Route::post('/forgot-password', [AuthenticateUser::class, 'forgotPassword'])->name('forgot-password.send');
@@ -128,6 +129,7 @@ Route::prefix('parish')->group(function () {
 
 Route::middleware('paroisse')->prefix('parish')->group(function () {
     Route::get('/dahboard', [ParoisseDashboard::class, 'dashboard'])->name('paroisse.dashboard');
+    Route::post('/dahboard', [ParoisseDashboard::class, 'dashboard'])->name('paroisse.dashboard');
     Route::get('/logout', [ParoisseDashboard::class, 'logout'])->name('paroisse.logout');
 
     // retraits
@@ -154,6 +156,8 @@ Route::middleware('paroisse')->prefix('parish')->group(function () {
 
     // Routes de gestion des offrandes
     Route::get('/offerings', [OffrandeController::class, 'create'])->name('paroisse.offrande');
+    Route::post('event/store', [EventController::class, 'store'])->name('event.store');
+
     Route::post('/parish/offrande', [OffrandeController::class, 'storeOffrande'])->name('paroisse.offrande.store');
     Route::get('/request/historys', [OffrandeController::class, 'history'])->name('demandes.messes.history');
 
@@ -171,6 +175,22 @@ Route::middleware('paroisse')->prefix('parish')->group(function () {
         Route::get('/{event}', [EventController::class, 'show'])->name('show');
         Route::put('/{event}', [EventController::class, 'update'])->name('update');
         Route::delete('/{event}', [EventController::class, 'destroy'])->name('destroy');
+    });
+
+    // Routes de gestion des paroissien
+    Route::prefix('paroissien')->name('paroissien.')->group(function () {
+        Route::get('/', [ParoissienController::class, 'index'])->name('index');
+        Route::get('/data', [ParoissienController::class, 'data'])->name('data'); // Pour DataTables AJAX
+        Route::get('/create', [ParoissienController::class, 'create'])->name('create'); // Manquait dans ta liste
+        Route::post('/', [ParoissienController::class, 'store'])->name('store');
+        Route::get('/{paroissien}', [ParoissienController::class, 'show'])->name('show');
+        Route::get('/{paroissien}/edit', [ParoissienController::class, 'edit'])->name('edit'); // Manquait
+        Route::put('/{paroissien}', [ParoissienController::class, 'update'])->name('update');
+        Route::delete('/{paroissien}', [ParoissienController::class, 'destroy'])->name('destroy');
+
+        // Routes pour export (Optionnel, nécessite une logique d'export)
+        Route::get('/export/pdf', [ParoissienController::class, 'exportPdf'])->name('export.pdf');
+        Route::get('/export/excel', [ParoissienController::class, 'exportExcel'])->name('export.excel');
     });
 
 });
