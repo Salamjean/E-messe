@@ -155,6 +155,78 @@
     </div>
 </aside>
 
+<script>
+    // Toggle du sidebar pour mobile/tablet
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const sidebarToggler = document.querySelector('.sidebar-toggler');
+
+        // Toggle du sidebar
+        if (sidebarToggler) {
+            sidebarToggler.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                sidebarOverlay.classList.toggle('active');
+                document.body.classList.toggle('sidebar-open');
+            });
+        }
+
+        // Fermer le sidebar en cliquant sur l'overlay
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('active');
+                document.body.classList.remove('sidebar-open');
+            });
+        }
+
+        // Gérer les menus déroulants
+        document.querySelectorAll('[data-toggle="expansionPanel"]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const targetId = this.getAttribute('data-target');
+                const targetPanel = document.getElementById(targetId);
+
+                // Fermer tous les autres panels
+                document.querySelectorAll('.mdc-expansion-panel').forEach(panel => {
+                    if (panel.id !== targetId) {
+                        panel.classList.remove('open');
+                    }
+                });
+
+                // Basculer les flèches
+                document.querySelectorAll('.mdc-drawer-arrow').forEach(arrow => {
+                    if (arrow !== this.querySelector('.mdc-drawer-arrow')) {
+                        arrow.style.transform = 'rotate(0deg)';
+                    }
+                });
+
+                // Toggle du panel cliqué
+                targetPanel.classList.toggle('open');
+                const arrow = this.querySelector('.mdc-drawer-arrow');
+                if (targetPanel.classList.contains('open')) {
+                    arrow.style.transform = 'rotate(90deg)';
+                } else {
+                    arrow.style.transform = 'rotate(0deg)';
+                }
+            });
+        });
+
+        // Fermer automatiquement le sidebar sur mobile après un clic sur un lien
+        const sidebarLinks = document.querySelectorAll('.mdc-drawer-link');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 991) {
+                    sidebar.classList.remove('open');
+                    sidebarOverlay.classList.remove('active');
+                    document.body.classList.remove('sidebar-open');
+                }
+            });
+        });
+    });
+</script>
+
 <style>
     /* =================================
        SIDEBAR STYLES DE BASE

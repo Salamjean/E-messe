@@ -54,7 +54,7 @@ class ParoissienController extends Controller
             'nom_prenom' => 'required|string',
             'telephone' => 'required',
             'photo' => 'nullable|image|max:2048',
-            // Ajoutez les autres validations...
+            
         ]);
 
         $data = $request->except('photo');

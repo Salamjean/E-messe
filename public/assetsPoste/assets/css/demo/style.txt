@@ -2481,11 +2481,9 @@ svg.mdc-button__icon {
   left: 0;
   /* @noflip */
   right: initial;
-  display: flex;
+  display: none;
   position: absolute;
 }
-
-
 
 
 [dir="rtl"] .mdc-drawer--dismissible,
