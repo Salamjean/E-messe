@@ -2476,14 +2476,7 @@ svg.mdc-button__icon {
   -webkit-overflow-scrolling: touch;
 }
 
-.mdc-drawer--dismissible {
-  /* @noflip */
-  left: 0;
-  /* @noflip */
-  right: initial;
-  display: flex;
-  position: absolute;
-}
+
 
 
 
