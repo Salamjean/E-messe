@@ -523,7 +523,7 @@
                             <label for="name">Nom complet</label>
                             <div class="input-with-icon">
                                 <i class="input-icon fas fa-user"></i>
-                                <input type="text" id="name" name="name" placeholder="Entrez votre nom complet" >
+                                <input type="text" id="name" name="name" placeholder="Entrez votre nom complet" value="{{ old('name') }}" >
                                  @error('name')
                                     <div class="error-message">
                                         <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -537,7 +537,7 @@
                             <label for="user_name">Nom d'utilisateur</label>
                             <div class="input-with-icon">
                                 <i class="input-icon fas fa-at"></i>
-                                <input type="text" id="user_name" name="user_name" placeholder="Entrez votre nom d'utilisateur" >
+                                <input type="text" id="user_name" name="user_name" placeholder="Entrez votre nom d'utilisateur" value="{{ old('user_name') }}" >
                                  @error('user_name')
                                     <div class="error-message">
                                         <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -555,7 +555,7 @@
                             <label for="email">Adresse email</label>
                             <div class="input-with-icon">
                                 <i class="input-icon fas fa-envelope"></i>
-                                <input type="email" id="email" name="email" placeholder="Entrez votre adresse email" >
+                                <input type="email" id="email" name="email" placeholder="Entrez votre adresse email" value="{{ old('email') }}">
                                 @error('email')
                                     <div class="error-message">
                                         <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -587,7 +587,7 @@
                             <label for="contact">Contact</label>
                             <div class="input-with-icon">
                                 <i class="input-icon fas fa-mobile-alt"></i>
-                                <input type="text" id="contact" name="contact" placeholder="Entrez votre numéro de téléphone" >
+                                <input type="text" id="contact" name="contact" placeholder="Entrez votre numéro de téléphone" value="{{ old('contact') }}">
                                 @error('contact')
                                     <div class="error-message">
                                         <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -605,7 +605,7 @@
                             <label for="password">Mot de passe</label>
                             <div class="input-with-icon">
                                 <i class="input-icon fas fa-lock"></i>
-                                <input type="password" id="password" name="password" placeholder="Entrez votre mot de passe" >
+                                <input type="password" id="password" name="password" placeholder="Entrez votre mot de passe" value="{{ old('password') }}">
                                 @error('password')
                                     <div class="error-message">
                                         <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -634,7 +634,7 @@
                             <label for="profile_picture">Photo de profil (facultatif)</label>
                             <div class="input-with-icon">
                                 <i class="input-icon fas fa-camera"></i>
-                                <input type="file" id="profile_picture" name="profile_picture" accept="image/*">
+                                <input type="file" id="profile_picture" name="profile_picture" accept="image/*" value="{{ old('profile_picture') }}">
                                 @error('profile_picture')
                                     <div class="error-message">
                                         <i class="fas fa-exclamation-circle"></i> {{ $message }}

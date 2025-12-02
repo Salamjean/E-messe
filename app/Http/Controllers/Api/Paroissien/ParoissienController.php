@@ -89,13 +89,15 @@ class ParoissienController extends Controller
     public function show(Request $request, $id)
     {
         try {
-            $user_id = $request->user()->id;
-            $paroissien = Paroissien::where('user_id', $user_id)->find($id);
+            if ($request->user()->id != $id) {
+                return response()->json(['status' => false, 'message' => 'Accès non autorisé'], 403);
+            }
+            $paroissien = Paroissien::where('user_id', $id)->first();
 
             if (! $paroissien) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Paroissien non trouvé',
+                    'message' => 'Aucun dossier paroissien trouvé pour cet utilisateur',
                 ], 404);
             }
 
@@ -103,7 +105,6 @@ class ParoissienController extends Controller
                 'status' => true,
                 'message' => 'Détails du paroissien récupérés avec succès',
                 'data' => $paroissien,
-                // Note : $paroissien contient maintenant 'user_id' grâce au store()
             ], 200);
 
         } catch (\Exception $e) {
@@ -115,17 +116,25 @@ class ParoissienController extends Controller
         }
     }
 
-    // Fonction pour mettre à jour un paroissien
+    /**
+     * Met à jour le paroissien correspondant à l'user_id passé en paramètre
+     * Route: POST /paroissien/{id} (où {id} est l'user_id)
+     */
     public function update(Request $request, $id)
     {
-        // 1. Recherche du paroissien
-        $paroissien = Paroissien::find($id);
+        // 1. Recherche du paroissien via le user_id
+        $paroissien = Paroissien::where('user_id', $id)->first();
 
         if (! $paroissien) {
             return response()->json([
                 'status' => false,
-                'message' => 'Paroissien non trouvé',
+                'message' => 'Dossier paroissien introuvable pour cet utilisateur',
             ], 404);
+        }
+
+        // Sécurité : Vérifier que c'est bien l'utilisateur connecté qui modifie son profil
+        if ($request->user()->id != $id) {
+            return response()->json(['status' => false, 'message' => 'Action non autorisée'], 403);
         }
 
         // 2. Validation des données
@@ -154,10 +163,9 @@ class ParoissienController extends Controller
         }
 
         try {
-            // 3. Récupération des données validées
             $data = $validator->validated();
 
-            // 4. Gestion des champs conditionnels
+            // 3. Gestion des champs conditionnels
             $estDansMouvement = isset($data['est_dans_mouvement'])
                 ? filter_var($data['est_dans_mouvement'], FILTER_VALIDATE_BOOLEAN)
                 : $paroissien->est_dans_mouvement;
@@ -166,31 +174,24 @@ class ParoissienController extends Controller
                 ? filter_var($data['est_baptise'], FILTER_VALIDATE_BOOLEAN)
                 : $paroissien->est_baptise;
 
-            // Si est_dans_mouvement est false, on vide nom_mouvement
             if (! $estDansMouvement) {
                 $data['nom_mouvement'] = null;
             }
-
-            // Si est_baptise est false, on vide date_bapteme
             if (! $estBaptise) {
                 $data['date_bapteme'] = null;
             }
 
-            // 5. Gestion de la photo
+            // 4. Gestion de la photo
             if ($request->hasFile('photo')) {
-                // Supprimer l'ancienne photo si elle existe
                 if ($paroissien->photo && Storage::disk('public')->exists($paroissien->photo)) {
                     Storage::disk('public')->delete($paroissien->photo);
                 }
-
                 $path = $request->file('photo')->store('photos_paroissiens', 'public');
                 $data['photo'] = $path;
             }
 
-            // 6. Mise à jour du paroissien
+            // 5. Mise à jour
             $paroissien->update($data);
-
-            // 7. Rafraîchir l'objet pour avoir les données mises à jour
             $paroissien->refresh();
 
             return response()->json([
