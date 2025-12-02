@@ -10,8 +10,10 @@ use Illuminate\Support\Facades\Log;
 
 class OffrandeController extends Controller
 {
-    public function create(){
+    public function create()
+    {
         $paroisse = Paroisse::find(Auth::guard('paroisse')->user()->id);
+
         return view('paroisse.offrande.create', compact('paroisse'));
     }
 
@@ -24,11 +26,11 @@ class OffrandeController extends Controller
         try {
             // Récupérer l'utilisateur paroisse connecté
             $user = Auth::guard('paroisse')->user();
-            
-            if (!$user) {
+
+            if (! $user) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Utilisateur non authentifié'
+                    'message' => 'Utilisateur non authentifié',
                 ], 401);
             }
 
@@ -40,32 +42,33 @@ class OffrandeController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Montant de demande de messe mis à jour avec succès!',
-                'new_amount' => $user->montant_offrande
+                'new_amount' => $user->montant_offrande,
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Erreur storeOffrande: ' . $e->getMessage());
-            
+            Log::error('Erreur storeOffrande: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Une erreur est survenue lors de la mise à jour'
+                'message' => 'Une erreur est survenue lors de la mise à jour',
             ], 500);
         }
     }
-    
-    public function history(){
-        $messess = Auth::guard('paroisse')->user()->messes()
-                    ->where('statut','!=','en attente')
-                    ->where('statut','!=','confirmee')
-                    ->where('statut','!=','en_attente_paiement')
-                    ->orderBy('created_at', 'desc')
-                    ->get();
-        
+
+    public function history()
+    {
+        $filteredMessess = Auth::guard('paroisse')->user()->messes()
+            ->where('statut', '!=', 'en attente')
+            ->where('statut', '!=', 'confirmee')
+            ->where('statut', '!=', 'en_attente_paiement')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         // Filtrer les demandes pour n'afficher que celles avec des dates valides
         // à partir de date_souhaitee
-        $filteredMessess = $messess->filter(function($messe) {
-            return $messe->hasValidDates();
-        });
+        // $filteredMessess = $messess->filter(function($messe) {
+        //     return $messe->hasValidDates();
+        // });
         return view('paroisse.offrande.history', compact('filteredMessess'));
     }
 }
