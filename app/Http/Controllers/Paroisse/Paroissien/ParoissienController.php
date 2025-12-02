@@ -2,41 +2,60 @@
 
 namespace App\Http\Controllers\Paroisse\Paroissien;
 
+use App\Exports\ParoissiensExport;
 use App\Http\Controllers\Controller;
 use App\Models\Paroissien;
-use DataTables;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Hash;
-use App\Models\Paroisse;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
+use Yajra\DataTables\Facades\DataTables;
 
 class ParoissienController extends Controller
 {
+    /**
+     * Affiche la page principale avec le tableau.
+     */
     public function index()
     {
         return view('paroisse.paroissiens.index');
     }
 
-    // Logique pour DataTables AJAX
-    public function data()
+    /**
+     * Données JSON pour DataTables avec filtres.
+     */
+    public function data(Request $request)
     {
-        $paroissiens = Paroissien::select(['id', 'nom_prenom', 'telephone', 'nom_paroisse', 'situation_matrimoniale']);
+        // On utilise la méthode commune pour appliquer les filtres (Sexe, Situation)
+        $query = $this->getFilteredQuery($request);
 
-        return datatables()->of($paroissiens)
+        // On sélectionne les colonnes nécessaires pour optimiser
+        $query->select(['id', 'nom_prenom', 'telephone', 'sexe', 'situation_matrimoniale', 'nom_paroisse']);
+
+        return DataTables::of($query)
             ->addColumn('action', function ($row) {
-                $btn = '<a href="'.route('paroissien.show', $row->id).'" class="btn btn-info btn-sm me-1">Voir</a>';
-                $btn .= '<a href="'.route('paroissien.edit', $row->id).'" class="btn btn-warning btn-sm me-1">Edit</a>';
-                $btn .= '<form action="'.route('paroissien.destroy', $row->id).'" method="POST" style="display:inline;" onsubmit="return confirm(\'Êtes-vous sûr ?\')">
-                            '.csrf_field().' '.method_field('DELETE').'
-                            <button type="submit" class="btn btn-danger btn-sm">Sup</button>
-                         </form>';
+                $showUrl = route('paroissien.show', $row->id);
+                $editUrl = route('paroissien.edit', $row->id);
+                $deleteUrl = route('paroissien.destroy', $row->id);
+                $csrf = csrf_field();
+                $method = method_field('DELETE');
 
-                return $btn;
+                return "
+                    <div class='btn-group'>
+                        <a href='{$showUrl}' class='btn btn-info btn-sm me-1' title='Voir'>
+                            <i class='fa fa-eye'></i>
+                        </a>
+                        <a href='{$editUrl}' class='btn btn-warning btn-sm me-1' title='Modifier'>
+                            <i class='fa fa-edit'></i>
+                        </a>
+                        <form action='{$deleteUrl}' method='POST' style='display:inline;' onsubmit='return confirm(\"Êtes-vous sûr de vouloir supprimer ce fidèle ?\")'>
+                            {$csrf} {$method}
+                            <button type='submit' class='btn btn-danger btn-sm' title='Supprimer'>
+                                <i class='fa fa-trash'></i>
+                            </button>
+                        </form>
+                    </div>";
             })
             ->rawColumns(['action'])
             ->make(true);
@@ -44,26 +63,27 @@ class ParoissienController extends Controller
 
     public function create()
     {
-        $nom_paroisse =  Auth::guard('paroisse')->user()->name;  
+        // Assurez-vous que le guard 'paroisse' est bien configuré
+        $nom_paroisse = Auth::guard('paroisse')->user()->name ?? 'Paroisse Inconnue';
+
         return view('paroisse.paroissiens.create', compact('nom_paroisse'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'nom_prenom' => 'required|string',
-            'telephone' => 'required',
+            'nom_prenom' => 'required|string|max:255',
+            'telephone' => 'required|string|max:20',
             'photo' => 'nullable|image|max:2048',
-            
         ]);
 
         $data = $request->except('photo');
 
-        // Gestion des checkbox switch (retournent "on" ou null)
+        // Gestion des checkbox/switches
         $data['est_dans_mouvement'] = $request->has('est_dans_mouvement');
         $data['est_baptise'] = $request->has('est_baptise');
 
-        // Nettoyage si switch OFF
+        // Nettoyage des champs conditionnels
         if (! $data['est_dans_mouvement']) {
             $data['nom_mouvement'] = null;
         }
@@ -73,13 +93,12 @@ class ParoissienController extends Controller
 
         // Upload Photo
         if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('photos_paroissiens', 'public');
-            $data['photo'] = $path;
+            $data['photo'] = $request->file('photo')->store('photos_paroissiens', 'public');
         }
 
         Paroissien::create($data);
 
-        return redirect()->route('paroissien.create')->with('success', 'Fidèle enregistré avec succès.');
+        return redirect()->route('paroissien.index')->with('success', 'Fidèle enregistré avec succès.');
     }
 
     public function show(Paroissien $paroissien)
@@ -94,10 +113,14 @@ class ParoissienController extends Controller
 
     public function update(Request $request, Paroissien $paroissien)
     {
-        // Validation similaire au store...
+        $request->validate([
+            'nom_prenom' => 'required|string|max:255',
+            'telephone' => 'required',
+            'photo' => 'nullable|image|max:2048',
+        ]);
+
         $data = $request->except('photo');
 
-        // Gestion Switch
         $data['est_dans_mouvement'] = $request->has('est_dans_mouvement');
         $data['est_baptise'] = $request->has('est_baptise');
 
@@ -108,20 +131,16 @@ class ParoissienController extends Controller
             $data['date_bapteme'] = null;
         }
 
-        // Update Photo
         if ($request->hasFile('photo')) {
-            // Supprimer l'ancienne photo si nécessaire
             if ($paroissien->photo) {
                 Storage::disk('public')->delete($paroissien->photo);
             }
-
-            $path = $request->file('photo')->store('photos_paroissiens', 'public');
-            $data['photo'] = $path;
+            $data['photo'] = $request->file('photo')->store('photos_paroissiens', 'public');
         }
 
         $paroissien->update($data);
 
-        return redirect()->route('paroissien.index')->with('success', 'Fidèle mis à jour.');
+        return redirect()->route('paroissien.index')->with('success', 'Fidèle mis à jour avec succès.');
     }
 
     public function destroy(Paroissien $paroissien)
@@ -131,17 +150,60 @@ class ParoissienController extends Controller
         }
         $paroissien->delete();
 
-        return redirect()->route('paroissien.index')->with('success', 'Supprimé avec succès.');
+        return redirect()->route('paroissien.index')->with('success', 'Fidèle supprimé avec succès.');
     }
 
-    // Méthodes placeholder pour export
-    public function exportPdf()
+    /**
+     * Méthode privée pour centraliser la logique de filtrage (SQL)
+     */
+    private function getFilteredQuery(Request $request)
     {
-        return 'Logique PDF ici (DomPDF)';
+        $query = Paroissien::query();
+
+        if ($request->filled('sexe')) {
+            $query->where('sexe', $request->sexe);
+        }
+
+        if ($request->filled('situation_matrimoniale')) {
+            $query->where('situation_matrimoniale', $request->situation_matrimoniale);
+        }
+
+        return $query;
     }
 
-    public function exportExcel()
+    public function exportExcel(Request $request)
     {
-        return 'Logique Excel ici (Maatwebsite)';
+        $filters = [
+            'sexe' => $request->sexe,
+            'situation_matrimoniale' => $request->situation_matrimoniale,
+            'search' => $request->search_term, // Terme de recherche global DataTables
+        ];
+
+        return Excel::download(new ParoissiensExport($filters), 'paroissiens_'.date('d-m-Y').'.xlsx');
+    }
+
+    public function exportPdf(Request $request)
+    {
+        // 1. Récupérer la requête filtrée de base (Sexe / Situation)
+        $query = $this->getFilteredQuery($request);
+
+        // 2. Appliquer manuellement la recherche textuelle
+        if ($request->filled('search_term')) {
+            $term = $request->search_term;
+            $query->where(function ($q) use ($term) {
+                $q->where('nom_prenom', 'LIKE', "%{$term}%")
+                    ->orWhere('telephone', 'LIKE', "%{$term}%")
+                    ->orWhere('adresse', 'LIKE', "%{$term}%");
+            });
+        }
+
+        $paroissiens = $query->get();
+
+        // CORRECTION ICI : 'exports' au pluriel pour correspondre au dossier resources/views/exports
+        $pdf = Pdf::loadView('paroisse.exports.paroissiens.pdf', compact('paroissiens'))
+            // ->setPaper('a4', 'landscape');
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->download('listes_paroissiens_'.date('d-m-Y').'.pdf');
     }
 }

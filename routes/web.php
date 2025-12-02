@@ -12,6 +12,7 @@ use App\Http\Controllers\Paroisse\Offrande\OffrandeController;
 use App\Http\Controllers\Paroisse\Paiement\ParoissePaiement;
 use App\Http\Controllers\Paroisse\ParoisseController;
 use App\Http\Controllers\Paroisse\ParoisseDashboard;
+use App\Http\Controllers\Paroisse\Paroissien\ParoissienController;
 use App\Http\Controllers\Redirectionpaiement\PaymentRedirectController;
 use App\Http\Controllers\Redirectionpaiement\RedirectController;
 use App\Http\Controllers\User\AuthenticateUser;
@@ -19,7 +20,6 @@ use App\Http\Controllers\User\Event\EventController as UserEventController;
 use App\Http\Controllers\User\Messe\MesseController;
 use App\Http\Controllers\User\Messe\PaiementController;
 use App\Http\Controllers\User\Messe\PaiementStripeController;
-use App\Http\Controllers\Paroisse\Paroissien\ParoissienController;
 use App\Http\Controllers\User\UserDashboard;
 use Google\Auth\Credentials\ServiceAccountCredentials;
 use Illuminate\Support\Facades\Route;
@@ -178,19 +178,40 @@ Route::middleware('paroisse')->prefix('parish')->group(function () {
     });
 
     // Routes de gestion des paroissien
+    // Route::prefix('paroissien')->name('paroissien.')->group(function () {
+    //     Route::get('/', [ParoissienController::class, 'index'])->name('index');
+    //     Route::get('/data', [ParoissienController::class, 'data'])->name('data'); // Pour DataTables AJAX
+    //     Route::get('/create', [ParoissienController::class, 'create'])->name('create'); // Manquait dans ta liste
+    //     Route::post('/', [ParoissienController::class, 'store'])->name('store');
+    //     Route::get('/{paroissien}', [ParoissienController::class, 'show'])->name('show');
+    //     Route::get('/{paroissien}/edit', [ParoissienController::class, 'edit'])->name('edit'); // Manquait
+    //     Route::put('/{paroissien}', [ParoissienController::class, 'update'])->name('update');
+    //     Route::delete('/{paroissien}', [ParoissienController::class, 'destroy'])->name('destroy');
+
+    //     // Routes pour export (Optionnel, nécessite une logique d'export)
+    //     Route::get('/export/pdf', [ParoissienController::class, 'exportPdf'])->name('export.pdf');
+    //     Route::get('/export/excel', [ParoissienController::class, 'exportExcel'])->name('export.excel');
+
+    // });
+
     Route::prefix('paroissien')->name('paroissien.')->group(function () {
+
+        // 1. Routes pour les Exports et AJAX (doivent être AVANT les routes avec ID)
+        Route::get('/data', [ParoissienController::class, 'data'])->name('data');
+        Route::get('/export/pdf', [ParoissienController::class, 'exportPdf'])->name('export.pdf');
+        Route::get('/export/excel', [ParoissienController::class, 'exportExcel'])->name('export.excel');
+
+        // 2. Routes CRUD standard
         Route::get('/', [ParoissienController::class, 'index'])->name('index');
-        Route::get('/data', [ParoissienController::class, 'data'])->name('data'); // Pour DataTables AJAX
-        Route::get('/create', [ParoissienController::class, 'create'])->name('create'); // Manquait dans ta liste
+        Route::get('/create', [ParoissienController::class, 'create'])->name('create');
         Route::post('/', [ParoissienController::class, 'store'])->name('store');
+
+        // Routes avec paramètre {paroissien} (ID)
         Route::get('/{paroissien}', [ParoissienController::class, 'show'])->name('show');
-        Route::get('/{paroissien}/edit', [ParoissienController::class, 'edit'])->name('edit'); // Manquait
+        Route::get('/{paroissien}/edit', [ParoissienController::class, 'edit'])->name('edit');
         Route::put('/{paroissien}', [ParoissienController::class, 'update'])->name('update');
         Route::delete('/{paroissien}', [ParoissienController::class, 'destroy'])->name('destroy');
 
-        // Routes pour export (Optionnel, nécessite une logique d'export)
-        Route::get('/export/pdf', [ParoissienController::class, 'exportPdf'])->name('export.pdf');
-        Route::get('/export/excel', [ParoissienController::class, 'exportExcel'])->name('export.excel');
     });
 
 });

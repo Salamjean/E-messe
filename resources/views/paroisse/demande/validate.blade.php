@@ -192,6 +192,8 @@
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         border-left: 4px solid #5ea7b5;
         position: relative;
+        width: 300px;
+        height: 100%;
     }
     
     .messe-card:hover {

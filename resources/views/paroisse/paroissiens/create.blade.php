@@ -64,11 +64,6 @@
                             <input type="text" name="telephone" class="form-control">
                         </div>
 
-                        {{-- <div class="col-md-12 mb-3">
-                        <label>Nom de sa paroisse</label>
-                        <input type="text" name="nom_paroisse" class="form-control">
-                    </div> --}}
-
                         <hr>
 
                         <!-- Switch Mouvement -->

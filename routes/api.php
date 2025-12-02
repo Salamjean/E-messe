@@ -185,5 +185,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('paroissien')->group(function () {
         Route::post('/store', [ParoissienController::class, 'store']);
+        Route::get('/{id}', [ParoissienController::class, 'show']);
+        Route::post('/{id}', [ParoissienController::class, 'update']);
     });
+
 });

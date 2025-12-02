@@ -89,8 +89,12 @@
 
                 <!-- Menu Déroulant: Paroissien -->
                 <div class="mdc-list-item mdc-drawer-item">
-                    <a class="mdc-expansion-panel-link d-flex align-items-center justify-content-between" href="#"
-                        data-toggle="expansionPanel" data-target="menu-paroissien">
+                    @php
+                        $isParoissienActive = Route::is('paroissien.*');
+                    @endphp
+
+                    <a class="mdc-expansion-panel-link d-flex align-items-center justify-content-between {{ $isParoissienActive ? 'expanded' : '' }}"
+                        href="#" data-toggle="expansionPanel" data-target="menu-paroissien">
                         <span class="d-flex align-items-center">
                             <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon me-2">
                                 account_balance_wallet
@@ -100,18 +104,23 @@
                         <i class="mdc-drawer-arrow material-icons">chevron_right</i>
                     </a>
 
-                    <div class="mdc-expansion-panel" id="menu-paroissien">
+                    <div class="mdc-expansion-panel {{ $isParoissienActive ? 'expanded' : '' }}" id="menu-paroissien">
                         <nav class="mdc-list mdc-drawer-submenu">
+
                             <div class="mdc-list-item mdc-drawer-item">
-                                <a class="mdc-drawer-link" href="{{ route('paroissien.create') }}">
+                                <a class="mdc-drawer-link {{ Route::is('paroissien.create') ? 'active' : '' }}"
+                                    href="{{ route('paroissien.create') }}">
                                     Ajoute un paroissien
                                 </a>
                             </div>
+
                             <div class="mdc-list-item mdc-drawer-item">
-                                <a class="mdc-drawer-link" href="{{ route('paroissien.index') }}">
+                                <a class="mdc-drawer-link {{ Route::is('paroissien.index') ? 'active' : '' }}"
+                                    href="{{ route('paroissien.index') }}">
                                     Liste des paroissiens
                                 </a>
                             </div>
+
                         </nav>
                     </div>
                 </div>
@@ -148,8 +157,6 @@
                     <img src="{{ asset('assetsPoste/assets/images/sidebar/logo.svg') }}" style="width: 70%;"
                         alt="logo">
                 </div>
-
-
             </nav>
         </div>
     </div>

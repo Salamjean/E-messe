@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,19 +10,20 @@ class Paroissien extends Model
     use HasFactory;
 
     protected $fillable = [
-        'nom_prenom', 
-        'date_naissance', 
-        'sexe', 
+        'nom_prenom',
+        'date_naissance',
+        'sexe',
         'situation_matrimoniale',
-        'adresse', 
-        'statut_activite', 
-        'nom_paroisse', 
+        'adresse',
+        'statut_activite',
+        'nom_paroisse',
         'telephone',
-        'est_dans_mouvement', 
+        'est_dans_mouvement',
         'nom_mouvement',
-        'est_baptise', 
-        'date_bapteme', 
-        'photo'
+        'est_baptise',
+        'date_bapteme',
+        'photo',
+        'user_id',
     ];
 
     protected $casts = [
@@ -32,4 +32,9 @@ class Paroissien extends Model
         'date_naissance' => 'date',
         'date_bapteme' => 'date',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
