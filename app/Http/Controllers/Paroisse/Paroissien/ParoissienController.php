@@ -28,8 +28,8 @@ class ParoissienController extends Controller
     public function data(Request $request)
     {
         // On utilise la méthode commune pour appliquer les filtres (Sexe, Situation)
-        $query = $this->getFilteredQuery($request);
-
+        // $query = $this->getFilteredQuery($request);
+        $query = Paroissien::query()->distinct();
         // On sélectionne les colonnes nécessaires pour optimiser
         $query->select(['id', 'nom_prenom', 'telephone', 'sexe', 'situation_matrimoniale', 'nom_paroisse']);
 
