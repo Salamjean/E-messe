@@ -109,8 +109,8 @@ Route::middleware('admin')->prefix('admin')->group(function () {
         Route::get('/{paroisse}/edit', [ParoisseController::class, 'edit'])->name('admin.paroisses.edit');
         Route::put('/{paroisse}', [ParoisseController::class, 'update'])->name('paroisse.update');
         Route::delete('/{paroisse}', [ParoisseController::class, 'destroy'])->name('admin.paroisses.destroy');
-    });
 
+    });
     // Les routes de gestions de retraits par l'admin
     Route::prefix('withdrawal')->group(function () {
         Route::get('/request/parishe', [RetraitController::class, 'request'])->name('admin.paroisse.index');
@@ -177,23 +177,6 @@ Route::middleware('paroisse')->prefix('parish')->group(function () {
         Route::delete('/{event}', [EventController::class, 'destroy'])->name('destroy');
     });
 
-    // Routes de gestion des paroissien
-    // Route::prefix('paroissien')->name('paroissien.')->group(function () {
-    //     Route::get('/', [ParoissienController::class, 'index'])->name('index');
-    //     Route::get('/data', [ParoissienController::class, 'data'])->name('data'); // Pour DataTables AJAX
-    //     Route::get('/create', [ParoissienController::class, 'create'])->name('create'); // Manquait dans ta liste
-    //     Route::post('/', [ParoissienController::class, 'store'])->name('store');
-    //     Route::get('/{paroissien}', [ParoissienController::class, 'show'])->name('show');
-    //     Route::get('/{paroissien}/edit', [ParoissienController::class, 'edit'])->name('edit'); // Manquait
-    //     Route::put('/{paroissien}', [ParoissienController::class, 'update'])->name('update');
-    //     Route::delete('/{paroissien}', [ParoissienController::class, 'destroy'])->name('destroy');
-
-    //     // Routes pour export (Optionnel, nécessite une logique d'export)
-    //     Route::get('/export/pdf', [ParoissienController::class, 'exportPdf'])->name('export.pdf');
-    //     Route::get('/export/excel', [ParoissienController::class, 'exportExcel'])->name('export.excel');
-
-    // });
-
     Route::prefix('paroissien')->name('paroissien.')->group(function () {
 
         // 1. Routes pour les Exports et AJAX (doivent être AVANT les routes avec ID)
@@ -202,9 +185,9 @@ Route::middleware('paroisse')->prefix('parish')->group(function () {
         Route::get('/export/excel', [ParoissienController::class, 'exportExcel'])->name('export.excel');
 
         // 2. Routes CRUD standard
-        Route::get('/', [ParoissienController::class, 'index'])->name('index');
-        Route::get('/create', [ParoissienController::class, 'create'])->name('create');
-        Route::post('/', [ParoissienController::class, 'store'])->name('store');
+        Route::get('/index_paroissien', [ParoissienController::class, 'index'])->name('index');
+        Route::get('/create_paroissien', [ParoissienController::class, 'create'])->name('create');
+        Route::post('/store_paroissien', [ParoissienController::class, 'store'])->name('store');
 
         // Routes avec paramètre {paroissien} (ID)
         Route::get('/{paroissien}', [ParoissienController::class, 'show'])->name('show');

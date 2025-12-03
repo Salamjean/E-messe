@@ -3,27 +3,28 @@
 namespace App\Http\Controllers\Admin\Paroisse;
 
 use App\Http\Controllers\Controller;
+use App\Models\Commune;
 use App\Models\Paroisse;
 use App\Models\ResetCodePasswordParoisse;
+use App\Models\Ville;
 use App\Notifications\SendEmailToParoisseAfterRegistrationNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
-use App\Models\Ville;
-use App\Models\Commune;
+
 class ParoisseController extends Controller
 {
     public function index()
     {
         // On charge les paroisses avec leur commune et la ville de la commune
         $paroisses = Paroisse::with('commune.ville')->get();
-    
+
         // On récupère les communes qui ont au moins une paroisse
         $communeIds = Paroisse::distinct()->pluck('commune_id');
         $communes = Commune::whereIn('id', $communeIds)->with('ville')->orderBy('nom_commune')->get();
-        
+
         // Gestion du tri (reste inchangée)
         $sort = request()->get('sort');
         if ($sort) {
@@ -42,7 +43,7 @@ class ParoisseController extends Controller
                     break;
             }
         }
-        
+
         // On passe la nouvelle variable 'communes' à la vue
         return view('admin.paroisse.index', compact('paroisses', 'communes'));
     }
@@ -51,6 +52,7 @@ class ParoisseController extends Controller
     {
         // Récupérer toutes les villes pour la liste déroulante
         $villes = Ville::orderBy('nom_ville')->get();
+
         return view('admin.paroisse.create', compact('villes'));
     }
 
@@ -58,20 +60,22 @@ class ParoisseController extends Controller
     public function getCommunesByVille($ville_id)
     {
         $communes = Commune::where('ville_id', $ville_id)->orderBy('nom_commune')->get();
+
         return response()->json($communes);
     }
-    
+
     public function store(Request $request)
     {
-        // Validation des données  
+        dd($request->all());
+        // Validation des données
         $request->validate([
-        'name' => 'required|string|max:255|unique:paroisses,name',
-        'email' => 'required|email|unique:paroisses,email',
-        'contact' => 'required|string|min:10',
-        'tel' => 'required|string|min:10',
-        'commune_id' => 'required|exists:communes,id',
-        'profile_picture' => 'nullable|image|max:2048',
-        ],[
+            'name' => 'required|string|max:255|unique:paroisses,name',
+            'email' => 'required|email|unique:paroisses,email',
+            'contact' => 'required|string|min:10',
+            'tel' => 'required|string|min:10',
+            'commune_id' => 'required|exists:communes,id',
+            'profile_picture' => 'nullable|image|max:2048',
+        ], [
             'name.required' => 'Le nom est obligatoire.',
             'name.unique' => 'Cette paroisse est déjà inscrite.',
             'email.required' => 'L\'adresse e-mail est obligatoire.',
@@ -90,11 +94,11 @@ class ParoisseController extends Controller
         try {
             $admin = Auth::guard('admin')->user();
 
-            if (!$admin || !$admin->name) {
+            if (! $admin || ! $admin->name) {
                 return redirect()->back()->withErrors(['error' => 'Impossible de récupérer les informations du admin.']);
             }
 
-            $paroisse = new Paroisse();
+            $paroisse = new Paroisse;
             $paroisse->name = $request->name;
             $paroisse->email = $request->email;
             $paroisse->contact = $request->contact;
@@ -102,7 +106,7 @@ class ParoisseController extends Controller
             $paroisse->commune_id = $request->commune_id;
             $paroisse->password = Hash::make('default');
 
-            // Stockage de l'image dans storage/app/public/paroisses 
+            // Stockage de l'image dans storage/app/public/paroisses
             if ($request->hasFile('profile_picture')) {
                 $paroisse->profile_picture = $request->file('profile_picture')->store('profile_picture', 'public');
             }
@@ -112,7 +116,7 @@ class ParoisseController extends Controller
             // Envoi de l'e-mail de vérification
             ResetCodePasswordParoisse::where('email', $paroisse->email)->delete();
             $code1 = rand(1000, 4000);
-            $code = $code1 . $paroisse->id;
+            $code = $code1.$paroisse->id;
 
             ResetCodePasswordParoisse::create([
                 'code' => $code,
@@ -124,7 +128,7 @@ class ParoisseController extends Controller
 
             return redirect()->route('paroisse.index')->with('success', 'La paroisse a bien été enregistrée avec succès.');
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'Une erreur est survenue : ' . $e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => 'Une erreur est survenue : '.$e->getMessage()]);
         }
     }
 
@@ -132,6 +136,7 @@ class ParoisseController extends Controller
     {
         try {
             $paroisse = Paroisse::findOrFail($id);
+
             return view('admin.paroisse.edit', compact('paroisse'));
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->route('admin.paroisses.index')
@@ -143,13 +148,13 @@ class ParoisseController extends Controller
     {
         try {
             $paroisse = Paroisse::findOrFail($id);
-            
+
             // Validation des données
             $validated = $request->validate([
-                'name' => 'required|string|max:255|unique:paroisses,name,' . $paroisse->id,
+                'name' => 'required|string|max:255|unique:paroisses,name,'.$paroisse->id,
                 'commune_id' => 'required|exists:communes,id',
                 'contact' => 'required|string|max:255',
-                'email' => 'required|email|unique:paroisses,email,' . $paroisse->id,
+                'email' => 'required|email|unique:paroisses,email,'.$paroisse->id,
                 'profile_picture' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
             ], [
                 'name.required' => 'Le nom de la paroisse est obligatoire.',
@@ -172,7 +177,7 @@ class ParoisseController extends Controller
                 if ($paroisse->profile_picture && Storage::disk('public')->exists($paroisse->profile_picture)) {
                     Storage::disk('public')->delete($paroisse->profile_picture);
                 }
-                
+
                 // Stocker la nouvelle image
                 $imagePath = $request->file('profile_picture')->store('paroisses/profile_pictures', 'public');
                 $paroisse->profile_picture = $imagePath;
@@ -183,7 +188,7 @@ class ParoisseController extends Controller
             $paroisse->commune_id = $validated['commune_id'];
             $paroisse->contact = $validated['contact'];
             $paroisse->email = $validated['email'];
-            
+
             $paroisse->save();
 
             return redirect()->route('paroisse.index')
@@ -194,21 +199,21 @@ class ParoisseController extends Controller
                 ->with('error', 'Paroisse non trouvée.');
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Une erreur est survenue lors de la mise à jour: ' . $e->getMessage())
+                ->with('error', 'Une erreur est survenue lors de la mise à jour: '.$e->getMessage())
                 ->withInput();
         }
     }
-    
+
     public function destroy($id)
     {
         try {
             $paroisse = Paroisse::findOrFail($id);
-            
+
             // Supprimer l'image de profil si elle existe
             if ($paroisse->profile_picture && Storage::disk('public')->exists($paroisse->profile_picture)) {
                 Storage::disk('public')->delete($paroisse->profile_picture);
             }
-            
+
             $paroisse->delete();
 
             return redirect()->route('paroisse.index')
@@ -219,7 +224,7 @@ class ParoisseController extends Controller
                 ->with('error', 'Paroisse non trouvée.');
         } catch (\Exception $e) {
             return redirect()->route('paroisse.index')
-                ->with('error', 'Une erreur est survenue lors de la suppression: ' . $e->getMessage());
+                ->with('error', 'Une erreur est survenue lors de la suppression: '.$e->getMessage());
         }
     }
 }

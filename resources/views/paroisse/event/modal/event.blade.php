@@ -65,12 +65,12 @@
 
                 <div class="modal-footer">
                     <!-- Bouton Annuler avec icône "close" -->
-                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-light border" style="color: #c5c5c7;" data-bs-dismiss="modal">
                         <i class="material-icons align-middle me-1">cancel</i> Annuler
                     </button>
 
                     <!-- Bouton Sauvegarder avec icône "save" -->
-                    <button type="submit" class="btn btn-dark" id="saveBtn">
+                    <button type="submit" class="btn btn-dark" id="saveBtn" style="color: #c49d54;">
                         <i class="material-icons align-middle me-1">save</i> Créer l'évènement
                     </button>
                 </div>

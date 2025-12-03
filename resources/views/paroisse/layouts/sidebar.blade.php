@@ -47,12 +47,12 @@
                     </a>
                 </div>
                 <!-- Faire un reversement -->
-                <div class="mdc-list-item mdc-drawer-item">
+                {{-- <div class="mdc-list-item mdc-drawer-item">
                     <a class="mdc-drawer-link" href="{{ route('reversement.list_reversement') }}">
                         <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon">compare_arrows</i>
                         Reversement
                     </a>
-                </div>
+                </div> --}}
                 <!-- Menu Déroulant: Messes demandées -->
                 <div class="mdc-list-item mdc-drawer-item">
                     <a class="mdc-expansion-panel-link d-flex align-items-center justify-content-between" href="#"
@@ -87,8 +87,36 @@
                     </div>
                 </div>
 
-                <!-- Menu Déroulant: Paroissien -->
                 <div class="mdc-list-item mdc-drawer-item">
+                    <a class="mdc-expansion-panel-link d-flex align-items-center justify-content-between" href="#"
+                        data-toggle="expansionPanel" data-target="paroissien-menu">
+                        <span class="d-flex align-items-center">
+                            <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon me-2">
+                                account_balance_wallet
+                            </i>
+                            <span>Paroissien</span>
+                        </span>
+                        <i class="mdc-drawer-arrow material-icons">chevron_right</i>
+                    </a>
+
+                    <div class="mdc-expansion-panel" id="paroissien-menu">
+                        <nav class="mdc-list mdc-drawer-submenu">
+                            <div class="mdc-list-item mdc-drawer-item">
+                                <a class="mdc-drawer-link" href="{{ route('paroissien.create') }}">
+                                    Ajoute un paroissien
+                                </a>
+                            </div>
+                            <div class="mdc-list-item mdc-drawer-item">
+                                <a class="mdc-drawer-link" href="{{ route('paroissien.index') }}">
+                                    Liste des paroissien
+                                </a>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Menu Déroulant: Paroissien -->
+                {{-- <div class="mdc-list-item mdc-drawer-item">
                     @php
                         $isParoissienActive = Route::is('paroissien.*');
                     @endphp
@@ -123,7 +151,7 @@
 
                         </nav>
                     </div>
-                </div>
+                </div> --}}
 
                 <!-- Menu Déroulant: Retraits -->
                 <div class="mdc-list-item mdc-drawer-item">

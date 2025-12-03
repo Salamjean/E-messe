@@ -34,6 +34,7 @@ class Paroisse extends Authenticatable
         'name',
         'email',
         'contact',
+        'tel',
         'password',
         'profile_picture',
         'commune_id',
