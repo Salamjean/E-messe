@@ -32,14 +32,13 @@ class ParoissienController extends Controller
 
         // On sélectionne les colonnes nécessaires
         $query->select([
-            // 'id',
+            'id',
             'nom_prenom',
             'telephone',
             'sexe',
             'situation_matrimoniale',
             'nom_paroisse',
-        ])
-            ->distinct();
+        ])->distinct();
 
         return DataTables::of($query)
             ->addColumn('action', function ($row) {
