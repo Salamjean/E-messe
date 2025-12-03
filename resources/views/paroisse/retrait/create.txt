@@ -287,49 +287,16 @@
                                     <option value="wave">Wave</option>
                                     <option value="orange_money">Orange Money</option>
                                     <option value="mtn_money">MTN Money</option>
-                                    <option value="moov_money">Moov Money</option>
                                     <option value="virement_bancaire">Virement Bancaire</option>
                                 </select>
                             </div>
 
-                            <!-- Opérateur Mobile Money (optionnel, pour mobile money seulement) -->
-                            <div id="operateur-container" class="mb-4 d-none">
-                                <label for="payment_method" class="form-label">Opérateur Mobile Money (optionnel)</label>
-                                <select class="form-select form-control-modern" id="payment_method" name="payment_method">
-                                    <option value="">-- Laisser le destinataire choisir --</option>
-                                    <option value="MTN">MTN Mobile Money</option>
-                                    <option value="MOOV">Moov Money</option>
-                                    <option value="ORANGE">Orange Money</option>
-                                    <option value="WAVE">Wave</option>
-                                </select>
-                            </div>
-
-                            <!-- Numéro Mobile Money (avec préfixe) -->
-                            <div id="mobile-money-container" class="mb-4 d-none">
-                                <label class="form-label">Numéro du destinataire <span class="text-danger">*</span></label>
-                                <div class="row g-2">
-                                    <div class="col-4">
-                                        <select class="form-select form-control-modern" id="prefix" name="prefix">
-                                            <option value="225">🇨🇮 +225</option>
-                                            <option value="221">🇸🇳 +221</option>
-                                            <option value="226">🇧🇫 +226</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-8">
-                                        <input type="tel" class="form-control form-control-modern" id="telephone"
-                                            name="telephone" placeholder="0707070707" pattern="[0-9]+">
-                                    </div>
-                                </div>
-                                <small class="text-muted"><i class="fas fa-info-circle"></i> Saisissez le numéro sans
-                                    l'indicatif pays.</small>
-                            </div>
-
-                            <!-- Numéro de compte bancaire (pour virement bancaire) -->
-                            <div id="virement-container" class="mb-4 d-none">
-                                <label for="numero_compte" class="form-label">Numéro de compte bancaire <span
+                            <!-- Numéro de compte/téléphone -->
+                            <div class="mb-4">
+                                <label for="numero_compte" class="form-label">Numéro de compte / Téléphone <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control form-control-modern" id="numero_compte"
-                                    name="numero_compte" placeholder="Entrez le numéro de compte...">
+                                    name="numero_compte" required placeholder="Entrez le numéro...">
                             </div>
 
                             <!-- Nom du titulaire -->
@@ -450,75 +417,26 @@
 
             // Informations selon la méthode de retrait
             const methodInfo = {
-                'wave': '⚡ Les retraits Wave sont traités IMMÉDIATEMENT via notre système de transfert automatique.',
-                'orange_money': '⚡ Les retraits Orange Money sont traités IMMÉDIATEMENT via notre système de transfert automatique.',
-                'mtn_money': '⚡ Les retraits MTN Money sont traités IMMÉDIATEMENT via notre système de transfert automatique.',
-                'moov_money': '⚡ Les retraits Moov Money sont traités IMMÉDIATEMENT via notre système de transfert automatique.',
-                'virement_bancaire': '⏳ Les virements bancaires peuvent prendre 2 à 3 jours ouvrés. Ils nécessitent une validation manuelle de notre équipe.
+                'wave': 'Les retraits via Wave sont traités dans un délai de 24 à 48 heures. Assurez-vous que votre numéro Wave est correct et actif.',
+                'orange_money': 'Les retraits via Orange Money sont traités dans un délai de 24 à 48 heures. Vérifiez que votre numéro est correct et que votre compte est activé.',
+                'mtn_money': 'Les retraits via MTN Money sont traités dans un délai de 24 à 48 heures. Vérifiez que votre numéro est correct et que votre compte est activé.',
+                'virement_bancaire': 'Les virements bancaires peuvent prendre 2 à 3 jours ouvrés. Assurez-vous d\'avoir fourni les bons détails bancaires (nom de la banque, etc.).'
             };
-
-            // Références aux nouveaux conteneurs
-            const mobileMoneyContainer = document.getElementById('mobile-money-container');
-            const virementContainer = document.getElementById('virement-container');
-            const operateurContainer = document.getElementById('operateur-container');
-            const telephoneInput = document.getElementById('telephone');
-            const prefixInput = document.getElementById('prefix');
-            const numeroCompteInput = document.getElementById('numero_compte');
-            const submitBtn = document.querySelector('.btn-soumettre');
 
             // Afficher les informations supplémentaires selon la méthode sélectionnée
             methodeSelect.addEventListener('change', function() {
                 const selectedMethod = this.value;
-                const isMobileMoney = ['wave', 'orange_money', 'mtn_money', 'moov_money'].includes(
-                    selectedMethod);
 
-                // Gérer l'affichage des champs selon le type
-                if (isMobileMoney) {
-                    // Afficher les champs Mobile Money
-                    mobileMoneyContainer.classList.remove('d-none');
-                    operateurContainer.classList.remove('d-none');
-                    telephoneInput.setAttribute('required', 'required');
-                    prefixInput.setAttribute('required', 'required');
-
-                    // Masquer les champs Virement Bancaire
-                    virementContainer.classList.add('d-none');
-                    nomBanqueContainer.classList.add('d-none');
-                    numeroCompteInput.removeAttribute('required');
-                    nomBanqueInput.removeAttribute('required');
-                    numeroCompteInput.value = '';
-                    nomBanqueInput.value = '';
-
-                    // Changer le texte du bouton
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Transférer maintenant';
-                } else if (selectedMethod === 'virement_bancaire') {
-                    // Afficher les champs Virement Bancaire
-                    virementContainer.classList.remove('d-none');
+                // Afficher/masquer le champ nom de la banque
+                if (selectedMethod === 'virement_bancaire') {
                     nomBanqueContainer.classList.remove('d-none');
-                    numeroCompteInput.setAttribute('required', 'required');
                     nomBanqueInput.setAttribute('required', 'required');
-
-                    // Masquer les champs Mobile Money
-                    mobileMoneyContainer.classList.add('d-none');
-                    operateurContainer.classList.add('d-none');
-                    telephoneInput.removeAttribute('required');
-                    prefixInput.removeAttribute('required');
-                    telephoneInput.value = '';
-
-                    // Changer le texte du bouton
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Demander le retrait';
                 } else {
-                    // Aucune méthode sélectionnée, tout masquer
-                    mobileMoneyContainer.classList.add('d-none');
-                    virementContainer.classList.add('d-none');
                     nomBanqueContainer.classList.add('d-none');
-                    operateurContainer.classList.add('d-none');
-                    telephoneInput.removeAttribute('required');
-                    prefixInput.removeAttribute('required');
-                    numeroCompteInput.removeAttribute('required');
                     nomBanqueInput.removeAttribute('required');
+                    nomBanqueInput.value = '';
                 }
 
-                // Afficher l'info selon la méthode
                 if (selectedMethod && methodInfo[selectedMethod]) {
                     infoText.textContent = methodInfo[selectedMethod];
                     additionalInfo.classList.remove('d-none');
@@ -533,8 +451,9 @@
 
                 const montant = parseFloat(document.getElementById('montant').value);
                 const methode = document.getElementById('methode').value;
+                const numeroCompte = document.getElementById('numero_compte').value;
                 const nomTitulaire = document.getElementById('nom_titulaire').value;
-                const isMobileMoney = ['wave', 'orange_money', 'mtn_money', 'moov_money'].includes(methode);
+                const nomBanque = document.getElementById('nom_banque').value;
 
                 // Validation côté client
                 if (!montant || montant < 1000 || montant > {{ $soldeDisponible }}) {
@@ -542,7 +461,7 @@
                         icon: 'error',
                         title: 'Montant invalide',
                         text: 'Le montant doit être entre 1 000 et {{ number_format($soldeDisponible, 0, ',', ' ') }} FCFA',
-                        confirmButtonColor: '#c49d54'
+                        confirmButtonColor: '#f35525'
                     });
                     return;
                 }
@@ -552,48 +471,30 @@
                         icon: 'error',
                         title: 'Méthode manquante',
                         text: 'Veuillez sélectionner une méthode de retrait',
-                        confirmButtonColor: '#c49d54'
+                        confirmButtonColor: '#f35525'
                     });
                     return;
                 }
 
-                // Validation spécifique selon la méthode
-                if (isMobileMoney) {
-                    const telephone = document.getElementById('telephone').value;
-                    const prefix = document.getElementById('prefix').value;
+                // Validation spécifique pour virement bancaire
+                if (methode === 'virement_bancaire' && !nomBanque) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Nom de banque manquant',
+                        text: 'Veuillez saisir le nom de votre banque pour un virement bancaire',
+                        confirmButtonColor: '#f35525'
+                    });
+                    return;
+                }
 
-                    if (!telephone || !prefix) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Numéro manquant',
-                            text: 'Veuillez saisir le numéro de téléphone mobile money',
-                            confirmButtonColor: '#c49d54'
-                        });
-                        return;
-                    }
-                } else if (methode === 'virement_bancaire') {
-                    const numeroCompte = document.getElementById('numero_compte').value;
-                    const nomBanque = document.getElementById('nom_banque').value;
-
-                    if (!numeroCompte) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Numéro de compte manquant',
-                            text: 'Veuillez saisir le numéro de compte bancaire',
-                            confirmButtonColor: '#c49d54'
-                        });
-                        return;
-                    }
-
-                    if (!nomBanque) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Nom de banque manquant',
-                            text: 'Veuillez saisir le nom de votre banque',
-                            confirmButtonColor: '#c49d54'
-                        });
-                        return;
-                    }
+                if (!numeroCompte) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Numéro manquant',
+                        text: 'Veuillez saisir un numéro de compte/téléphone',
+                        confirmButtonColor: '#f35525'
+                    });
+                    return;
                 }
 
                 if (!nomTitulaire) {
@@ -601,7 +502,7 @@
                         icon: 'error',
                         title: 'Nom manquant',
                         text: 'Veuillez saisir le nom du titulaire du compte',
-                        confirmButtonColor: '#c49d54'
+                        confirmButtonColor: '#f35525'
                     });
                     return;
                 }
@@ -611,25 +512,15 @@
                 <div class="text-start">
                     <p>Vous êtes sur le point de demander un retrait de <strong>${montant.toLocaleString('fr-FR')} FCFA</strong></p>
                     <p>Méthode: <strong>${methode.replace('_', ' ')}</strong></p>
+                    <p>Numéro: <strong>${numeroCompte}</strong></p>
+                    <p>Titulaire: <strong>${nomTitulaire}</strong></p>
             `;
 
-                // Ajouter les détails selon la méthode
-                if (isMobileMoney) {
-                    const telephone = document.getElementById('telephone').value;
-                    const prefix = document.getElementById('prefix').value;
-                    confirmationText += `<p>Numéro: <strong>(+${prefix}) ${telephone}</strong></p>`;
-                    confirmationText +=
-                        `<p class="text-warning"><i class="fas fa-bolt"></i> Ce retrait sera traité <strong>IMMÉDIATEMENT</strong></p>`;
-                } else if (methode === 'virement_bancaire') {
-                    const numeroCompte = document.getElementById('numero_compte').value;
-                    const nomBanque = document.getElementById('nom_banque').value;
-                    confirmationText += `<p>Numéro de compte: <strong>${numeroCompte}</strong></p>`;
+                // Ajouter le nom de la banque si c'est un virement bancaire
+                if (methode === 'virement_bancaire') {
                     confirmationText += `<p>Banque: <strong>${nomBanque}</strong></p>`;
-                    confirmationText +=
-                        `<p class="text-info"><i class="fas fa-clock"></i> Ce retrait nécessitera une validation manuelle (2-3 jours)</p>`;
                 }
 
-                confirmationText += `<p>Titulaire: <strong>${nomTitulaire}</strong></p>`;
                 confirmationText += `</div>`;
 
                 // Confirmation avant envoi
@@ -638,7 +529,7 @@
                     html: confirmationText,
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonColor: '#c49d54',
+                    confirmButtonColor: '#f35525',
                     cancelButtonColor: '#6c757d',
                     confirmButtonText: '<i class="fas fa-check me-1"></i> Confirmer',
                     cancelButtonText: '<i class="fas fa-times me-1"></i> Annuler',

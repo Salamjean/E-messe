@@ -80,6 +80,7 @@
                 <th>Adresse</th>
                 <th>Mouvement</th>
                 <th>Baptisé</th>
+                <th>Paroisse Baptême</th>
             </tr>
         </thead>
         <tbody>
@@ -107,6 +108,7 @@
                             <span class="badge-non">Non</span>
                         @endif
                     </td>
+                    <td>{{ $p->nom_paroisse_bapteme }}</td>
                 </tr>
             @empty
                 <tr>

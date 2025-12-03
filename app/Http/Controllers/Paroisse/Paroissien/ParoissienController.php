@@ -27,19 +27,16 @@ class ParoissienController extends Controller
      */
     public function data(Request $request)
     {
-        // On utilise la méthode commune pour appliquer les filtres (Sexe, Situation)
         $query = $this->getFilteredQuery($request);
 
-        // 🔥 On regroupe par les colonnes SANS utiliser id
-        // On récupère UN SEUL id avec MIN(id)
         $query->selectRaw('
-        MIN(id) as id,
-        nom_prenom,
-        telephone,
-        sexe,
-        situation_matrimoniale,
-        nom_paroisse
-    ')
+            MIN(id) as id,
+            nom_prenom,
+            telephone,
+            sexe,
+            situation_matrimoniale,
+            nom_paroisse
+        ')
             ->groupBy([
                 'nom_prenom',
                 'telephone',
@@ -90,6 +87,9 @@ class ParoissienController extends Controller
             'nom_prenom' => 'required|string|max:255',
             'telephone' => 'required|string|max:20',
             'photo' => 'nullable|image|max:2048',
+            'date_bapteme' => 'nullable|date',
+            'nom_paroisse_bapteme' => 'nullable|string|max:255',
+            'nom_mouvement' => 'nullable|string|max:255',
         ]);
 
         $data = $request->except('photo');
@@ -104,6 +104,7 @@ class ParoissienController extends Controller
         }
         if (! $data['est_baptise']) {
             $data['date_bapteme'] = null;
+            $data['nom_paroisse_bapteme'] = null;
         }
 
         // Upload Photo

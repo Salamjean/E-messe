@@ -59,6 +59,7 @@ class ParoissiensExport implements FromQuery, ShouldAutoSize, WithHeadings, With
             $paroissien->nom_mouvement,
             $paroissien->est_baptise ? 'Oui' : 'Non',
             $paroissien->date_bapteme,
+            $paroissien->nom_paroisse_bapteme,
         ];
     }
 
@@ -68,6 +69,7 @@ class ParoissiensExport implements FromQuery, ShouldAutoSize, WithHeadings, With
             'ID', 'Nom & Prénoms', 'Date Naissance', 'Sexe', 'Situation Matrimoniale',
             'Adresse', 'Statut Activité', 'Téléphone',
             'Dans un mouvement ?', 'Nom Mouvement', 'Baptisé ?', 'Date Baptême',
+            'Paroisse Baptême',
         ];
     }
 }

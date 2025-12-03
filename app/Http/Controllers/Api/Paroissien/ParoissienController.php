@@ -26,6 +26,7 @@ class ParoissienController extends Controller
             'nom_mouvement' => 'nullable|required_if:est_dans_mouvement,true|string',
             'est_baptise' => 'nullable|boolean',
             'date_bapteme' => 'nullable|required_if:est_baptise,true|date',
+            'nom_paroisse_bapteme' => 'nullable|required_if:est_baptise,true|string',
             'photo' => 'nullable|image|max:2048',
         ]);
 
@@ -58,6 +59,7 @@ class ParoissienController extends Controller
             }
             if (! $estBaptise) {
                 $data['date_bapteme'] = null;
+                $data['nom_paroisse_bapteme'] = null;
             }
 
             // 3. Gestion de la photo
@@ -150,6 +152,7 @@ class ParoissienController extends Controller
             'est_dans_mouvement' => 'nullable|boolean',
             'nom_mouvement' => 'nullable|required_if:est_dans_mouvement,true|string',
             'est_baptise' => 'nullable|boolean',
+            'nom_paroisse_bapteme' => 'nullable|required_if:est_baptise,true|string',
             'date_bapteme' => 'nullable|required_if:est_baptise,true|date',
             'photo' => 'nullable|image|max:2048',
         ]);
@@ -179,6 +182,7 @@ class ParoissienController extends Controller
             }
             if (! $estBaptise) {
                 $data['date_bapteme'] = null;
+                $data['nom_paroisse_bapteme'] = null;
             }
 
             // 4. Gestion de la photo

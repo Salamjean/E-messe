@@ -30,6 +30,7 @@ return new class extends Migration
             // Logique Baptême
             $table->boolean('est_baptise')->default(false);
             $table->date('date_bapteme')->nullable(); // Si oui
+            $table->string('nom_paroisse_bapteme')->nullable(); // Si oui
 
             $table->string('photo')->nullable(); // Chemin vers la photo
             $table->timestamps();

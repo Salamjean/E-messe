@@ -83,13 +83,23 @@
                         <div class="col-md-6 mb-3">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="switchBapteme" name="est_baptise">
-                                <label class="form-check-label" for="switchBapteme">Etes-vous baptisé ?</label>
+                                <label class="form-check-label" for="switchBapteme">Êtes-vous baptisé ?</label>
                             </div>
-                            <div class="mt-2 d-none" id="divBapteme">
-                                <label>Date de Baptême</label>
-                                <input type="date" name="date_bapteme" class="form-control">
+
+                            <div class="col-md-12 mt-2 d-none" id="divBapteme">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label>Date de Baptême</label>
+                                        <input type="date" name="date_bapteme" class="form-control mt-1">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label>Nom de la paroisse</label>
+                                        <input type="text" name="nom_paroisse_bapteme" class="form-control mt-1">
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
 
                         <div class="col-md-12 mb-3">
                             <label>Photo</label>
@@ -98,9 +108,11 @@
                     </div>
                     <input type="hidden" name="nom_paroisse" value="{{ $nom_paroisse }}">
                     <div class="d-flex justify-content-between">
-                        <a href="{{ route('paroissien.index') }}" class="btn btn-secondary"><i
-                                class="fas fa-arrow-left"></i> Retour</a>
-                        <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Enregistrer</button>
+                        <a href="{{ route('paroissien.index') }}" class="btn btn-secondary"
+                            style="background-color: #d9d9d9;  border: none;"><i class="fas fa-arrow-left"></i> Retour</a>
+                        <button type="submit" class="btn btn-success" style="background-color: #c49d54; border: none;"><i
+                                class="fas fa-save"></i>
+                            Enregistrer</button>
                     </div>
                 </form>
             </div>
@@ -108,7 +120,6 @@
     </div>
 
     <script>
-        // Logique JS simple pour afficher/cacher les champs
         document.getElementById('switchMouvement').addEventListener('change', function() {
             document.getElementById('divMouvement').classList.toggle('d-none', !this.checked);
         });

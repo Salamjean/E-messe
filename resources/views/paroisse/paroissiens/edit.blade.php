@@ -125,9 +125,13 @@
 
                             <div class="mt-2 {{ old('est_baptise', $paroissien->est_baptise) ? '' : 'd-none' }}"
                                 id="divBapteme">
+
                                 <label>Date de Baptême</label>
                                 <input type="date" name="date_bapteme" class="form-control"
                                     value="{{ old('date_bapteme', optional($paroissien->date_bapteme)->format('Y-m-d')) }}">
+                                <label>Nom de la paroisse</label>
+                                <input type="text" name="nom_paroisse_bapteme" class="form-control"
+                                    value="{{ old('nom_paroisse_bapteme', $paroissien->nom_paroisse_bapteme) }}">
                             </div>
                         </div>
 

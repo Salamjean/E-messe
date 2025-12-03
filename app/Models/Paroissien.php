@@ -24,6 +24,7 @@ class Paroissien extends Model
         'date_bapteme',
         'photo',
         'user_id',
+        'nom_paroisse_bapteme',
     ];
 
     protected $casts = [
