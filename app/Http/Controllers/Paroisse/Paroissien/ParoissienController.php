@@ -30,17 +30,17 @@ class ParoissienController extends Controller
         // On utilise la méthode commune pour appliquer les filtres (Sexe, Situation)
         $query = $this->getFilteredQuery($request);
 
-        // 🔥 On group par les colonnes pour éviter les doublons
-        $query->select([
-            'id',
-            'nom_prenom',
-            'telephone',
-            'sexe',
-            'situation_matrimoniale',
-            'nom_paroisse',
-        ])
+        // 🔥 On regroupe par les colonnes SANS utiliser id
+        // On récupère UN SEUL id avec MIN(id)
+        $query->selectRaw('
+        MIN(id) as id,
+        nom_prenom,
+        telephone,
+        sexe,
+        situation_matrimoniale,
+        nom_paroisse
+    ')
             ->groupBy([
-                'id',
                 'nom_prenom',
                 'telephone',
                 'sexe',
