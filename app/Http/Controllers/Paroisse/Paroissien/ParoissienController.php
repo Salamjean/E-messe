@@ -30,7 +30,7 @@ class ParoissienController extends Controller
         // On utilise la méthode commune pour appliquer les filtres (Sexe, Situation)
         $query = $this->getFilteredQuery($request);
 
-        // On sélectionne les colonnes nécessaires
+        // 🔥 On group par les colonnes pour éviter les doublons
         $query->select([
             'id',
             'nom_prenom',
@@ -38,7 +38,14 @@ class ParoissienController extends Controller
             'sexe',
             'situation_matrimoniale',
             'nom_paroisse',
-        ])->distinct();
+        ])
+            ->groupBy([
+                'nom_prenom',
+                'telephone',
+                'sexe',
+                'situation_matrimoniale',
+                'nom_paroisse',
+            ]);
 
         return DataTables::of($query)
             ->addColumn('action', function ($row) {
@@ -49,20 +56,20 @@ class ParoissienController extends Controller
                 $method = method_field('DELETE');
 
                 return "
-                    <div class='btn-group'>
-                        <a href='{$showUrl}' class='btn btn-info btn-sm me-1' title='Voir'>
-                            <i class='fa fa-eye'></i>
-                        </a>
-                        <a href='{$editUrl}' class='btn btn-warning btn-sm me-1' title='Modifier'>
-                            <i class='fa fa-edit'></i>
-                        </a>
-                        <form action='{$deleteUrl}' method='POST' style='display:inline;' onsubmit='return confirm(\"Êtes-vous sûr de vouloir supprimer ce fidèle ?\")'>
-                            {$csrf} {$method}
-                            <button type='submit' class='btn btn-danger btn-sm' title='Supprimer'>
-                                <i class='fa fa-trash'></i>
-                            </button>
-                        </form>
-                    </div>";
+                <div class='btn-group'>
+                    <a href='{$showUrl}' class='btn btn-info btn-sm me-1' title='Voir'>
+                        <i class='fa fa-eye'></i>
+                    </a>
+                    <a href='{$editUrl}' class='btn btn-warning btn-sm me-1' title='Modifier'>
+                        <i class='fa fa-edit'></i>
+                    </a>
+                    <form action='{$deleteUrl}' method='POST' style='display:inline;' onsubmit='return confirm(\"Êtes-vous sûr de vouloir supprimer ce fidèle ?\")'>
+                        {$csrf} {$method}
+                        <button type='submit' class='btn btn-danger btn-sm' title='Supprimer'>
+                            <i class='fa fa-trash'></i>
+                        </button>
+                    </form>
+                </div>";
             })
             ->rawColumns(['action'])
             ->make(true);
