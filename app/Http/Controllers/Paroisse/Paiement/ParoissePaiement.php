@@ -159,7 +159,7 @@ class ParoissePaiement extends Controller
 
             $loginResult = $loginResponse->json();
 
-            if (!$loginResponse->successful() || !isset($loginResult['data']['token'])) {
+            if (! $loginResponse->successful() || ! isset($loginResult['data']['token'])) {
                 Log::error('CinetPay Login Error', ['response' => $loginResult]);
                 $reversement->update(['statut' => 'failed']);
 
@@ -182,7 +182,7 @@ class ParoissePaiement extends Controller
             ];
 
             // Ajouter le payment_method si fourni
-            if ($request->has('payment_method') && !empty($request->payment_method)) {
+            if ($request->has('payment_method') && ! empty($request->payment_method)) {
                 $payload['payment_method'] = $request->payment_method;
             }
 

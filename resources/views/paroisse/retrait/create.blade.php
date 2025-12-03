@@ -1,9 +1,14 @@
 @extends('paroisse.layouts.template')
+
 @section('content')
+    <!-- JQuery (Indispensable pour ce code) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- Liens CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Ajout de SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
     <style>
         :root {
             --primary: #c49d54;
@@ -197,6 +202,24 @@
             color: white;
         }
 
+        /* Spinner pour le bouton */
+        .spinner-loading {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            vertical-align: text-bottom;
+            border: .2em solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spinner-border .75s linear infinite;
+        }
+
+        @keyframes spinner-border {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
         .method-badge {
             display: inline-block;
             background: rgba(243, 85, 37, 0.1);
@@ -239,13 +262,14 @@
                 <p>Gérez vos retraits de fonds, {{ Auth::guard('paroisse')->user()->name }}!</p>
             </div>
             <div class="user-profile">
-                <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('paroisse')->user()->name) }}"
+                <!-- Fallback pour l'image si nécessaire -->
+                <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('paroisse')->user()->name) }}&background=random"
                     alt="Profile">
             </div>
         </div>
 
         <div class="row">
-            <div class="col-lg-8">
+            <div class="col-lg-7">
                 <!-- Carte de formulaire -->
                 <div class="card-modern">
                     <div class="card-header-modern">
@@ -259,22 +283,25 @@
                             </div>
                             <div class="solde-info">
                                 <h3>Solde disponible</h3>
-                                <p class="montant">{{ number_format($soldeDisponible, 0, ',', ' ') }} FCFA</p>
+                                <p class="montant">{{ number_format($soldeDisponible ?? 0, 0, ',', ' ') }} FCFA</p>
                                 <p class="texte">Montant maximum que vous pouvez retirer</p>
                             </div>
                         </div>
 
                         <!-- Formulaire de retrait -->
-                        <form id="retraitForm" method="POST" action="{{ route('paroisse.retrait.request') }}">
+                        <!-- Note: L'action est gérée via Javascript, mais on garde une valeur par défaut -->
+                        <form id="retraitForm">
                             @csrf
 
-                            <!-- Montant à retirer -->
+                            <!-- Montant à retirer (Commun) -->
                             <div class="mb-4">
                                 <label for="montant" class="form-label">Montant à retirer (FCFA) <span
                                         class="text-danger">*</span></label>
-                                <input type="number" class="form-control form-control-modern" id="montant" name="montant"
-                                    required min="1000" max="{{ $soldeDisponible }}"
-                                    placeholder="Entrez le montant que vous souhaitez retirer">
+                                <div class="input-group">
+                                    <input type="number" class="form-control form-control-modern" id="montant"
+                                        name="montant" required min="1000" max="{{ $soldeDisponible ?? 0 }}"
+                                        placeholder="Ex: 5000">
+                                </div>
                                 <div class="form-text text-muted mt-2">Le montant minimum de retrait est de 1 000 FCFA</div>
                             </div>
 
@@ -283,7 +310,7 @@
                                 <label for="methode" class="form-label">Méthode de retrait <span
                                         class="text-danger">*</span></label>
                                 <select class="form-select form-control-modern" id="methode" name="methode" required>
-                                    <option value="">Sélectionnez une méthode de retrait</option>
+                                    <option value="">-- Sélectionnez une méthode --</option>
                                     <option value="wave">Wave</option>
                                     <option value="orange_money">Orange Money</option>
                                     <option value="mtn_money">MTN Money</option>
@@ -292,75 +319,71 @@
                                 </select>
                             </div>
 
-                            <!-- Opérateur Mobile Money (optionnel, pour mobile money seulement) -->
-                            <div id="operateur-container" class="mb-4 d-none">
-                                <label for="payment_method" class="form-label">Opérateur Mobile Money (optionnel)</label>
-                                <select class="form-select form-control-modern" id="payment_method" name="payment_method">
-                                    <option value="">-- Laisser le destinataire choisir --</option>
-                                    <option value="MTN">MTN Mobile Money</option>
-                                    <option value="MOOV">Moov Money</option>
-                                    <option value="ORANGE">Orange Money</option>
-                                    <option value="WAVE">Wave</option>
-                                </select>
-                            </div>
-
-                            <!-- Numéro Mobile Money (avec préfixe) -->
-                            <div id="mobile-money-container" class="mb-4 d-none">
-                                <label class="form-label">Numéro du destinataire <span class="text-danger">*</span></label>
-                                <div class="row g-2">
+                            <!-- SECTION MOBILE MONEY (Visible uniquement si Wave, Orange, MTN, Moov) -->
+                            <div id="section-mobile-money" class="animate-section">
+                                <div class="row mb-4">
+                                    <label class="form-label">Numéro du destinataire <span
+                                            class="text-danger">*</span></label>
                                     <div class="col-4">
-                                        <select class="form-select form-control-modern" id="prefix" name="prefix">
+                                        <select class="form-select form-control-modern mobile-input" name="prefix"
+                                            id="prefix">
                                             <option value="225">🇨🇮 +225</option>
-                                            <option value="221">🇸🇳 +221</option>
-                                            <option value="226">🇧🇫 +226</option>
                                         </select>
                                     </div>
                                     <div class="col-8">
-                                        <input type="tel" class="form-control form-control-modern" id="telephone"
-                                            name="telephone" placeholder="0707070707" pattern="[0-9]+">
+                                        <input type="tel" class="form-control form-control-modern mobile-input"
+                                            name="telephone" id="telephone" placeholder="0707070707" pattern="[0-9]+">
+                                    </div>
+                                    <div class="col-12 mt-2">
+                                        <small class="text-muted"><i class="fas fa-info-circle"></i> Saisissez le numéro
+                                            sans l'indicatif pays.</small>
                                     </div>
                                 </div>
-                                <small class="text-muted"><i class="fas fa-info-circle"></i> Saisissez le numéro sans
-                                    l'indicatif pays.</small>
                             </div>
 
-                            <!-- Numéro de compte bancaire (pour virement bancaire) -->
-                            <div id="virement-container" class="mb-4 d-none">
-                                <label for="numero_compte" class="form-label">Numéro de compte bancaire <span
-                                        class="text-danger">*</span></label>
-                                <input type="text" class="form-control form-control-modern" id="numero_compte"
-                                    name="numero_compte" placeholder="Entrez le numéro de compte...">
+                            <!-- SECTION VIREMENT BANCAIRE (Visible uniquement si Virement Bancaire) -->
+                            <div id="section-banque" class="d-none animate-section">
+                                <!-- Nom de la banque -->
+                                <div class="mb-4">
+                                    <label for="nom_banque" class="form-label">Nom de la banque <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" class="form-control form-control-modern banque-input"
+                                        id="nom_banque" name="nom_banque" placeholder="Ex: Ecobank, NSIA, etc.">
+                                </div>
+
+                                <!-- Numéro de compte / IBAN -->
+                                <div class="mb-4">
+                                    <label for="numero_compte" class="form-label">Numéro de compte / RIB <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" class="form-control form-control-modern banque-input"
+                                        id="numero_compte" name="numero_compte"
+                                        placeholder="Entrez le numéro de compte complet">
+                                </div>
+
+                                <!-- Nom du titulaire -->
+                                <div class="mb-4">
+                                    <label for="nom_titulaire" class="form-label">Nom du titulaire du compte <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" class="form-control form-control-modern banque-input"
+                                        id="nom_titulaire" name="nom_titulaire" placeholder="Nom et Prénoms du titulaire">
+                                </div>
                             </div>
 
-                            <!-- Nom du titulaire -->
-                            <div class="mb-4">
-                                <label for="nom_titulaire" class="form-label">Nom du titulaire du compte <span
-                                        class="text-danger">*</span></label>
-                                <input type="text" class="form-control form-control-modern" id="nom_titulaire"
-                                    name="nom_titulaire" required placeholder="Veuillez entrez votre nom...">
-                            </div>
-
-                            <!-- Nom de la banque (conditionnel) -->
-                            <div id="nom-banque-container" class="mb-4 d-none">
-                                <label for="nom_banque" class="form-label">Nom de la banque <span
-                                        class="text-danger">*</span></label>
-                                <input type="text" class="form-control form-control-modern" id="nom_banque"
-                                    name="nom_banque" placeholder="Entrez le nom de votre banque...">
-                            </div>
-
-                            <!-- Informations supplémentaires selon la méthode -->
+                            <!-- Informations dynamiques -->
                             <div id="additional-info" class="info-additionnelle d-none">
                                 <h6><i class="fas fa-info-circle me-1"></i> Informations importantes</h6>
                                 <p id="info-text" class="mb-0 small"></p>
                             </div>
 
-                            <!-- Boutons d'action -->
+                            <!-- Boutons -->
                             <div class="d-flex gap-3 justify-content-end mt-4">
                                 <a href="{{ url()->previous() }}" class="btn btn-retour">
                                     <i class="fas fa-arrow-left me-1"></i> Retour
                                 </a>
-                                <button type="submit" class="btn btn-soumettre">
-                                    <i class="fas fa-paper-plane me-1"></i> Demander le retrait
+                                <button type="submit" class="btn btn-soumettre" id="btn-submit">
+                                    <span class="btn-text"><i class="fas fa-paper-plane me-1"></i> Demander le
+                                        retrait</span>
+                                    <span class="spinner-loading d-none"></span>
                                 </button>
                             </div>
                         </form>
@@ -368,307 +391,254 @@
                 </div>
             </div>
 
-            <div class="col-lg-4">
+            <div class="col-lg-5">
                 <!-- Carte d'informations -->
-                <div class="card-modern">
+                <div class="card-modern mb-4">
                     <div class="card-header-modern">
                         <i class="fas fa-lightbulb me-2"></i>Informations importantes
                     </div>
                     <div class="card-body-modern">
-                        <div class="d-flex align-items-start mb-3">
-                            <div class="me-3 text-primary">
-                                <i class="fas fa-clock fa-lg"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-1">Délais de traitement</h6>
-                                <p class="small mb-0">Les retraits sont traités sous 24 à 48 heures ouvrées.</p>
-                            </div>
-                        </div>
+                        @php
+                            $infos = [
+                                [
+                                    'icon' => 'fa-clock',
+                                    'title' => 'Délais de traitement',
+                                    'text' => 'Les retraits sont traités sous 24 à 48 heures ouvrées.',
+                                ],
+                                [
+                                    'icon' => 'fa-exclamation-circle',
+                                    'title' => 'Vérification des informations',
+                                    'text' =>
+                                        'Assurez-vous que vos coordonnées sont correctes pour éviter tout retard.',
+                                ],
+                                [
+                                    'icon' => 'fa-shield-alt',
+                                    'title' => 'Sécurité',
+                                    'text' => 'Toutes vos transactions sont cryptées et sécurisées.',
+                                ],
+                            ];
 
-                        <div class="d-flex align-items-start mb-3">
-                            <div class="me-3 text-primary">
-                                <i class="fas fa-exclamation-circle fa-lg"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-1">Vérification des informations</h6>
-                                <p class="small mb-0">Assurez-vous que vos coordonnées sont correctes pour éviter tout
-                                    retard.</p>
-                            </div>
-                        </div>
+                            $methods = ['Wave', 'Orange Money', 'MTN Money', 'Virement Bancaire'];
+                        @endphp
 
-                        <div class="d-flex align-items-start">
-                            <div class="me-3 text-primary">
-                                <i class="fas fa-shield-alt fa-lg"></i>
+                        @foreach ($infos as $info)
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="me-3 text-primary">
+                                    <i class="fas {{ $info['icon'] }} fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">{{ $info['title'] }}</h6>
+                                    <p class="small mb-0">{{ $info['text'] }}</p>
+                                </div>
                             </div>
-                            <div>
-                                <h6 class="mb-1">Sécurité</h6>
-                                <p class="small mb-0">Toutes vos transactions sont cryptées et sécurisées.</p>
-                            </div>
-                        </div>
+                        @endforeach
 
                         <hr>
 
                         <h6 class="mb-3">Méthodes disponibles</h6>
                         <div class="d-flex flex-wrap gap-2">
-                            <span class="method-badge">Wave</span>
-                            <span class="method-badge">Orange Money</span>
-                            <span class="method-badge">MTN Money</span>
-                            <span class="method-badge">Virement Bancaire</span>
+                            @foreach ($methods as $method)
+                                <span class="method-badge">{{ $method }}</span>
+                            @endforeach
                         </div>
                     </div>
                 </div>
 
                 <!-- Carte de contact -->
-                <div class="card-modern mt-4">
+                <div class="card-modern">
                     <div class="card-header-modern">
                         <i class="fas fa-headset me-2"></i>Besoin d'aide?
                     </div>
                     <div class="card-body-modern">
-                        <p class="small">Si vous rencontrez des difficultés avec votre demande de retrait, contactez notre
-                            support.</p>
+                        <p class="small">
+                            Si vous rencontrez des difficultés avec votre demande de retrait, contactez notre support.
+                        </p>
                         <div class="d-grid">
                             <a href="#" class="btn btn-outline-primary">
-                                <i class="fas fa-phone me-1"></i>+225 {{ Auth::guard('paroisse')->user()->contact }}
+                                <i class="fas fa-phone me-1"></i>+225
+                                {{ Auth::guard('paroisse')->user()->contact ?? '00000000' }}
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 
-    <!-- Ajout de SweetAlert2 JS -->
+    <!-- Script JS / jQuery / AJAX -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('retraitForm');
-            const methodeSelect = document.getElementById('methode');
-            const additionalInfo = document.getElementById('additional-info');
-            const infoText = document.getElementById('info-text');
-            const nomBanqueContainer = document.getElementById('nom-banque-container');
-            const nomBanqueInput = document.getElementById('nom_banque');
-
-            // Informations selon la méthode de retrait
-            const methodInfo = {
-                'wave': '⚡ Les retraits Wave sont traités IMMÉDIATEMENT via notre système de transfert automatique.',
-                'orange_money': '⚡ Les retraits Orange Money sont traités IMMÉDIATEMENT via notre système de transfert automatique.',
-                'mtn_money': '⚡ Les retraits MTN Money sont traités IMMÉDIATEMENT via notre système de transfert automatique.',
-                'moov_money': '⚡ Les retraits Moov Money sont traités IMMÉDIATEMENT via notre système de transfert automatique.',
-                'virement_bancaire': '⏳ Les virements bancaires peuvent prendre 2 à 3 jours ouvrés. Ils nécessitent une validation manuelle de notre équipe.
-            };
-
-            // Références aux nouveaux conteneurs
-            const mobileMoneyContainer = document.getElementById('mobile-money-container');
-            const virementContainer = document.getElementById('virement-container');
-            const operateurContainer = document.getElementById('operateur-container');
-            const telephoneInput = document.getElementById('telephone');
-            const prefixInput = document.getElementById('prefix');
-            const numeroCompteInput = document.getElementById('numero_compte');
-            const submitBtn = document.querySelector('.btn-soumettre');
-
-            // Afficher les informations supplémentaires selon la méthode sélectionnée
-            methodeSelect.addEventListener('change', function() {
-                const selectedMethod = this.value;
-                const isMobileMoney = ['wave', 'orange_money', 'mtn_money', 'moov_money'].includes(
-                    selectedMethod);
-
-                // Gérer l'affichage des champs selon le type
-                if (isMobileMoney) {
-                    // Afficher les champs Mobile Money
-                    mobileMoneyContainer.classList.remove('d-none');
-                    operateurContainer.classList.remove('d-none');
-                    telephoneInput.setAttribute('required', 'required');
-                    prefixInput.setAttribute('required', 'required');
-
-                    // Masquer les champs Virement Bancaire
-                    virementContainer.classList.add('d-none');
-                    nomBanqueContainer.classList.add('d-none');
-                    numeroCompteInput.removeAttribute('required');
-                    nomBanqueInput.removeAttribute('required');
-                    numeroCompteInput.value = '';
-                    nomBanqueInput.value = '';
-
-                    // Changer le texte du bouton
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Transférer maintenant';
-                } else if (selectedMethod === 'virement_bancaire') {
-                    // Afficher les champs Virement Bancaire
-                    virementContainer.classList.remove('d-none');
-                    nomBanqueContainer.classList.remove('d-none');
-                    numeroCompteInput.setAttribute('required', 'required');
-                    nomBanqueInput.setAttribute('required', 'required');
-
-                    // Masquer les champs Mobile Money
-                    mobileMoneyContainer.classList.add('d-none');
-                    operateurContainer.classList.add('d-none');
-                    telephoneInput.removeAttribute('required');
-                    prefixInput.removeAttribute('required');
-                    telephoneInput.value = '';
-
-                    // Changer le texte du bouton
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Demander le retrait';
-                } else {
-                    // Aucune méthode sélectionnée, tout masquer
-                    mobileMoneyContainer.classList.add('d-none');
-                    virementContainer.classList.add('d-none');
-                    nomBanqueContainer.classList.add('d-none');
-                    operateurContainer.classList.add('d-none');
-                    telephoneInput.removeAttribute('required');
-                    prefixInput.removeAttribute('required');
-                    numeroCompteInput.removeAttribute('required');
-                    nomBanqueInput.removeAttribute('required');
-                }
-
-                // Afficher l'info selon la méthode
-                if (selectedMethod && methodInfo[selectedMethod]) {
-                    infoText.textContent = methodInfo[selectedMethod];
-                    additionalInfo.classList.remove('d-none');
-                } else {
-                    additionalInfo.classList.add('d-none');
+        $(document).ready(function() {
+            // Configuration CSRF pour AJAX
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('input[name="_token"]').val()
                 }
             });
 
-            // Validation du formulaire
-            form.addEventListener('submit', function(e) {
+            // ==========================================
+            // DEFINITION DES ROUTES ET DONNEES
+            // ==========================================
+            const soldeDisponible = {{ $soldeDisponible ?? 0 }};
+
+            // Les deux routes demandées
+            const routeVirement = "{{ route('paroisse.retrait.request') }}";
+            const routeMobileMoney = "{{ route('reversement.store') }}";
+
+            const mobileMethods = ['wave', 'orange_money', 'mtn_money', 'moov_money'];
+            const methodInfo = {
+                'wave': 'Retrait Wave : Vérifiez que votre compte est actif (plafond max).',
+                'orange_money': 'Retrait Orange Money : Assurez-vous d\'avoir activé votre compte.',
+                'mtn_money': 'Retrait MTN Money : Compte vérifié requis.',
+                'moov_money': 'Retrait Moov Money : Compte vérifié requis.',
+                'virement_bancaire': 'Virement : Le nom du titulaire doit correspondre à votre compte paroissial.'
+            };
+
+            // ==========================================
+            // GESTION DE L'AFFICHAGE DU FORMULAIRE
+            // ==========================================
+            $('#methode').on('change', function() {
+                const selectedMethod = $(this).val();
+
+                // 1. Réinitialisation
+                $('#section-mobile-money, #section-banque, #additional-info').addClass('d-none');
+                $('.mobile-input, .banque-input').prop('required', false);
+
+                // 2. Logique d'affichage
+                if (mobileMethods.includes(selectedMethod)) {
+                    $('#section-mobile-money').removeClass('d-none');
+                    $('.mobile-input').prop('required', true);
+                } else if (selectedMethod === 'virement_bancaire') {
+                    $('#section-banque').removeClass('d-none');
+                    $('.banque-input').prop('required', true);
+                }
+
+                // 3. Texte d'information
+                if (selectedMethod && methodInfo[selectedMethod]) {
+                    $('#info-text').text(methodInfo[selectedMethod]);
+                    $('#additional-info').removeClass('d-none');
+                }
+            });
+
+            // ==========================================
+            // SOUMISSION DU FORMULAIRE
+            // ==========================================
+            $('#retraitForm').on('submit', function(e) {
                 e.preventDefault();
 
-                const montant = parseFloat(document.getElementById('montant').value);
-                const methode = document.getElementById('methode').value;
-                const nomTitulaire = document.getElementById('nom_titulaire').value;
-                const isMobileMoney = ['wave', 'orange_money', 'mtn_money', 'moov_money'].includes(methode);
+                const $form = $(this);
+                const $btn = $('#btn-submit');
+                const $spinner = $btn.find('.spinner-loading');
+                const $btnText = $btn.find('.btn-text');
 
-                // Validation côté client
-                if (!montant || montant < 1000 || montant > {{ $soldeDisponible }}) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Montant invalide',
-                        text: 'Le montant doit être entre 1 000 et {{ number_format($soldeDisponible, 0, ',', ' ') }} FCFA',
-                        confirmButtonColor: '#c49d54'
-                    });
-                    return;
-                }
+                // Récupération des valeurs
+                const montant = parseFloat($('#montant').val());
+                const methode = $('#methode').val();
 
-                if (!methode) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Méthode manquante',
-                        text: 'Veuillez sélectionner une méthode de retrait',
-                        confirmButtonColor: '#c49d54'
-                    });
-                    return;
-                }
-
-                // Validation spécifique selon la méthode
-                if (isMobileMoney) {
-                    const telephone = document.getElementById('telephone').value;
-                    const prefix = document.getElementById('prefix').value;
-
-                    if (!telephone || !prefix) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Numéro manquant',
-                            text: 'Veuillez saisir le numéro de téléphone mobile money',
-                            confirmButtonColor: '#c49d54'
-                        });
-                        return;
-                    }
+                // LOGIQUE DE ROUTAGE (La partie demandée)
+                let targetUrl = '';
+                if (mobileMethods.includes(methode)) {
+                    // Si Wave, OM, MTN, Moov -> route reversement.store
+                    targetUrl = routeMobileMoney;
                 } else if (methode === 'virement_bancaire') {
-                    const numeroCompte = document.getElementById('numero_compte').value;
-                    const nomBanque = document.getElementById('nom_banque').value;
-
-                    if (!numeroCompte) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Numéro de compte manquant',
-                            text: 'Veuillez saisir le numéro de compte bancaire',
-                            confirmButtonColor: '#c49d54'
-                        });
-                        return;
-                    }
-
-                    if (!nomBanque) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Nom de banque manquant',
-                            text: 'Veuillez saisir le nom de votre banque',
-                            confirmButtonColor: '#c49d54'
-                        });
-                        return;
-                    }
+                    // Si Virement -> route paroisse.retrait.request
+                    targetUrl = routeVirement;
+                } else {
+                    Swal.fire('Erreur', 'Veuillez sélectionner une méthode de paiement.', 'warning');
+                    return;
                 }
 
-                if (!nomTitulaire) {
+                // Validation Frontend Basique
+                if (montant < 1000 || montant > soldeDisponible) {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Nom manquant',
-                        text: 'Veuillez saisir le nom du titulaire du compte',
+                        title: 'Montant incorrect',
+                        text: 'Le montant doit être compris entre 1 000 et ' + soldeDisponible
+                            .toLocaleString() + ' FCFA.',
                         confirmButtonColor: '#c49d54'
                     });
                     return;
                 }
 
-                // Préparer le texte de confirmation
-                let confirmationText = `
-                <div class="text-start">
-                    <p>Vous êtes sur le point de demander un retrait de <strong>${montant.toLocaleString('fr-FR')} FCFA</strong></p>
-                    <p>Méthode: <strong>${methode.replace('_', ' ')}</strong></p>
-            `;
+                // Construction du résumé pour la confirmation
+                let detailsHtml = `<div class="text-start fs-6 mt-3">
+                    <p class="mb-1"><strong>Montant :</strong> <span class="text-primary">${montant.toLocaleString()} FCFA</span></p>
+                    <p class="mb-1"><strong>Méthode :</strong> ${methode.replace('_', ' ').toUpperCase()}</p>`;
 
-                // Ajouter les détails selon la méthode
-                if (isMobileMoney) {
-                    const telephone = document.getElementById('telephone').value;
-                    const prefix = document.getElementById('prefix').value;
-                    confirmationText += `<p>Numéro: <strong>(+${prefix}) ${telephone}</strong></p>`;
-                    confirmationText +=
-                        `<p class="text-warning"><i class="fas fa-bolt"></i> Ce retrait sera traité <strong>IMMÉDIATEMENT</strong></p>`;
+                if (mobileMethods.includes(methode)) {
+                    detailsHtml +=
+                        `<p class="mb-1"><strong>Numéro :</strong> (+${$('#prefix').val()}) ${$('#telephone').val()}</p>`;
                 } else if (methode === 'virement_bancaire') {
-                    const numeroCompte = document.getElementById('numero_compte').value;
-                    const nomBanque = document.getElementById('nom_banque').value;
-                    confirmationText += `<p>Numéro de compte: <strong>${numeroCompte}</strong></p>`;
-                    confirmationText += `<p>Banque: <strong>${nomBanque}</strong></p>`;
-                    confirmationText +=
-                        `<p class="text-info"><i class="fas fa-clock"></i> Ce retrait nécessitera une validation manuelle (2-3 jours)</p>`;
+                    detailsHtml += `<p class="mb-1"><strong>Banque :</strong> ${$('#nom_banque').val()}</p>
+                                    <p class="mb-1"><strong>Compte :</strong> ${$('#numero_compte').val()}</p>`;
                 }
+                detailsHtml += `</div>`;
 
-                confirmationText += `<p>Titulaire: <strong>${nomTitulaire}</strong></p>`;
-                confirmationText += `</div>`;
-
-                // Confirmation avant envoi
+                // Confirmation SweetAlert
                 Swal.fire({
                     title: 'Confirmer la demande',
-                    html: confirmationText,
+                    html: detailsHtml,
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#c49d54',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: '<i class="fas fa-check me-1"></i> Confirmer',
-                    cancelButtonText: '<i class="fas fa-times me-1"></i> Annuler',
+                    confirmButtonText: 'Oui, envoyer',
+                    cancelButtonText: 'Annuler',
                     reverseButtons: true
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Soumettre le formulaire
-                        form.submit();
+                        // Début de l'appel AJAX
+                        $btn.prop('disabled', true);
+                        $btnText.addClass('d-none');
+                        $spinner.removeClass('d-none');
+
+                        $.ajax({
+                            url: targetUrl, // Utilisation de l'URL dynamique
+                            type: 'POST',
+                            data: $form.serialize(),
+                            dataType: 'json',
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Succès !',
+                                    text: response.message ||
+                                        'Opération effectuée avec succès.',
+                                    confirmButtonColor: '#c49d54'
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                                $form[0].reset();
+                            },
+                            error: function(xhr) {
+                                let errorMessage =
+                                    "Une erreur est survenue lors du traitement.";
+
+                                if (xhr.responseJSON) {
+                                    if (xhr.responseJSON.errors) {
+                                        errorMessage = Object.values(xhr.responseJSON
+                                            .errors).flat().join('<br>');
+                                    } else if (xhr.responseJSON.message) {
+                                        errorMessage = xhr.responseJSON.message;
+                                    }
+                                }
+
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Erreur',
+                                    html: errorMessage,
+                                    confirmButtonColor: '#c49d54'
+                                });
+                            },
+                            complete: function() {
+                                $btn.prop('disabled', false);
+                                $spinner.addClass('d-none');
+                                $btnText.removeClass('d-none');
+                            }
+                        });
                     }
                 });
             });
-
-            // Gérer les messages de session (succès/erreur)
-            @if (session('success'))
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Succès!',
-                    text: '{{ session('success') }}',
-                    confirmButtonColor: '#f35525'
-                });
-            @endif
-
-            @if (session('error'))
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erreur!',
-                    text: '{{ session('error') }}',
-                    confirmButtonColor: '#f35525'
-                });
-            @endif
         });
     </script>
 @endsection

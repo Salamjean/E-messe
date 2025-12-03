@@ -134,7 +134,7 @@ Route::middleware('paroisse')->prefix('parish')->group(function () {
 
     // retraits
     Route::post('/retrait/request', [ParoissePaiement::class, 'requestRetrait'])->name('paroisse.retrait.request');
-    Route::get('/request/create', [ParoissePaiement::class, 'create'])->name('paroisse.retrait.create');
+    Route::get('/request/created_retrait', [ParoissePaiement::class, 'create'])->name('paroisse.retrait.create');
     Route::get('/retraits', [ParoissePaiement::class, 'index'])->name('paroisse.retraits');
     Route::get('/historye', [ParoissePaiement::class, 'history'])->name('paroisse.history');
     Route::delete('/retrait/{id}/annuler', [ParoissePaiement::class, 'annuler'])->name('paroisse.retrait.annuler');
