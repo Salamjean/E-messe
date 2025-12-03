@@ -40,6 +40,7 @@ class ParoissienController extends Controller
             'nom_paroisse',
         ])
             ->groupBy([
+                'id',
                 'nom_prenom',
                 'telephone',
                 'sexe',
