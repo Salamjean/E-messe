@@ -262,7 +262,7 @@
                 <p>Gérez vos retraits de fonds, {{ Auth::guard('paroisse')->user()->name }}!</p>
             </div>
             <div class="user-profile">
-                <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('paroisse')->user()->name) }}&background=random"
+                <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('paroisse')->user()->name) }}"
                     alt="Profile">
             </div>
         </div>
