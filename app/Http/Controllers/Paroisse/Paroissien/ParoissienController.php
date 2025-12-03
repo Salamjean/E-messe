@@ -158,7 +158,7 @@ class ParoissienController extends Controller
      */
     private function getFilteredQuery(Request $request)
     {
-        $query = Paroissien::query();
+        $query = Paroissien::query()->distinct();
 
         if ($request->filled('sexe')) {
             $query->where('sexe', $request->sexe);
@@ -176,7 +176,7 @@ class ParoissienController extends Controller
         $filters = [
             'sexe' => $request->sexe,
             'situation_matrimoniale' => $request->situation_matrimoniale,
-            'search' => $request->search_term, // Terme de recherche global DataTables
+            'search' => $request->search_term,
         ];
 
         return Excel::download(new ParoissiensExport($filters), 'paroissiens_'.date('d-m-Y').'.xlsx');
@@ -184,10 +184,8 @@ class ParoissienController extends Controller
 
     public function exportPdf(Request $request)
     {
-        // 1. Récupérer la requête filtrée de base (Sexe / Situation)
         $query = $this->getFilteredQuery($request);
 
-        // 2. Appliquer manuellement la recherche textuelle
         if ($request->filled('search_term')) {
             $term = $request->search_term;
             $query->where(function ($q) use ($term) {
@@ -199,9 +197,7 @@ class ParoissienController extends Controller
 
         $paroissiens = $query->get();
 
-        // CORRECTION ICI : 'exports' au pluriel pour correspondre au dossier resources/views/exports
         $pdf = Pdf::loadView('paroisse.exports.paroissiens.pdf', compact('paroissiens'))
-            // ->setPaper('a4', 'landscape');
             ->setPaper('a4', 'portrait');
 
         return $pdf->download('listes_paroissiens_'.date('d-m-Y').'.pdf');
