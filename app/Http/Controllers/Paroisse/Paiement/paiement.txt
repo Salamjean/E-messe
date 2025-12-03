@@ -84,7 +84,7 @@ class ParoissePaiement extends Controller
         if ($request->montant > $soldeDisponible) {
             // Retour JSON pour AJAX
             return response()->json([
-                'message' => 'Le montant demandé dépasse votre solde disponible ('.number_format($soldeDisponible, 0, ',', ' ').' FCFA).',
+                'message' => 'Le montant demandé dépasse votre solde disponible (' . number_format($soldeDisponible, 0, ',', ' ') . ' FCFA).'
             ], 422);
         }
 
@@ -97,21 +97,20 @@ class ParoissePaiement extends Controller
             $retrait->numero_compte = $request->numero_compte;
             $retrait->nom_titulaire = $request->nom_titulaire;
             $retrait->nom_banque = $request->nom_banque;
-            $retrait->reference = 'RET'.time().$paroisse->id;
+            $retrait->reference = 'RET' . time() . $paroisse->id;
             $retrait->statut = 'en_attente';
             $retrait->save();
 
             // Retour JSON impératif pour AJAX
             return response()->json([
                 'success' => true,
-                'message' => 'Votre demande de virement a été envoyée avec succès. Elle sera traitée sous 24 à 48h.',
+                'message' => 'Votre demande de virement a été envoyée avec succès. Elle sera traitée sous 24 à 48h.'
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Erreur demande retrait: '.$e->getMessage());
-
+            Log::error('Erreur demande retrait: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Une erreur interne est survenue. Veuillez réessayer.',
+                'message' => 'Une erreur interne est survenue. Veuillez réessayer.'
             ], 500);
         }
     }
@@ -133,12 +132,12 @@ class ParoissePaiement extends Controller
 
         if ($request->montant > $soldeDisponible) {
             return response()->json([
-                'message' => 'Solde insuffisant. Disponible : '.number_format($soldeDisponible, 0, ',', ' ').' FCFA.',
+                'message' => 'Solde insuffisant. Disponible : ' . number_format($soldeDisponible, 0, ',', ' ') . ' FCFA.',
             ], 422);
         }
 
         // 2. Génération référence unique
-        $reference = 'REV_'.time().'_'.rand(1000, 9999);
+        $reference = 'REV_' . time() . '_' . rand(1000, 9999);
 
         // 3. Création du reversement en BDD (Statut Pending)
         $reversement = Reversement::create([
@@ -156,7 +155,7 @@ class ParoissePaiement extends Controller
             $password = env('CINETPAY_PASSWORD');
 
             if (empty($apiKey) || empty($password)) {
-                throw new \Exception('Clés API CinetPay non configurées.');
+                throw new \Exception("Clés API CinetPay non configurées.");
             }
 
             Log::info("Connexion CinetPay pour transfert $reference");
@@ -168,17 +167,17 @@ class ParoissePaiement extends Controller
 
             $loginResult = $loginResponse->json();
 
-            if (! $loginResponse->successful() || ! isset($loginResult['data']['token'])) {
+            if (!$loginResponse->successful() || !isset($loginResult['data']['token'])) {
                 $reversement->update(['statut' => 'failed']);
                 Log::error('CinetPay Login Error', ['response' => $loginResult]);
-
+                
                 return response()->json([
-                    'message' => 'Échec authentification bancaire. Veuillez réessayer plus tard.',
+                    'message' => "Échec authentification bancaire. Veuillez réessayer plus tard.",
                 ], 500);
             }
 
             $token = $loginResult['data']['token'];
-            $transferUrl = 'https://client.cinetpay.com/v1/transfer/money/send/contact?token='.$token;
+            $transferUrl = 'https://client.cinetpay.com/v1/transfer/money/send/contact?token=' . $token;
 
             // 5. Envoi demande transfert
             $payload = [
@@ -211,7 +210,7 @@ class ParoissePaiement extends Controller
                 $retrait->paroisse_id = $paroisse->id;
                 $retrait->montant = $request->montant;
                 $retrait->methode = $request->methode ?? 'mobile_money';
-                $retrait->numero_compte = '(+'.$request->prefix.') '.$request->telephone;
+                $retrait->numero_compte = '(+' . $request->prefix . ') ' . $request->telephone;
                 $retrait->nom_titulaire = 'Mobile Money User'; // Peut être mis à jour si dispo
                 $retrait->reference = $reference;
                 $retrait->statut = 'traite'; // Directement traité
@@ -237,7 +236,7 @@ class ParoissePaiement extends Controller
                 $retrait->paroisse_id = $paroisse->id;
                 $retrait->montant = $request->montant;
                 $retrait->methode = $request->methode ?? 'mobile_money';
-                $retrait->numero_compte = '(+'.$request->prefix.') '.$request->telephone;
+                $retrait->numero_compte = '(+' . $request->prefix . ') ' . $request->telephone;
                 $retrait->reference = $reference;
                 $retrait->statut = 'rejete';
                 $retrait->raison_rejet = "API Error: $errorMessage";
@@ -250,7 +249,7 @@ class ParoissePaiement extends Controller
             }
 
         } catch (\Exception $e) {
-            Log::critical('Exception Reversement: '.$e->getMessage());
+            Log::critical('Exception Reversement: ' . $e->getMessage());
             $reversement->update(['statut' => 'failed']);
 
             return response()->json([
@@ -305,7 +304,7 @@ class ParoissePaiement extends Controller
     {
         try {
             $paroisseId = Auth::guard('paroisse')->id();
-
+            
             $query = Reversement::query()
                 ->where('paroisse_id', $paroisseId) // Filtrage par paroisse ajouté pour sécurité
                 ->select(['reference', 'created_at', 'numero_destinataire', 'prefix_pays', 'montant', 'statut']);
@@ -315,7 +314,7 @@ class ParoissePaiement extends Controller
                     return $row->created_at->format('d/m/Y H:i');
                 })
                 ->editColumn('montant', function ($row) {
-                    return number_format($row->montant, 0, ',', ' ').' FCFA';
+                    return number_format($row->montant, 0, ',', ' ') . ' FCFA';
                 })
                 ->editColumn('statut', function ($row) {
                     if ($row->statut == 'success') {
@@ -324,15 +323,13 @@ class ParoissePaiement extends Controller
                     if ($row->statut == 'failed') {
                         return '<span class="badge bg-danger">Échec</span>';
                     }
-
                     return '<span class="badge bg-warning text-dark">En attente</span>';
                 })
                 ->rawColumns(['statut'])
                 ->make(true);
 
         } catch (\Exception $e) {
-            Log::error('Erreur DataTables: '.$e->getMessage());
-
+            Log::error('Erreur DataTables: ' . $e->getMessage());
             return response()->json(['error' => 'Erreur lors du chargement des données'], 500);
         }
     }

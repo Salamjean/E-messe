@@ -262,7 +262,6 @@
                 <p>Gérez vos retraits de fonds, {{ Auth::guard('paroisse')->user()->name }}!</p>
             </div>
             <div class="user-profile">
-                <!-- Fallback pour l'image si nécessaire -->
                 <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('paroisse')->user()->name) }}&background=random"
                     alt="Profile">
             </div>
@@ -289,7 +288,6 @@
                         </div>
 
                         <!-- Formulaire de retrait -->
-                        <!-- Note: L'action est gérée via Javascript, mais on garde une valeur par défaut -->
                         <form id="retraitForm">
                             @csrf
 
@@ -302,7 +300,8 @@
                                         name="montant" required min="1000" max="{{ $soldeDisponible ?? 0 }}"
                                         placeholder="Ex: 5000">
                                 </div>
-                                <div class="form-text text-muted mt-2">Le montant minimum de retrait est de 1 000 FCFA</div>
+                                <div class="form-text text-muted mt-2">Le montant minimum de retrait est de 1 000 FCFA
+                                </div>
                             </div>
 
                             <!-- Méthode de retrait -->
@@ -319,7 +318,7 @@
                                 </select>
                             </div>
 
-                            <!-- SECTION MOBILE MONEY (Visible uniquement si Wave, Orange, MTN, Moov) -->
+                            <!-- SECTION MOBILE MONEY -->
                             <div id="section-mobile-money" class="animate-section">
                                 <div class="row mb-4">
                                     <label class="form-label">Numéro du destinataire <span
@@ -341,7 +340,7 @@
                                 </div>
                             </div>
 
-                            <!-- SECTION VIREMENT BANCAIRE (Visible uniquement si Virement Bancaire) -->
+                            <!-- SECTION VIREMENT BANCAIRE -->
                             <div id="section-banque" class="d-none animate-section">
                                 <!-- Nom de la banque -->
                                 <div class="mb-4">
@@ -462,7 +461,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -478,7 +476,7 @@
             });
 
             // ==========================================
-            // DEFINITION DES ROUTES ET DONNEES
+            // DEFINITION DES ROUTES ET DONNEES          
             // ==========================================
             const soldeDisponible = {{ $soldeDisponible ?? 0 }};
 
@@ -501,8 +499,10 @@
             $('#methode').on('change', function() {
                 const selectedMethod = $(this).val();
 
-                // 1. Réinitialisation
+                // 1. Réinitialisation visuelle
                 $('#section-mobile-money, #section-banque, #additional-info').addClass('d-none');
+
+                // On réinitialise l'attribut required
                 $('.mobile-input, .banque-input').prop('required', false);
 
                 // 2. Logique d'affichage
@@ -536,13 +536,11 @@
                 const montant = parseFloat($('#montant').val());
                 const methode = $('#methode').val();
 
-                // LOGIQUE DE ROUTAGE (La partie demandée)
+                // LOGIQUE DE ROUTAGE
                 let targetUrl = '';
                 if (mobileMethods.includes(methode)) {
-                    // Si Wave, OM, MTN, Moov -> route reversement.store
                     targetUrl = routeMobileMoney;
                 } else if (methode === 'virement_bancaire') {
-                    // Si Virement -> route paroisse.retrait.request
                     targetUrl = routeVirement;
                 } else {
                     Swal.fire('Erreur', 'Veuillez sélectionner une méthode de paiement.', 'warning');
@@ -588,15 +586,32 @@
                     reverseButtons: true
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Début de l'appel AJAX
+                        // Début du processus d'envoi
                         $btn.prop('disabled', true);
                         $btnText.addClass('d-none');
                         $spinner.removeClass('d-none');
 
+                        // --- CORRECTION CRITIQUE ICI ---
+                        // On désactive les champs de l'autre méthode pour ne pas les envoyer
+                        // Cela évite les erreurs de validation côté serveur sur des champs vides
+                        if (methode === 'virement_bancaire') {
+                            $('#section-mobile-money :input').prop('disabled', true);
+                        } else {
+                            $('#section-banque :input').prop('disabled', true);
+                        }
+
+                        // Sérialisation des données
+                        const formData = $form.serialize();
+
+                        // On réactive les champs immédiatement après la sérialisation
+                        // au cas où l'utilisateur annulerait ou voudrait corriger
+                        $('#section-mobile-money :input, #section-banque :input').prop('disabled',
+                            false);
+
                         $.ajax({
-                            url: targetUrl, // Utilisation de l'URL dynamique
+                            url: targetUrl,
                             type: 'POST',
-                            data: $form.serialize(),
+                            data: formData,
                             dataType: 'json',
                             success: function(response) {
                                 Swal.fire({
@@ -616,8 +631,15 @@
 
                                 if (xhr.responseJSON) {
                                     if (xhr.responseJSON.errors) {
-                                        errorMessage = Object.values(xhr.responseJSON
-                                            .errors).flat().join('<br>');
+                                        // Affiche les erreurs de validation Laravel
+                                        let errorsHtml = '<ul class="text-start">';
+                                        $.each(xhr.responseJSON.errors, function(key,
+                                            val) {
+                                            errorsHtml += '<li>' + val[0] +
+                                                '</li>';
+                                        });
+                                        errorsHtml += '</ul>';
+                                        errorMessage = errorsHtml;
                                     } else if (xhr.responseJSON.message) {
                                         errorMessage = xhr.responseJSON.message;
                                     }
