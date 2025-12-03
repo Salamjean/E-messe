@@ -328,7 +328,7 @@ class ParoissePaiement extends Controller
             'montant' => 'required|numeric|min:1000',
             'methode' => 'required|string',
             'numero_compte' => 'required|string',
-            'nom_titulaire' => 'required|string', // Ici c'est obligatoire, donc pas d'erreur SQL
+            'nom_titulaire' => 'required|string',
             'nom_banque' => 'required|string',
         ]);
 
