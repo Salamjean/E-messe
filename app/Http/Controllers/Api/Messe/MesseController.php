@@ -3,18 +3,17 @@
 namespace App\Http\Controllers\Api\Messe;
 
 use App\Http\Controllers\Controller;
+use App\Models\Favoris;
 use App\Models\Messe;
 use App\Models\Paiement;
-use App\Models\Favoris;
-use App\Models\User;    
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
-use App\Notifications\NouveauEvenementParoisseNotification;
+use App\Models\User;
 use App\Notifications\MesseEnAttentePaiementNotification;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Validator;
 
 class MesseController extends Controller
 {
@@ -22,28 +21,31 @@ class MesseController extends Controller
      * Liste des messes actives de l'utilisateur connecté.
      */
 
-        /**
+    /**
      * @OA\Get(
      *     path="/api/messes",
      *     summary="Liste des messes actives de l'utilisateur connecté",
      *     tags={"Messes"},
      *     security={{"bearerAuth":{}}},
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Liste des messes",
+     *
      *         @OA\JsonContent(
      *             type="object",
+     *
      *             @OA\Property(property="status", type="string"),
      *             @OA\Property(
      *                 property="messes",
      *                 type="array",
+     *
      *                 @OA\Items(ref="#/components/schemas/Messe")
      *             )
      *         )
      *     )
      * )
      */
-
     public function index(Request $request): JsonResponse
     {
 
@@ -56,14 +58,15 @@ class MesseController extends Controller
         $messes->transform(function ($messe) {
             $messe->paroisse_name = $messe->paroisse ? $messe->paroisse->name : null;
             unset($messe->paroisse);
+
             return $messe;
         });
+
         return response()->json([
             'status' => 'success',
-            'messes' => $messes
+            'messes' => $messes,
         ]);
     }
-
 
     /**
      * @OA\Get(
@@ -71,27 +74,34 @@ class MesseController extends Controller
      *     summary="Liste des messes selon un type spécifique",
      *     tags={"Messes"},
      *     security={{"bearerAuth":{}}},
+     *
      *     @OA\Parameter(
      *         name="celebration_choisie",
      *         in="query",
      *         required=true,
      *         description="Type de messe à filtrer",
+     *
      *         @OA\Schema(type="string", enum={"Messe quotidienne","Messe dominicale","Messe solennelle"})
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Liste filtrée des messes",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="string"),
      *             @OA\Property(property="celebration_choisie", type="string"),
      *             @OA\Property(property="total", type="integer"),
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
+     *
      *                 @OA\Items(ref="#/components/schemas/Messe")
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(response=400, description="Paramètre manquant"),
      *     @OA\Response(response=422, description="Type de célébration invalide")
      * )
@@ -102,19 +112,19 @@ class MesseController extends Controller
         $celebration = $request->query('celebration_choisie'); // ex: "Messe dominicale"
 
         // Validation du paramètre
-        if (!$celebration) {
+        if (! $celebration) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Le paramètre celebration_choisie est requis.'
+                'message' => 'Le paramètre celebration_choisie est requis.',
             ], 400);
         }
 
         // Vérifie si le type de célébration est valide
         $validCelebrations = ['Messe quotidienne', 'Messe dominicale', 'Messe solennelle'];
-        if (!in_array($celebration, $validCelebrations)) {
+        if (! in_array($celebration, $validCelebrations)) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Type de célébration invalide.'
+                'message' => 'Type de célébration invalide.',
             ], 422);
         }
 
@@ -129,7 +139,7 @@ class MesseController extends Controller
             'status' => 'success',
             'celebration_choisie' => $celebration,
             'total' => $messes->count(),
-            'data' => $messes
+            'data' => $messes,
         ]);
     }
 
@@ -137,85 +147,92 @@ class MesseController extends Controller
      * Historique des messes (annulées ou célébrées).
      */
 
-        /**
+    /**
      * @OA\Get(
      *     path="/api/messes/history",
      *     summary="Historique des messes (annulées ou célébrées)",
      *     tags={"Messes"},
      *     security={{"bearerAuth":{}}},
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Historique des messes",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="string"),
      *             @OA\Property(
      *                 property="history",
      *                 type="array",
+     *
      *                 @OA\Items(ref="#/components/schemas/Messe")
      *             )
      *         )
      *     )
      * )
      */
-public function history(Request $request): JsonResponse
-{
-    // Récupérer les messes annulées ou célébrées de l'utilisateur connecté
-    $messes = $request->user()->messes()
-        ->with(['paroisse', 'paiements'])
-        ->whereIn('statut', ['annulee', 'celebre'])
-        ->orderByDesc('created_at')
-        ->get();
+    public function history(Request $request): JsonResponse
+    {
+        // Récupérer les messes annulées ou célébrées de l'utilisateur connecté
+        $messes = $request->user()->messes()
+            ->with(['paroisse', 'paiements'])
+            ->whereIn('statut', ['annulee', 'celebre'])
+            ->orderByDesc('created_at')
+            ->get();
 
-    // Ajouter le nom de la paroisse à chaque messe
-    $messes->transform(function ($messe) {
-        $messe->paroisse_name = $messe->paroisse ? $messe->paroisse->name : null;
-        unset($messe->paroisse); // On enlève l'objet paroisse complet si tu veux un JSON plus léger
-        return $messe;
-    });
+        // Ajouter le nom de la paroisse à chaque messe
+        $messes->transform(function ($messe) {
+            $messe->paroisse_name = $messe->paroisse ? $messe->paroisse->name : null;
+            unset($messe->paroisse); // On enlève l'objet paroisse complet si tu veux un JSON plus léger
 
-    return response()->json([
-        'status' => 'success',
-        'history' => $messes,
-    ]);
-}
+            return $messe;
+        });
 
-public function en_cours(Request $request): JsonResponse
-{
-    $messes = $request->user()->messes()
-        ->with(['paroisse', 'paiements'])
-        ->whereIn('statut', ['en_attente_paiement', 'en attente', 'confirmee'])
-        ->orderByDesc('created_at')
-        ->get();
+        return response()->json([
+            'status' => 'success',
+            'history' => $messes,
+        ]);
+    }
 
-    // Ajouter le nom de la paroisse à chaque messe
-    $messes->transform(function ($messe) {
-        $messe->paroisse_name = $messe->paroisse ? $messe->paroisse->name : null;
-        unset($messe->paroisse);
-        return $messe;
-    });
+    public function en_cours(Request $request): JsonResponse
+    {
+        $messes = $request->user()->messes()
+            ->with(['paroisse', 'paiements'])
+            ->whereIn('statut', ['en_attente_paiement', 'en attente', 'confirmee'])
+            ->orderByDesc('created_at')
+            ->get();
 
-    return response()->json([
-        'status' => 'success',
-        'messes' => $messes,
-    ]);
-}
+        // Ajouter le nom de la paroisse à chaque messe
+        $messes->transform(function ($messe) {
+            $messe->paroisse_name = $messe->paroisse ? $messe->paroisse->name : null;
+            unset($messe->paroisse);
 
+            return $messe;
+        });
 
+        return response()->json([
+            'status' => 'success',
+            'messes' => $messes,
+        ]);
+    }
 
     /**
      * Créer une nouvelle demande de messe.
      */
 
-        /**
+    /**
      * @OA\Post(
      *     path="/api/messes",
      *     summary="Créer une nouvelle demande de messe",
      *     tags={"Messes"},
      *     security={{"bearerAuth":{}}},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
      *             required={"motif_intention","celebration_choisie","montant_offrande","date_souhaitee","paroisse_id"},
+     *
      *             @OA\Property(property="motif_intention", type="string"),
      *             @OA\Property(property="interception_par", type="string"),
      *             @OA\Property(property="celebration_choisie", type="string", enum={"Messe quotidienne","Messe dominicale","Messe solennelle"}),
@@ -227,12 +244,15 @@ public function en_cours(Request $request): JsonResponse
      *             @OA\Property(property="paroisse_id", type="integer")
      *         )
      *     ),
+     *
      *     @OA\Response(response=201, description="Messe créée avec succès", @OA\JsonContent(
+     *
      *         @OA\Property(property="status", type="string"),
      *         @OA\Property(property="message", type="string"),
      *         @OA\Property(property="messe", ref="#/components/schemas/Messe"),
      *         @OA\Property(property="paiement", ref="#/components/schemas/Paiement")
      *     )),
+     *
      *     @OA\Response(response=422, description="Erreurs de validation"),
      *     @OA\Response(response=500, description="Erreur serveur")
      * )
@@ -244,15 +264,15 @@ public function en_cours(Request $request): JsonResponse
     {
         // 🔹 Validation
         $validator = Validator::make($request->all(), [
-            'motif_intention'     => 'required|string|max:255',
-            'interception_par'    => 'nullable|string|max:255',
+            'motif_intention' => 'required|string|max:255',
+            'interception_par' => 'nullable|string|max:255',
             'celebration_choisie' => 'required|in:Messe quotidienne,Messe dominicale,Messe solennelle',
-            'jours_quotidienne'   => 'required_if:celebration_choisie,Messe quotidienne|array',
-            'jours_dominicale'    => 'required_if:celebration_choisie,Messe dominicale|array',
-            'montant_offrande'    => 'required|numeric|min:0',
-            'date_souhaitee'      => 'required|date|after:today',
-            'heure_souhaitee'     => 'nullable|date_format:H:i',
-            'paroisse_id'         => 'required|exists:paroisses,id',
+            'jours_quotidienne' => 'required_if:celebration_choisie,Messe quotidienne|array',
+            'jours_dominicale' => 'required_if:celebration_choisie,Messe dominicale|array',
+            'montant_offrande' => 'required|numeric|min:0',
+            'date_souhaitee' => 'required|date|after:today',
+            'heure_souhaitee' => 'nullable|date_format:H:i',
+            'paroisse_id' => 'required|exists:paroisses,id',
         ]);
 
         if ($validator->fails()) {
@@ -277,23 +297,23 @@ public function en_cours(Request $request): JsonResponse
                 $datesSelectionnees = $request->jours_dominicale ?? [];
             }
 
-            $datesJson = !empty($datesSelectionnees) ? json_encode($datesSelectionnees) : null;
+            $datesJson = ! empty($datesSelectionnees) ? json_encode($datesSelectionnees) : null;
 
             // 🔹 Création de la messe
             $messe = Messe::create([
-                'user_id'              => $user->id,
-                'paroisse_id'          => $request->paroisse_id,
-                'interception_par'     => $request->interception_par,
-                'motif_intention'      => $request->motif_intention,
-                'date_souhaitee'       => $request->date_souhaitee,
-                'heure_souhaitee'      => $request->heure_souhaitee,
-                'celebration_choisie'  => $request->celebration_choisie,
-                'nom_demandeur'        => $user->name,
-                'email_demandeur'      => $user->email,
-                'telephone_demandeur'  => $user->contact,
-                'statut'               => 'en_attente_paiement',
-                'montant_offrande'     => $request->montant_offrande,
-                'dates_selectionnees'  => $datesJson,
+                'user_id' => $user->id,
+                'paroisse_id' => $request->paroisse_id,
+                'interception_par' => $request->interception_par,
+                'motif_intention' => $request->motif_intention,
+                'date_souhaitee' => $request->date_souhaitee,
+                'heure_souhaitee' => $request->heure_souhaitee,
+                'celebration_choisie' => $request->celebration_choisie,
+                'nom_demandeur' => $user->name,
+                'email_demandeur' => $user->email,
+                'telephone_demandeur' => $user->contact,
+                'statut' => 'en_attente_paiement',
+                'montant_offrande' => $request->montant_offrande,
+                'dates_selectionnees' => $datesJson,
             ]);
 
             // --- Envoi de la notification ---
@@ -316,30 +336,29 @@ public function en_cours(Request $request): JsonResponse
                 try {
                     $messe->user->notify(new MesseEnAttentePaiementNotification($messe));
                 } catch (\Exception $e) {
-                    Log::error('Échec de l\'envoi de la notification en attente de paiement pour la messe #' . $messe->id . ': ' . $e->getMessage());
+                    Log::error('Échec de l\'envoi de la notification en attente de paiement pour la messe #'.$messe->id.': '.$e->getMessage());
                 }
             }
 
-
-            $reference = 'MESSE_API_' . time() . '_' . $messe->id;
+            $reference = 'MESSE_API_'.time().'_'.$messe->id;
 
             // 🔹 Simulation Paiement
             $paiementEffectue = rand(0, 1); // à remplacer par ton intégration réelle
             $paiement = Paiement::create([
-                'messe_id'            => $messe->id,
-                'user_id'             => $user->id,
-                'reference'           => $reference,
-                'montant'             => $request->montant_offrande * 1.02,
-                'devise'              => 'XOF',
-                'methode'             => 'wave',
-                'statut'              => $paiementEffectue ? 'paye' : 'en_attente',
-                'transaction_id'      => $paiementEffectue ? uniqid('TX_') : null,
+                'messe_id' => $messe->id,
+                'user_id' => $user->id,
+                'reference' => $reference,
+                'montant' => $request->montant_offrande * 1.02,
+                'devise' => 'XOF',
+                'methode' => 'wave',
+                'statut' => $paiementEffectue ? 'paye' : 'en_attente',
+                'transaction_id' => $paiementEffectue ? uniqid('TX_') : null,
                 'donnees_transaction' => $paiementEffectue ? json_encode(['message' => 'Paiement réussi']) : null,
-                'date_paiement'       => $paiementEffectue ? now() : null,
+                'date_paiement' => $paiementEffectue ? now() : null,
             ]);
 
             $messe->update([
-                'statut' => $paiementEffectue ? 'en_attente_paiement' : 'en_attente_paiement'
+                'statut' => $paiementEffectue ? 'en_attente_paiement' : 'en_attente_paiement',
             ]);
 
             // ===================================================
@@ -370,11 +389,11 @@ public function en_cours(Request $request): JsonResponse
             // ===================================================
 
             return response()->json([
-                'status'   => 'success',
-                'message'  => $paiementEffectue
+                'status' => 'success',
+                'message' => $paiementEffectue
                     ? 'Messe enregistrée et paiement effectué avec succès.'
                     : 'Messe enregistrée, en attente de paiement.',
-                'messe'    => $messe,
+                'messe' => $messe,
                 'paiement' => $paiement ?? null,
             ], 201);
 
@@ -382,9 +401,9 @@ public function en_cours(Request $request): JsonResponse
             Log::error('Erreur création messe API', ['error' => $e->getMessage()]);
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Une erreur s\'est produite lors de l\'enregistrement.',
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -396,13 +415,13 @@ public function en_cours(Request $request): JsonResponse
     {
         $serverKey = config('services.firebase.server_key'); // clé FCM à mettre dans .env
         $response = Http::withHeaders([
-            'Authorization' => 'key=' . $serverKey,
-            'Content-Type'  => 'application/json',
+            'Authorization' => 'key='.$serverKey,
+            'Content-Type' => 'application/json',
         ])->post('https://fcm.googleapis.com/fcm/send', [
             'to' => $token,
             'notification' => [
                 'title' => $title,
-                'body'  => $body,
+                'body' => $body,
             ],
             'data' => [
                 'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
@@ -415,77 +434,121 @@ public function en_cours(Request $request): JsonResponse
         ]);
     }
 
-
     /**
      * Affiche les détails d’une messe spécifique.
      */
 
-        /**
+    /**
      * @OA\Get(
      *     path="/api/messes/{messeId}",
      *     summary="Afficher les détails d’une messe spécifique",
      *     tags={"Messes"},
      *     security={{"bearerAuth":{}}},
+     *
      *     @OA\Parameter(
      *         name="messeId",
      *         in="path",
      *         required=true,
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\Response(response=200, description="Détails de la messe", @OA\JsonContent(ref="#/components/schemas/Messe")),
      *     @OA\Response(response=403, description="Accès non autorisé")
      * )
      */
+    public function show(Request $request, $id): JsonResponse
+    {
+        $messe = Messe::with(['paroisse', 'paiements'])->find($id);
 
-public function show(Request $request, $id): JsonResponse
-{
-    $messe = Messe::with(['paroisse', 'paiements'])->find($id);
+        if (! $messe) {
+            return response()->json(['message' => 'Messe introuvable.'], 404);
+        }
 
-    if (!$messe) {
-        return response()->json(['message' => 'Messe introuvable.'], 404);
+        if ($request->user()->id !== $messe->user_id) {
+            return response()->json(['message' => 'Accès non autorisé.'], 403);
+        }
+
+        // Ajout du nom de la paroisse dans la réponse
+        $messe->paroisse_name = $messe->paroisse ? $messe->paroisse->name : null;
+
+        return response()->json($messe);
     }
 
-    if ($request->user()->id !== $messe->user_id) {
-        return response()->json(['message' => 'Accès non autorisé.'], 403);
+    public function destroy(Request $request, $id): JsonResponse
+    {
+        // Récupération de la messe
+        $messe = Messe::find($id);
+
+        if (! $messe) {
+            return response()->json([
+                'message' => 'Messe introuvable.',
+            ], 404);
+        }
+
+        // Vérification que l’utilisateur est bien le propriétaire
+        if ($request->user()->id !== $messe->user_id) {
+            return response()->json([
+                'message' => 'Accès non autorisé.',
+            ], 403);
+        }
+
+        // Suppression
+        $messe->delete();
+
+        return response()->json([
+            'message' => 'Messe supprimée avec succès.',
+            'deleted_id' => $id,
+        ], 200);
     }
 
-    // Ajout du nom de la paroisse dans la réponse
-    $messe->paroisse_name = $messe->paroisse ? $messe->paroisse->name : null;
+    // public function destroy(Request $request, Messe $messe): JsonResponse
+    // {
+    //     if ($request->user()->id !== $messe->user_id) {
+    //         return response()->json(['message' => 'Accès non autorisé.'], 403);
+    //     }
 
-    return response()->json($messe);
-}
+    //     if (!in_array($messe->statut, ['en attente', 'en_attente_paiement'])) {
+    //         return response()->json(['message' => 'Seules les messes en attente peuvent être supprimées.'], 409);
+    //     }
 
+    //     $messe->delete();
 
+    //     return response()->json(['message' => 'Demande supprimée avec succès.'], 200);
+    // }
 
     /**
      * Met à jour une demande de messe (seulement si "en attente").
      */
 
-        /**
+    /**
      * @OA\Put(
      *     path="/api/messes/{messeId}",
      *     summary="Mettre à jour une demande de messe",
      *     tags={"Messes"},
      *     security={{"bearerAuth":{}}},
+     *
      *     @OA\Parameter(name="messeId", in="path", required=true, @OA\Schema(type="integer")),
+     *
      *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *
      *         @OA\Property(property="motif_intention", type="string"),
      *         @OA\Property(property="date_souhaitee", type="string", format="date")
      *     )),
+     *
      *     @OA\Response(response=200, description="Mise à jour réussie"),
      *     @OA\Response(response=403, description="Accès non autorisé"),
      *     @OA\Response(response=409, description="Cette demande ne peut plus être modifiée"),
      *     @OA\Response(response=422, description="Erreurs de validation")
      * )
      */
-
     public function update(Request $request, Messe $messe): JsonResponse
     {
         if ($request->user()->id !== $messe->user_id) {
             return response()->json(['message' => 'Accès non autorisé.'], 403);
         }
 
-        if (!in_array($messe->statut, ['en attente', 'en_attente_paiement'])) {
+        if (! in_array($messe->statut, ['en attente', 'en_attente_paiement'])) {
             return response()->json(['message' => 'Cette demande ne peut plus être modifiée.'], 409);
         }
 
@@ -503,7 +566,7 @@ public function show(Request $request, $id): JsonResponse
         return response()->json([
             'status' => 'success',
             'message' => 'Demande de messe mise à jour avec succès.',
-            'messe' => $messe
+            'messe' => $messe,
         ]);
     }
 
@@ -511,30 +574,18 @@ public function show(Request $request, $id): JsonResponse
      * Supprime une messe (si non célébrée).
      */
 
-        /**
+    /**
      * @OA\Delete(
      *     path="/api/messes/{messeId}",
      *     summary="Supprime une messe si non célébrée",
      *     tags={"Messes"},
      *     security={{"bearerAuth":{}}},
+     *
      *     @OA\Parameter(name="messeId", in="path", required=true, @OA\Schema(type="integer")),
+     *
      *     @OA\Response(response=200, description="Messe supprimée"),
      *     @OA\Response(response=403, description="Accès non autorisé"),
      *     @OA\Response(response=409, description="Seules les messes en attente peuvent être supprimées")
      * )
      */
-    public function destroy(Request $request, Messe $messe): JsonResponse
-    {
-        if ($request->user()->id !== $messe->user_id) {
-            return response()->json(['message' => 'Accès non autorisé.'], 403);
-        }
-
-        if (!in_array($messe->statut, ['en attente', 'en_attente_paiement'])) {
-            return response()->json(['message' => 'Seules les messes en attente peuvent être supprimées.'], 409);
-        }
-
-        $messe->delete();
-
-        return response()->json(['message' => 'Demande supprimée avec succès.'], 200);
-    }
 }

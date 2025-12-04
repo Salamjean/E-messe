@@ -55,15 +55,15 @@ class ParoissienController extends Controller
 
                 return "
                 <div class='btn-group'>
-                    <a href='{$showUrl}' class='btn btn-info btn-sm me-1' title='Voir'>
+                    <a href='{$showUrl}' class='btn btn-view btn-action btn-sm me-1' title='Voir'>
                         <i class='fa fa-eye'></i>
                     </a>
-                    <a href='{$editUrl}' class='btn btn-warning btn-sm me-1' title='Modifier'>
+                    <a href='{$editUrl}' class='btn btn-edit btn-action btn-sm me-1' title='Modifier'>
                         <i class='fa fa-edit'></i>
                     </a>
                     <form action='{$deleteUrl}' method='POST' style='display:inline;' onsubmit='return confirm(\"Êtes-vous sûr de vouloir supprimer ce fidèle ?\")'>
                         {$csrf} {$method}
-                        <button type='submit' class='btn btn-danger btn-sm' title='Supprimer'>
+                        <button type='submit' class='btn btn-delete btn-action btn-sm me-1' title='Supprimer'>
                             <i class='fa fa-trash'></i>
                         </button>
                     </form>

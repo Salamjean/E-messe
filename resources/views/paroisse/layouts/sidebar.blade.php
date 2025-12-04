@@ -73,9 +73,15 @@
                                     En attente confirmation
                                 </a>
                             </div>
+                            
                             <div class="mdc-list-item mdc-drawer-item">
                                 <a class="mdc-drawer-link" href="{{ route('demandes.messes.index') }}">
                                     A célébrées
+                                </a>
+                            </div>
+                            <div class="mdc-list-item mdc-drawer-item">
+                                <a class="mdc-drawer-link" href="{{ route('demandes.messes.celebrated') }}">
+                                    En attente célébrations
                                 </a>
                             </div>
                             <div class="mdc-list-item mdc-drawer-item">

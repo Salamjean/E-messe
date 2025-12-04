@@ -34,12 +34,12 @@
         @endif
 
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="fw-bold text-dark mb-0">
+            <h3 class="fw-bold text-dark mb-0" style="color: #d4bd8a !important;">
                 <i class="material-icons align-middle me-2">event</i>
                 Gestion des Événements
             </h3>
-            <button type="button" id="addEventBtn" class="btn btn-dark shadow-sm" data-bs-toggle="modal"
-                data-bs-target="#eventModal">
+            <button type="button" id="addEventBtn" class="btn btn-dark shadow-sm"
+                style="background-color: #d4bd8a; border: none;" data-bs-toggle="modal" data-bs-target="#eventModal">
                 <i class="material-icons align-middle me-1">add_circle</i> Ajouter un événement
             </button>
         </div>
@@ -47,7 +47,8 @@
         <div class="card border-0 shadow-sm rounded-4">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table id="eventsTable" class="table table-hover table-striped align-middle" style="width:100%">
+                    <table id="eventsTable" class="table table-hover table-striped align-middle"
+                        style="width:100%; color: #d4bd8a !important;">
                         <thead class="table-light">
                             <tr>
                                 <th>#</th>
@@ -97,3 +98,16 @@
         };
     </script>
 @endpush
+
+<style>
+    .messe-header h1 {
+        color: #d4bd8a;
+        font-weight: 700;
+    }
+
+    table.dataTable thead th {
+        background-color: #5ea7b5 !important;
+        color: #ffffffff !important;
+        vertical-align: middle;
+    }
+</style>

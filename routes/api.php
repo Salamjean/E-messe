@@ -100,6 +100,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/history', [MesseController::class, 'history']);
         Route::get('/en-cours', [MesseController::class, 'en_cours']);
         Route::get('/detail/{id}', [MesseController::class, 'show']);
+        Route::delete('/{id}', [MesseController::class, 'destroy']);
 
         Route::get('/demandes-specifiques', [MesseController::class, 'demandesSpecifiques']);
 
@@ -107,6 +108,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{messe}', [MesseController::class, 'show']);
         Route::put('/{messe}', [MesseController::class, 'update']);
         Route::delete('/{messe}', [MesseController::class, 'destroy']);
+
     });
 
     // Route pour les paroisses

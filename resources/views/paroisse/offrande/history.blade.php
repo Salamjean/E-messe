@@ -1,547 +1,471 @@
 @extends('paroisse.layouts.template')
-@section('content')
 
+@section('styles')
+    <!-- CSS DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+@endsection
+
+@section('content')
     <div class="messe-container">
         <div class="messe-header">
-            <h1>Historique celebrées ou annulées.</h1>
-            <p>Retrouvez toutes les demandes celebrées.</p>
+            <h1>Historique célébrées ou annulées</h1>
+            <p>Retrouvez toutes les demandes traitées.</p>
         </div>
 
-        @if ($filteredMessess->isEmpty())
-            <div class="empty-state">
-                <div class="empty-icon">⛪</div>
-                <h3>Aucune demande de messe</h3>
-            </div>
-        @else
-            <div class="messe-cards">
-                @foreach ($filteredMessess as $messe)
-                    <div class="messe-card" data-status="{{ $messe->statut }}">
-                        <div class="card-header">
-                            <div class="card-badge {{ str_replace(' ', '_', $messe->statut) }}">
-                                {{ ucfirst($messe->statut) }}
-                            </div>
-                            <div class="card-date">
-                                {{ $messe->created_at->format('d/m/Y') }}
-                            </div>
-                        </div>
+        <!-- Actions de masse (PDF) -->
+        <div class="bulk-actions" id="bulkActionsPanel">
+            <span id="selectedCount" style="font-weight: bold; color: #333;">0 sélectionné(s)</span>
+            <button onclick="generatePDF()" class="btn-action btn-pdf">
+                📄 Générer le PDF
+            </button>
+        </div>
 
-                        <div class="card-content">
-                            <h3 class="card-title">
-                                Messe
-                                @if ($messe->type_intention === 'Defunt')
-                                    de Défunt
-                                @elseif($messe->type_intention === 'Action graces')
-                                    d'action de Grâces
-                                @else
-                                    d'ntention Particulière
-                                @endif
-                            </h3>
-
-                            <div class="card-details">
-                                <div class="detail-item">
-                                    <span class="detail-label">📅 Date souhaitée:</span>
-                                    <span
-                                        class="detail-value">{{ \Carbon\Carbon::parse($messe->date_souhaitee)->format('d/m/Y') }}</span>
-                                </div>
-
-                                @if ($messe->heure_souhaitee)
-                                    <div class="detail-item">
-                                        <span class="detail-label">⏰ Heure:</span>
-                                        <span class="detail-value">{{ $messe->heure_souhaitee }}</span>
-                                    </div>
-                                @endif
-
-                                <div class="detail-item">
-                                    <span class="detail-label">⛪ Type:</span>
-                                    <span class="detail-value">{{ $messe->celebration_choisie ?? 'Non spécifié' }}</span>
-                                </div>
-
-                                @if ($messe->montant_offrande)
-                                    <div class="detail-item">
-                                        <span class="detail-label">💰 Offrande:</span>
-                                        <span
-                                            class="detail-value">{{ number_format($messe->montant_offrande, 0, ',', ' ') }}
-                                            FCFA</span>
-                                    </div>
-                                @endif
-                            </div>
-
-                            <div class="card-noms">
-                                <strong>Noms concernés:</strong>
-                                @php
-                                    $noms = is_array($messe->nom_prenom_concernes)
-                                        ? $messe->nom_prenom_concernes
-                                        : json_decode($messe->nom_prenom_concernes, true) ?? [
-                                                $messe->nom_prenom_concernes,
-                                            ];
-                                @endphp
-                                <div class="noms-list">
-                                    @foreach ($noms as $nom)
-                                        <span class="nom-tag">{{ $nom }}</span>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card-actions">
-                            <a href="{{ route('paroisse.messe.show', ['messe' => $messe->id]) }}"
-                                class="card-action-btn view-btn">
-                                👁️ Voir détails
-                            </a>
-                            @if ($messe->statut === 'en attente')
-                                <form action="{{ route('paroisse.messe.cancel', ['messe' => $messe->id]) }}" method="POST"
-                                    class="d-inline">
-                                    @csrf
-                                    @method('POST')
-                                    <button type="submit" class="card-action-btn cancel-btn"
-                                        style="background-color: rgb(199, 12, 12)"
-                                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ? Cette action est irréversible.')">
-                                        🗑️ Annulée
-                                    </button>
-                                </form>
-                            @endif
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        @endif
+        <!-- Tableau DataTable -->
+        <div class="table-responsive bg-white p-3 rounded shadow-sm">
+            <table id="messesTable" class="table table-striped table-hover display responsive nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th width="5%"><input type="checkbox" id="selectAll"></th>
+                        <th>Date Création</th>
+                        <th>Type</th>
+                        <th>Date Souhaitée</th>
+                        <th>Heure</th>
+                        <th>Montant</th>
+                        <th>Demandeur</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 
-    <!-- Formulaire caché pour générer le PDF -->
+    <!-- MODAL DE DÉTAILS -->
+    <div class="modal fade" id="messeDetailModal" tabindex="-1" role="dialog" aria-labelledby="messeDetailModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="messeDetailModalLabel">Détails de la demande</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"
+                        onclick="$('#messeDetailModal').modal('hide')">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Statut -->
+                    <div class="text-center mb-4" id="modalStatusContainer">
+                        <!-- Badge injecté via JS -->
+                    </div>
+
+                    <h5>📅 Informations Générales</h5>
+                    <div class="detail-row">
+                        <span class="detail-label">Créée le :</span>
+                        <span class="detail-value" id="modalDateCreation"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Type de messe :</span>
+                        <span class="detail-value" id="modalTypeMesse"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Demandeur :</span>
+                        <span class="detail-value" id="modalDemandeur"></span>
+                    </div>
+
+                    <h5 class="mt-4">⛪ Célébration</h5>
+                    <div class="detail-row">
+                        <span class="detail-label">Date souhaitée :</span>
+                        <span class="detail-value" id="modalDateSouhaitee"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Heure :</span>
+                        <span class="detail-value" id="modalHeure"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Offrande :</span>
+                        <span class="detail-value" id="modalMontant" style="color: #28a745; font-weight: bold;"></span>
+                    </div>
+
+                    <h5 class="mt-4">🙏 Intentions (Noms concernés)</h5>
+                    <div class="intentions-box" id="modalIntentions">
+                        <!-- Noms injectés via JS -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                        onclick="$('#messeDetailModal').modal('hide')">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire caché pour l'export PDF -->
     <form id="pdfForm" action="{{ route('paroisse.messe.export-pdf') }}" method="POST" target="_blank">
         @csrf
         <input type="hidden" name="selected_ids" id="selectedIds">
     </form>
+@endsection
 
-    <style>
-        .messe-container {
-            width: 90%;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
+@push('js')
+    <!-- jQuery (Déjà inclus ?) -->
+    <!-- <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script> -->
+    <!-- Bootstrap JS (Nécessaire pour le modal) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
-        .messe-header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 30px 20px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        }
+    <!-- JS DataTables -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
 
-        .messe-header h1 {
-            color: #5ea7b5;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-
-        .messe-header p {
-            color: #666;
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .messe-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-
-        .messe-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border-left: 4px solid #5ea7b5;
-            position: relative;
-            width: 300px;
-            height: 100%;
-        }
-
-        .messe-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-        }
-
-        .messe-card[data-status="confirmee"] {
-            border-left-color: #28a745;
-        }
-
-        .messe-card[data-status="celebre"] {
-            border-left-color: #17a2b8;
-        }
-
-        .messe-card[data-status="annulee"] {
-            border-left-color: #5ea7b5;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .card-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .card-badge.en_attente {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .card-badge.confirmee {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .card-badge.celebre {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .card-badge.annulee {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .card-date {
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-
-        .card-content {
-            padding: 20px;
-        }
-
-        .card-title {
-            color: #333;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-
-        .card-details {
-            margin-bottom: 15px;
-        }
-
-        .detail-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            padding: 5px 0;
-        }
-
-        .detail-label {
-            color: #666;
-            font-weight: 500;
-        }
-
-        .detail-value {
-            color: #333;
-            font-weight: 600;
-        }
-
-        .card-noms {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px dashed #e9ecef;
-        }
-
-        .noms-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
-        }
-
-        .nom-tag {
-            background: #f0f2f5;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            color: #495057;
-        }
-
-        .card-actions {
-            padding: 15px 20px;
-            background: #f8f9fa;
-            border-top: 1px solid #e9ecef;
-            display: flex;
-            gap: 10px;
-        }
-
-        .card-action-btn {
-            padding: 8px 15px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .view-btn {
-            background: #c49d54;
-            color: white;
-        }
-
-        .view-btn:hover {
-            background: #ff7c52;
-            color: white;
-        }
-
-        .cancel-btn {
-            background: #6c757d;
-            color: white;
-        }
-
-        .cancel-btn:hover {
-            background: #495057;
-            color: white;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-        }
-
-        .empty-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .empty-state h3 {
-            color: #333;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .empty-state p {
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        /* Styles pour les checkboxes */
-        .card-checkbox {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            z-index: 10;
-        }
-
-        .checkbox-label {
-            display: block;
-            position: relative;
-            padding-left: 30px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            font-size: 16px;
-            user-select: none;
-        }
-
-        .checkbox-label input {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-            height: 0;
-            width: 0;
-        }
-
-        .checkmark {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 22px;
-            width: 22px;
-            background-color: #fff;
-            border: 2px solid #ddd;
-            border-radius: 4px;
-            transition: all 0.3s;
-        }
-
-        .checkbox-label input:checked~.checkmark {
-            background-color: #2196F3;
-            border-color: #2196F3;
-        }
-
-        .checkmark:after {
-            content: "";
-            position: absolute;
-            display: none;
-        }
-
-        .checkbox-label input:checked~.checkmark:after {
-            display: block;
-        }
-
-        .checkbox-label .checkmark:after {
-            left: 7px;
-            top: 3px;
-            width: 5px;
-            height: 10px;
-            border: solid white;
-            border-width: 0 3px 3px 0;
-            transform: rotate(45deg);
-        }
-
-        /* Styles pour les actions groupées */
-        .bulk-actions {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .bulk-actions .btn {
-            padding: 8px 15px;
-            border-radius: 6px;
-            font-weight: 500;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .bulk-actions .btn-primary {
-            background: #007bff;
-            color: white;
-        }
-
-        .bulk-actions .btn-primary:hover {
-            background: #0056b3;
-        }
-
-        .bulk-actions .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .bulk-actions .btn-secondary:hover {
-            background: #545b62;
-        }
-
-        .select-all-container {
-            width: 15%;
-            background: white;
-            padding: 12px 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        @media (max-width: 768px) {
-            .messe-cards {
-                grid-template-columns: 1fr;
-            }
-
-            .card-actions {
-                flex-direction: column;
-            }
-
-            .card-action-btn {
-                text-align: center;
-            }
-
-            .bulk-actions {
-                flex-direction: column;
-                align-items: stretch;
-            }
-        }
-    </style>
+    <!-- Moment.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 
     <script>
-        // Fonction pour basculer la sélection de toutes les checkboxes
-        function toggleSelectAll(checkbox) {
-            const checkboxes = document.querySelectorAll('.messe-checkbox');
-            checkboxes.forEach(cb => {
-                cb.checked = checkbox.checked;
+        $(document).ready(function() {
+            // Initialisation du DataTable
+            var table = $('#messesTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: "{{ route('demandes.messes.history') }}",
+                language: {
+                    url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json"
+                },
+                order: [
+                    [1, "desc"]
+                ],
+                columns: [{
+                        data: 'id',
+                        orderable: false,
+                        render: function(data) {
+                            return `<input type="checkbox" class="messe-checkbox" value="${data}">`;
+                        }
+                    },
+                    {
+                        data: 'created_at',
+                        render: function(data) {
+                            return moment(data).format('DD/MM/YYYY');
+                        }
+                    },
+                    {
+                        data: 'celebration_choisie'
+                    }, // Assurez-vous que cette colonne existe dans votre JSON
+                    {
+                        data: 'date_souhaitee',
+                        render: function(data) {
+                            return moment(data).format('DD/MM/YYYY');
+                        }
+                    },
+                    {
+                        data: 'heure_souhaitee'
+                    },
+                    {
+                        data: 'montant_offrande',
+                        render: function(data) {
+                            return data ? new Intl.NumberFormat('fr-FR').format(data) + ' FCFA' :
+                                '-';
+                        }
+                    },
+                    {
+                        data: 'nom_demandeur'
+                    },
+                    {
+                        data: null, // On passe l'objet entier (null data source)
+                        orderable: false,
+                        render: function(data, type, row) {
+                            // Bouton Voir avec classe spéciale pour trigger le modal
+                            let buttons =
+                                `<button class="btn-action btn-view view-details-btn" title="Voir les détails">👁️</button>`;
+
+                            // Bouton Annuler
+                            if (row.statut === 'en attente') {
+                                let cancelUrl =
+                                    "{{ route('paroisse.messe.cancel', ['messe' => ':id']) }}"
+                                    .replace(':id', row.id);
+                                let csrf = "{{ csrf_token() }}";
+                                buttons += `
+                                    <form action="${cancelUrl}" method="POST" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr ?')">
+                                        <input type="hidden" name="_token" value="${csrf}">
+                                        <button type="submit" class="btn-action" style="background:#dc3545; color:white;" title="Annuler">🗑️</button>
+                                    </form>
+                                `;
+                            }
+                            return buttons;
+                        }
+                    }
+                ]
             });
-            updateBulkActions();
-        }
 
-        // Fonction pour mettre à jour l'affichage des actions groupées
-        function updateBulkActions() {
-            const selectedCount = document.querySelectorAll('.messe-checkbox:checked').length;
-            const bulkActions = document.getElementById('bulkActions');
+            // --- LOGIQUE DU MODAL ---
 
-            if (selectedCount > 0) {
-                bulkActions.style.display = 'flex';
-            } else {
-                bulkActions.style.display = 'none';
+            // Délégation d'événement pour le bouton "Voir"
+            $('#messesTable tbody').on('click', '.view-details-btn', function() {
+                // Récupérer les données de la ligne
+                var tr = $(this).closest('tr');
+                var row = table.row(tr);
+                var data = row.data();
+
+                // 1. Remplir le statut (Badge)
+                var statusClass = 'badge-' + data.statut.replace(' ', '_').toLowerCase();
+                var statusLabel = data.statut.charAt(0).toUpperCase() + data.statut.slice(1);
+                $('#modalStatusContainer').html(
+                    `<span class="badge-status ${statusClass}" style="font-size:1rem; padding: 8px 20px;">${statusLabel}</span>`
+                );
+
+                // 2. Remplir les champs textes
+                $('#modalDateCreation').text(moment(data.created_at).format('DD/MM/YYYY à HH:mm'));
+                $('#modalTypeMesse').text(data.celebration_choisie || data.type_intention);
+                $('#modalDemandeur').text(data.nom_demandeur);
+
+                $('#modalDateSouhaitee').text(moment(data.date_souhaitee).format('DD/MM/YYYY'));
+                $('#modalHeure').text(data.heure_souhaitee || 'Non spécifiée');
+                $('#modalMontant').text(new Intl.NumberFormat('fr-FR').format(data.montant_offrande) +
+                    ' FCFA');
+
+                // 3. Traitement des Intentions (Noms concernés)
+                var intentionsHtml = '';
+                var noms = [];
+
+                // Logique de parsing robuste (JSON ou String ou Array)
+                // Note: Assurez-vous que le JSON renvoyé par le contrôleur contient 'nom_prenom_concernes'
+                // Si la colonne n'est pas affichée dans le tableau, elle est quand même dans l'objet 'data'
+                var rawNoms = data.nom_prenom_concernes;
+
+                try {
+                    if (Array.isArray(rawNoms)) {
+                        noms = rawNoms;
+                    } else if (typeof rawNoms === 'string') {
+                        // Test si c'est du JSON
+                        if (rawNoms.startsWith('[') || rawNoms.startsWith('{')) {
+                            noms = JSON.parse(rawNoms);
+                        } else {
+                            noms = [rawNoms];
+                        }
+                    }
+                    // Forcer en tableau si objet simple
+                    if (noms && !Array.isArray(noms)) noms = [noms];
+                } catch (e) {
+                    noms = [rawNoms];
+                }
+
+                if (noms && noms.length > 0) {
+                    noms.forEach(function(nom) {
+                        intentionsHtml += `<span class="nom-tag">${nom}</span> `;
+                    });
+                } else {
+                    intentionsHtml = '<span class="text-muted">Aucun nom spécifié</span>';
+                }
+
+                $('#modalIntentions').text(data.motif_intention || 'Non spécifiée');
+                // $('#modalHeure').text(data.heure_souhaitee || 'Non spécifiée');
+
+                // 4. Afficher le modal
+                $('#messeDetailModal').modal('show');
+            });
+
+
+            // --- LOGIQUE DES CHECKBOXES ---
+
+            $('#selectAll').on('click', function() {
+                var rows = table.rows({
+                    'search': 'applied'
+                }).nodes();
+                $('input[type="checkbox"]', rows).prop('checked', this.checked);
+                updateBulkActions();
+            });
+
+            $('#messesTable tbody').on('change', 'input[type="checkbox"]', function() {
+                if (!this.checked) {
+                    var el = $('#selectAll').get(0);
+                    if (el && el.checked && ('indeterminate' in el)) el.indeterminate = true;
+                }
+                updateBulkActions();
+            });
+
+            function updateBulkActions() {
+                let count = $('.messe-checkbox:checked').length;
+                if (count > 0) {
+                    $('#bulkActionsPanel').css('display', 'flex');
+                    $('#selectedCount').text(count + ' demande(s) sélectionnée(s)');
+                } else {
+                    $('#bulkActionsPanel').hide();
+                }
             }
-        }
 
-        // Fonction pour tout désélectionner
-        function deselectAll() {
-            document.getElementById('selectAll').checked = false;
-            const checkboxes = document.querySelectorAll('.messe-checkbox');
-            checkboxes.forEach(cb => {
-                cb.checked = false;
-            });
-            updateBulkActions();
-        }
+            window.generatePDF = function() {
+                let selectedIds = [];
+                $('.messe-checkbox:checked').each(function() {
+                    selectedIds.push($(this).val());
+                });
 
-        // Fonction pour générer le PDF
-        function generatePDF() {
-            const selectedCheckboxes = document.querySelectorAll('.messe-checkbox:checked');
-            const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
-
-            if (selectedIds.length === 0) {
-                alert('Veuillez sélectionner au moins une demande.');
-                return;
+                if (selectedIds.length === 0) {
+                    alert('Veuillez sélectionner au moins une ligne.');
+                    return;
+                }
+                $('#selectedIds').val(JSON.stringify(selectedIds));
+                $('#pdfForm').submit();
             }
-
-            // Mettre à jour le champ caché avec les IDs sélectionnés
-            document.getElementById('selectedIds').value = JSON.stringify(selectedIds);
-
-            // Afficher un message de chargement
-            const downloadBtn = document.querySelector('.bulk-actions .btn-primary');
-            const originalText = downloadBtn.innerHTML;
-            downloadBtn.innerHTML = '⏳ Génération en cours...';
-            downloadBtn.disabled = true;
-
-            // Soumettre le formulaire
-            setTimeout(() => {
-                document.getElementById('pdfForm').submit();
-
-                // Réactiver le bouton après 3 secondes
-                setTimeout(() => {
-                    downloadBtn.innerHTML = originalText;
-                    downloadBtn.disabled = false;
-                }, 3000);
-            }, 500);
-        }
-
-        // Initialiser les actions groupées au chargement
-        document.addEventListener('DOMContentLoaded', function() {
-            updateBulkActions();
-
-            // Écouter les changements sur les checkboxes
-            const checkboxes = document.querySelectorAll('.messe-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', updateBulkActions);
-            });
         });
     </script>
-@endsection
+@endpush
+
+<style>
+    .messe-container {
+        width: 95%;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+
+    .messe-header {
+        text-align: center;
+        margin-bottom: 30px;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .messe-header h1 {
+        color: #d4bd8a;
+        font-weight: 700;
+    }
+
+    /* Badges de statut */
+    .badge-status {
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+
+    .badge-confirmee {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .badge-celebre {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .badge-annulee {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .badge-en_attente {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    /* Actions groupées */
+    .bulk-actions {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        display: none;
+        align-items: center;
+        gap: 15px;
+        border: 1px solid #e9ecef;
+    }
+
+    .btn-action {
+        padding: 6px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        border: none;
+        cursor: pointer;
+        transition: 0.3s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .btn-view {
+        background-color: #c49d54;
+        color: white;
+    }
+
+    .btn-view:hover {
+        background-color: #a38243;
+        color: white;
+    }
+
+    .btn-pdf {
+        background-color: #5ea7b5;
+        color: white;
+    }
+
+    .btn-pdf:hover {
+        background-color: #4a8996;
+    }
+
+    /* DataTable Customization */
+    table.dataTable thead th {
+        background-color: #5ea7b5;
+        color: #ffffff !important;
+        vertical-align: middle;
+        padding: 12px;
+    }
+
+    table.dataTable tbody td {
+        vertical-align: middle;
+    }
+
+    .nom-tag {
+        display: inline-block;
+        background: #f0f2f5;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        margin: 2px;
+        color: #495057;
+        border: 1px solid #e9ecef;
+    }
+
+    /* Styles Spécifiques Modal */
+    .modal-header {
+        background-color: #5ea7b5;
+        color: white;
+        border-bottom: none;
+    }
+
+    .modal-title {
+        font-weight: 700;
+    }
+
+    .modal-body h5 {
+        color: #c49d54;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 5px;
+    }
+
+    .detail-row {
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: #666;
+    }
+
+    .detail-value {
+        font-weight: 500;
+        color: #333;
+        text-align: right;
+    }
+
+    .intentions-box {
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 10px;
+    }
+</style>

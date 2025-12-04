@@ -144,9 +144,11 @@ Route::middleware('paroisse')->prefix('parish')->group(function () {
     Route::put('/profile/update', [AuthenticateParoisse::class, 'updateProfile'])->name('paroisse.update');
 
     // Routes de gestion des demandes de messes
-    Route::get('/index', [DemandeController::class, 'index'])->name('demandes.messes.index');
+    Route::get('/index/messes', [DemandeController::class, 'index'])->name('demandes.messes.index');
     Route::get('/validate', [DemandeController::class, 'validate'])->name('demandes.messes.validate');
-    Route::get('/mes-messes/{messe}', [DemandeController::class, 'show'])->name('paroisse.messe.show');
+    Route::get('/celebrated', [DemandeController::class, 'celebrated'])->name('demandes.messes.celebrated');
+    Route::get('/messes_show/{messe}/show', [DemandeController::class, 'show'])->name('paroisse.messe_show');
+    Route::get('/mes-messes_show_details/{messe}', [DemandeController::class, 'show_details'])->name('paroisse.messe.show_details');
     Route::post('/mes-messes/export-pdf', [DemandeController::class, 'exportPdf'])->name('paroisse.messe.export-pdf');
     Route::post('/mes-messes/{messe}/cancel', [DemandeController::class, 'cancel'])->name('paroisse.messe.cancel');
     Route::post('/mes-messes/{messe}/confirmed', [DemandeController::class, 'confirmed'])->name('paroisse.messe.confirmed');

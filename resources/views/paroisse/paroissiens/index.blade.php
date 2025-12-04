@@ -13,7 +13,7 @@
 
         {{-- Zone de Filtres --}}
         <div class="card mb-3 shadow-sm">
-            <div class="card-header bg-white">
+            <div class="card-header bg-white ">
                 <i class="fas fa-filter text-primary"></i> <strong>Filtres & Options</strong>
             </div>
             <div class="card-body">
@@ -37,10 +37,11 @@
                         </select>
                     </div>
                     <div class="col-md-6 d-flex align-items-end justify-content-end gap-2">
-                        <button id="btn_filter" class="btn btn-primary">
+                        <button id="btn_filter" class="btn btn-primary" style="background-color: #c49d54; border:none;">
                             <i class="fas fa-search"></i> Filtrer
                         </button>
-                        <button id="btn_reset" class="btn btn-outline-secondary">
+                        <button id="btn_reset" class="btn btn-outline-secondary"
+                            style="background-color: #d9d9d9; border:none;">
                             <i class="fas fa-undo"></i> Réinitialiser
                         </button>
                     </div>
@@ -54,14 +55,16 @@
                 <h5 class="mb-0 text-primary fw-bold">Gestion des Paroissiens</h5>
                 <div>
                     {{-- Les href sont mis à jour via JS en fonction des filtres --}}
-                    <a href="{{ route('paroissien.export.pdf') }}" id="btn-export-pdf" class="btn btn-danger me-1"
-                        target="_blank">
+                    <a href="{{ route('paroissien.export.pdf') }}" id="btn-export-pdf" style="background-color: #de353e;"
+                        class="btn btn-danger me-1" target="_blank">
                         <i class="fas fa-file-pdf"></i> PDF
                     </a>
-                    <a href="{{ route('paroissien.export.excel') }}" id="btn-export-excel" class="btn btn-success me-1">
+                    <a href="{{ route('paroissien.export.excel') }}" style="background-color: #339c5d;"
+                        id="btn-export-excel" class="btn btn-success me-1">
                         <i class="fas fa-file-excel"></i> Excel
                     </a>
-                    <a href="{{ route('paroissien.create') }}" class="btn btn-primary">
+                    <a href="{{ route('paroissien.create') }}" class="btn btn-primary "
+                        style="background-color: #c49d54; border:none;">
                         <i class="fas fa-plus"></i> Nouveau
                     </a>
                 </div>
@@ -188,3 +191,45 @@
         });
     </script>
 @endpush
+
+
+<style>
+    .btn-action {
+        width: 28px;
+        /* largeur identique */
+        height: 22px;
+        /* hauteur identique */
+        padding: 0 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        border: none !important;
+    }
+
+    .btn-view {
+        background-color: #d9d9d9 !important;
+    }
+
+    .btn-edit {
+        background-color: #c49d54 !important;
+        color: white;
+    }
+
+    .btn-delete {
+        background-color: #de353e !important;
+        color: white;
+    }
+
+    .messe-header h1 {
+        color: #d4bd8a;
+        font-weight: 700;
+    }
+
+    table.dataTable thead th,
+    table.dataTable thead td {
+        background-color: #5ea7b5 !important;
+        color: #ffffffff !important;
+        vertical-align: middle;
+    }
+</style>

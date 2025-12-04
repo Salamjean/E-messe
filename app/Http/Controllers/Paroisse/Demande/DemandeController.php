@@ -13,17 +13,90 @@ use PDF;
 
 class DemandeController extends Controller
 {
-    public function index()
+    // public function index()
+    // {
+    //     $today = now()->startOfDay();
+
+    //     $filteredMessess = Auth::guard('paroisse')->user()->messes()
+    //         ->where('statut', 'confirmee')
+    //         ->whereDate('date_souhaitee', '<=', $today)
+    //         ->orderBy('created_at', 'desc')
+    //         ->get();
+
+    //     return view('paroisse.demande.index', compact('filteredMessess'));
+    // }
+
+    public function index(Request $request)
     {
-        $today = now()->startOfDay();
+        // Si c'est une requête AJAX (venant du DataTable)
+        if ($request->ajax()) {
+            $today = now()->startOfDay();
 
-        $filteredMessess = Auth::guard('paroisse')->user()->messes()
-            ->where('statut', 'confirmee')
-            ->whereDate('date_souhaitee', '<=', $today)
-            ->orderBy('created_at', 'desc')
-            ->get();
+            $messes = Auth::guard('paroisse')->user()->messes()
+                ->where('statut', 'confirmee')
+                ->whereDate('date_souhaitee', '<=', $today)
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        return view('paroisse.demande.index', compact('filteredMessess'));
+            // On formate les données pour le DataTable
+            $data = $messes->map(function ($messe) {
+
+                // Calculer la progression
+                $celebrationCount = $messe->getCelebrationsCount();
+                $progressPercentage = $celebrationCount['total'] > 0
+                    ? ($celebrationCount['celebrated'] / $celebrationCount['total']) * 100
+                    : 0;
+
+                // Formater les noms
+                $noms = is_array($messe->nom_prenom_concernes)
+                    ? $messe->nom_prenom_concernes
+                    : json_decode($messe->nom_prenom_concernes, true) ?? [$messe->nom_prenom_concernes];
+                $nomsHtml = collect($noms)->map(function ($nom) {
+                    return '<span class="badge bg-light text-dark border me-1">'.$nom.'</span>';
+                })->implode(' ');
+
+                // Déterminer le type d'intention
+                $typeLabel = match ($messe->type_intention) {
+                    'Defunt' => 'Défunt',
+                    'Action graces' => 'Action de Grâces',
+                    default => 'Intention Particulière',
+                };
+
+                return [
+                    'id' => $messe->id,
+                    'checkbox' => '<input type="checkbox" name="selected_messes[]" value="'.$messe->id.'" class="messe-checkbox form-check-input">',
+                    'date_creation' => $messe->created_at->format('d/m/Y'),
+                    'date_souhaitee' => Carbon::parse($messe->date_souhaitee)->format('d/m/Y').' '.$messe->heure_souhaitee,
+                    'statut' => '<span class="badge badge-'.str_replace(' ', '_', $messe->statut).'">'.ucfirst($messe->statut).'</span>',
+                    'type_celebration' => $messe->celebration_choisie,
+                    'noms' => $messe->user->name,
+                    'progression' => '
+                    <div class="d-flex align-items-center">
+                        <div class="progress flex-grow-1" style="height: 6px;">
+                            <div class="progress-bar" role="progressbar" style="width: '.$progressPercentage.'%; background-color: #5ea7b5;"></div>
+                        </div>
+                        <span class="ms-2" style="font-size:0.8rem">'.$celebrationCount['celebrated'].'/'.$celebrationCount['total'].'</span>
+                    </div>',
+                    'montant' => number_format($messe->montant_offrande, 0, ',', ' ').' FCFA',
+                    'actions' => '
+                    <div class="btn-group btn-group-sm">
+                        <a href="'.route('paroisse.messe_show', ['messe' => $messe->id]).'" class="btn btn-outline-primary" title="Voir détails">
+                            👁️
+                        </a>
+                        '.($messe->statut === 'en attente' ? '
+                        <form action="'.route('paroisse.messe.cancel', ['messe' => $messe->id]).'" method="POST" class="d-inline" onsubmit="return confirm(\'Êtes-vous sûr ?\')">
+                            '.csrf_field().'
+                            <button type="submit" class="btn btn-outline-danger" title="Annuler">🗑️</button>
+                        </form>' : '').'
+                    </div>',
+                ];
+            });
+
+            return response()->json(['data' => $data]);
+        }
+
+        // Si chargement normal de la page
+        return view('paroisse.demande.index');
     }
 
     // Méthode pour vérifier si toutes les dates ont été célébrées
@@ -235,44 +308,165 @@ class DemandeController extends Controller
         }
     }
 
-    // public function cancel($id)
+    // public function validate()
     // {
-    //     // Récupérer la messe avec l'ID
-    //     $messe = Messe::findOrFail($id);
+    //     $filteredMessess = Auth::guard('paroisse')->user()->messes()
+    //         ->orderBy('created_at', 'desc')
+    //         ->where('statut', 'en attente')
+    //         ->get();
 
-    //     // Vérifier que l'utilisateur peut annuler cette messe
-    //     if ($messe->paroisse_id !== Auth::guard('paroisse')->user()->id) {
-    //         return redirect()->back()->with('error', 'Non autorisé');
-    //     }
-
-    //     // Vérifier que la messe peut être annulée
-    //     if ($messe->statut !== 'en attente') {
-    //         return redirect()->back()->with('error', 'Seules les demandes en attente peuvent être annulées');
-    //     }
-
-    //     $messe->update(['statut' => 'annulee']);
-
-    //     return redirect()->route('demandes.messes.index')
-    //         ->with('success', 'Demande annulée avec succès');
+    //     return view('paroisse.demande.validate', compact('filteredMessess'));
     // }
 
-    public function validate()
+    public function validate(Request $request)
     {
-        $filteredMessess = Auth::guard('paroisse')->user()->messes()
-            ->orderBy('created_at', 'desc')
-            ->where('statut', 'en attente')
-            ->get();
+        if ($request->ajax()) {
+            $messes = Auth::guard('paroisse')->user()->messes()
+                ->where('statut', 'en attente')
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        // Filtrer les demandes pour n'afficher que celles avec des dates valides
-        // à partir de date_souhaitee
-        // $filteredMessess = $messess->filter(function($messe) {
-        //     return $messe->hasValidDates();
-        // });
+            return response()->json([
+                'data' => $messes->map(function ($messe) {
 
-        return view('paroisse.demande.validate', compact('filteredMessess'));
+                    // --- MISE A JOUR ICI : On pointe vers 'show_details' ---
+                    // Assurez-vous que cette route existe dans web.php
+                    $urlShow = route('paroisse.messe.show_details', ['messe' => $messe->id]);
+
+                    $urlConfirm = route('paroisse.messe.confirmed', ['messe' => $messe->id]);
+                    $urlCancel = route('paroisse.messe.cancel', ['messe' => $messe->id]);
+
+                    // Nom à afficher dans le tableau
+                    $nomsAffiche = $messe->user->name ?? 'Anonyme';
+
+                    return [
+                        'id' => $messe->id,
+                        'checkbox' => '<input type="checkbox" class="messe-checkbox form-check-input" value="'.$messe->id.'">',
+                        'date_creation' => $messe->created_at->format('d/m/Y'),
+                        'type_intention' => $messe->celebration_choisie,
+                        'noms' => $nomsAffiche,
+                        'date_souhaitee' => Carbon::parse($messe->date_souhaitee)->format('d/m/Y'),
+                        'heure' => $messe->heure_souhaitee ?? '-',
+                        'offrande' => number_format($messe->montant_offrande, 0, ',', ' ').' FCFA',
+                        'motif_intention' => $messe->motif_intention,
+
+                        'actions' => '
+                    <div class="d-flex justify-content-center gap-1">
+                        <!-- Bouton VOIR avec la classe "btn-show-details" -->
+                        <button type="button" class="btn btn-sm btn-info text-white btn-show-details" 
+                                style="background-color: #d9d9d9; border:none;" 
+                                data-url="'.$urlShow.'" 
+                                title="Voir les détails">
+                            👁️
+                        </button>
+                        
+                        <button type="button" class="btn btn-sm btn-success confirm-single-btn"
+                                style="background-color: #c49d54; border:none;" 
+                                data-url="'.$urlConfirm.'" 
+                                title="Confirmer">
+                            ✅
+                        </button>
+                            
+                        <button type="button" class="btn btn-sm btn-danger cancel-single-btn" 
+                                data-url="'.$urlCancel.'" 
+                                style="background-color: #de353e; border:none;"
+                                title="Annuler">
+                            ❌
+                        </button>
+                    </div>
+                ',
+                    ];
+                }),
+            ]);
+        }
+
+        return view('paroisse.demande.validate');
     }
 
-    // /NOuvelles fonctions pour les notification
+    // Votre fonction renommée show_details
+    public function show_details($id)
+    {
+        // Récupération sécurisée
+        $messe = Auth::guard('paroisse')->user()->messes()->with('user')->findOrFail($id);
+
+        // Traitement pour l'affichage propre des "Noms concernés"
+        $noms_concernes = $messe->nom_prenom_concernes;
+
+        // Si c'est stocké en JSON ou Array, on le convertit en string lisible
+        if (is_string($noms_concernes)) {
+            $decoded = json_decode($noms_concernes, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $noms_concernes = implode(', ', $decoded);
+            }
+        } elseif (is_array($noms_concernes)) {
+            $noms_concernes = implode(', ', $noms_concernes);
+        }
+
+        // Retourne les données formatées pour le JS
+        return response()->json([
+            'type_intention' => $messe->celebration_choisie,
+            'date_souhaitee' => Carbon::parse($messe->date_souhaitee)->format('d/m/Y'),
+            'heure' => $messe->heure_souhaitee ?? 'Non spécifiée',
+            'offrande' => number_format($messe->montant_offrande, 0, ',', ' '),
+            'noms' => $noms_concernes,
+            'demandeur' => $messe->user ? $messe->user->name : 'Anonyme',
+            'status' => $messe->status ?? 'En attente',
+            'motif_intention' => $messe->motif_intention,
+        ]);
+    }
+
+    public function celebrated(Request $request)
+    {
+        if ($request->ajax()) {
+            $messes = Auth::guard('paroisse')
+                ->user()
+                ->messes()
+                ->where('statut', 'confirmee')
+                ->where('date_souhaitee', '>=', now())
+                ->orderBy('date_souhaitee', 'desc')
+                ->get();
+
+            return response()->json([
+                'data' => $messes->map(function ($messe) {
+                    // Gestion des noms concernés (pour l'intention)
+                    // On suppose que c'est stocké dans 'nom_prenom_concernes' ou similaire
+                    // Si vous n'avez pas ce champ, remplacez par $messe->motif_intention
+                    $rawNoms = $messe->nom_prenom_concernes ?? [];
+
+                    $noms = is_array($rawNoms)
+                        ? $rawNoms
+                        : (json_decode($rawNoms, true) ?? [$rawNoms]);
+
+                    // Si vide ou null, on met un tableau vide
+                    if (! is_array($noms)) {
+                        $noms = [];
+                    }
+
+                    return [
+                        'id' => $messe->id,
+                        'checkbox' => '<input type="checkbox" class="messe-checkbox form-check-input" value="'.$messe->id.'">',
+                        'date_souhaitee' => $messe->date_souhaitee ? Carbon::parse($messe->date_souhaitee)->format('d/m/Y') : '-',
+                        'heure_souhaitee' => $messe->heure_souhaitee ?? '-',
+                        'intention' => $messe->celebration_choisie,
+                        'nom_concerne' => $messe->user->name,
+                        'offrande' => number_format($messe->montant_offrande, 0, ',', ' ').' FCFA',
+                        'statut' => $messe->statut,
+                        // Données brutes pour la modale
+                        'full_details' => [
+                            'demandeur' => $messe->user->name,
+                            'telephone' => $messe->telephone_demandeur ?? 'Non renseigné',
+                            'email' => $messe->email_demandeur ?? 'Non renseigné',
+                            'motif' => $messe->motif_intention ?? 'Aucun motif spécifié',
+                            'celebration' => $messe->celebration_choisie ?? 'Non spécifié',
+                            'noms_text' => implode(', ', $noms),
+                        ],
+                    ];
+                }),
+            ]);
+        }
+
+        return view('paroisse.demande.hold_celebration');
+    }
 
     public function cancel($id)
     {

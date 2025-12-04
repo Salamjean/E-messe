@@ -1,5 +1,5 @@
 <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-lg modal-dialog-centered" style="background-color: #f8f9fa;">
         <div class="modal-content border-0 shadow-lg rounded-4">
             <form id="eventForm" enctype="multipart/form-data" method="POST">
                 @csrf
@@ -65,12 +65,14 @@
 
                 <div class="modal-footer">
                     <!-- Bouton Annuler avec icône "close" -->
-                    <button type="button" class="btn btn-light border" style="color: #c5c5c7;" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-light border" style="color: #c5c5c7; border:none;"
+                        data-bs-dismiss="modal">
                         <i class="material-icons align-middle me-1">cancel</i> Annuler
                     </button>
 
                     <!-- Bouton Sauvegarder avec icône "save" -->
-                    <button type="submit" class="btn btn-dark" id="saveBtn" style="color: #c49d54;">
+                    <button type="submit" class="btn btn-dark" id="saveBtn"
+                        style="background-color: #c49d54; border:none;">
                         <i class="material-icons align-middle me-1">save</i> Créer l'évènement
                     </button>
                 </div>

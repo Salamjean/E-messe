@@ -7,7 +7,7 @@
 @section('content')
     <div class="container mt-4"><br><br>
         <div class="card">
-            <div class="card-header">
+            <div class="card-header" style="background-color: #5ea7b5; border:none;">
                 <h3>Fiche d’identification des fidèles</h3>
             </div>
             <div class="card-body">
@@ -43,7 +43,7 @@
                                 <option>Marié(e)</option>
                             </select>
                         </div>
-
+             
                         <div class="col-md-4 mb-3">
                             <label>Statut d'Activité</label>
                             <select name="statut_activite" class="form-select">

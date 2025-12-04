@@ -55,20 +55,22 @@ class OffrandeController extends Controller
         }
     }
 
-    public function history()
+    public function history(Request $request)
     {
-        $filteredMessess = Auth::guard('paroisse')->user()->messes()
-            ->where('statut', '!=', 'en attente')
-            ->where('statut', '!=', 'confirmee')
-            ->where('statut', '!=', 'en_attente_paiement')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Si la requête est une demande AJAX (pour le DataTable)
+        if ($request->ajax()) {
+            $messes = Auth::guard('paroisse')->user()->messes()
+                ->where('statut', '!=', 'en attente')
+                ->where('statut', '!=', 'confirmee')
+                ->where('statut', '!=', 'en_attente_paiement')
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        // Filtrer les demandes pour n'afficher que celles avec des dates valides
-        // à partir de date_souhaitee
-        // $filteredMessess = $messess->filter(function($messe) {
-        //     return $messe->hasValidDates();
-        // });
-        return view('paroisse.offrande.history', compact('filteredMessess'));
+            // On formate les données pour le JSON
+            return response()->json(['data' => $messes]);
+        }
+
+        // Sinon, on retourne la vue vide (le tableau sera rempli par JS)
+        return view('paroisse.offrande.history');
     }
 }
