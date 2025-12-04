@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
-    <div class="messe-container">
+    <div class="container-fluid mt-4">
         <div class="messe-header">
             <h1>Validation des intentions de messes</h1>
             <p>Gérez vos demandes en attente via le tableau ci-dessous.</p>

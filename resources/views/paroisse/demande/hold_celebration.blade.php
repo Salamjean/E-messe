@@ -6,73 +6,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
-    <style>
-        .messe-container {
-            width: 95%;
-            margin: 0 auto;
-            padding: 20px 0;
-        }
-
-        .messe-header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        .messe-header h1 {
-            color: #d4bd8a;
-            font-weight: 700;
-        }
-
-        .page-item.active .page-link {
-            background-color: #5ea7b5;
-            border-color: #5ea7b5;
-        }
-
-        table.dataTable tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        .nom-badge {
-            font-size: 0.85em;
-            margin-right: 4px;
-            margin-bottom: 4px;
-            display: inline-block;
-        }
-
-        /* Style pour la modale */
-        .modal-header {
-            background-color: #5ea7b5;
-            color: white;
-        }
-
-        .detail-group {
-            margin-bottom: 15px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-        }
-
-        .detail-label {
-            font-weight: bold;
-            color: #555;
-            display: block;
-        }
-
-        .detail-value {
-            color: #000;
-        }
-
-        table.dataTable thead th {
-            background-color: #5ea7b5;
-            color: #ffffffff;
-            vertical-align: middle;
-        }
-    </style>
-
-    <div class="messe-container">
+    <div class="container-fluid mt-4">
         <div class="messe-header">
             <h1>Validation des intentions de messes</h1>
             <p>Retrouvez toutes vos demandes confirmées à venir sous forme de liste.</p>
@@ -309,3 +243,70 @@
         });
     </script>
 @endpush
+
+
+<style>
+    .messe-container {
+        width: 95%;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+
+    .messe-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .messe-header h1 {
+        color: #d4bd8a;
+        font-weight: 700;
+    }
+
+    .page-item.active .page-link {
+        background-color: #5ea7b5;
+        border-color: #5ea7b5;
+    }
+
+    table.dataTable tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .nom-badge {
+        font-size: 0.85em;
+        margin-right: 4px;
+        margin-bottom: 4px;
+        display: inline-block;
+    }
+
+    /* Style pour la modale */
+    .modal-header {
+        background-color: #5ea7b5;
+        color: white;
+    }
+
+    .detail-group {
+        margin-bottom: 15px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+    }
+
+    .detail-label {
+        font-weight: bold;
+        color: #555;
+        display: block;
+    }
+
+    .detail-value {
+        color: #000;
+    }
+
+    table.dataTable thead th {
+        background-color: #5ea7b5;
+        color: #ffffffff;
+        vertical-align: middle;
+    }
+</style>

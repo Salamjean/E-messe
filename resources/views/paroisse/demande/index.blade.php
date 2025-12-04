@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-    <div class="container"><br><br>
+    <div class="container-fluid mt-4"><br><br>
 
         <div class="messe-header">
             <h1>Liste des demandes de messes à célébrer</h1>

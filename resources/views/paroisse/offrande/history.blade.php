@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-    <div class="messe-container">
+    <div class="container-fluid mt-4">
         <div class="messe-header">
             <h1>Historique célébrées ou annulées</h1>
             <p>Retrouvez toutes les demandes traitées.</p>

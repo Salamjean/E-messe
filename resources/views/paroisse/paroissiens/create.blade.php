@@ -5,10 +5,10 @@
 @endpush
 
 @section('content')
-    <div class="container mt-4"><br><br>
+    <div class="container-fluid mt-4"><br><br>
         <div class="card">
             <div class="card-header" style="background-color: #5ea7b5; border:none;">
-                <h3>Fiche d’identification des fidèles</h3>
+                <h3 style="color: #ffffffff !important;">Fiche d’identification des fidèles</h3>
             </div>
             <div class="card-body">
                 <form action="{{ route('paroissien.store') }}" method="POST" enctype="multipart/form-data">
@@ -43,7 +43,7 @@
                                 <option>Marié(e)</option>
                             </select>
                         </div>
-             
+
                         <div class="col-md-4 mb-3">
                             <label>Statut d'Activité</label>
                             <select name="statut_activite" class="form-select">
@@ -129,3 +129,44 @@
         });
     </script>
 @endsection
+
+<style>
+    .btn-action {
+        width: 28px;
+        /* largeur identique */
+        height: 22px;
+        /* hauteur identique */
+        padding: 0 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        border: none !important;
+    }
+
+    .btn-view {
+        background-color: #d9d9d9 !important;
+    }
+
+    .btn-edit {
+        background-color: #c49d54 !important;
+        color: white;
+    }
+
+    .btn-delete {
+        background-color: #de353e !important;
+        color: white;
+    }
+
+    .messe-header h1 {
+        color: #d4bd8a;
+        font-weight: 700;
+    }
+
+    table.dataTable thead th,
+    table.dataTable thead td {
+        background-color: #5ea7b5 !important;
+        color: #ffffffff !important;
+        vertical-align: middle;
+    }
+</style>
