@@ -315,8 +315,8 @@
 
         .support-icon {
             /* width: 40px;
-                            height: 40px;
-                            margin: 0 auto 25px; */
+                                    height: 40px;
+                                    margin: 0 auto 25px; */
             background: linear-gradient(135deg, #C9A961 0%, #B89551 100%);
             border-radius: 50%;
             /* display: flex; */
@@ -418,6 +418,7 @@
         }
     </style>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Form submission
@@ -446,7 +447,12 @@
                     data: formData,
                     success: function(response) {
                         // Show success message
-                        alert(response.message);
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Succès!',
+                            text: response.message,
+                            confirmButtonColor: '#C9A961'
+                        });
 
                         // Reset form
                         $('#contactForm')[0].reset();
@@ -458,7 +464,12 @@
                             errorMessage = Object.values(xhr.responseJSON.errors).flat().join(
                                 '\n');
                         }
-                        alert(errorMessage);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erreur',
+                            text: errorMessage,
+                            confirmButtonColor: '#C9A961'
+                        });
                     },
                     complete: function() {
                         // Reset button state
