@@ -128,11 +128,8 @@
                                             </td>
                                         </tr>
                                     @empty
-                                        <tr>
-                                            <td colspan="7" class="text-center py-4">
-                                                <p class="text-xs Text-second mb-0">Aucun succès de paroisse trouvé.</p>
-                                            </td>
-                                        </tr>
+
+                                        <p class="text-center py-4"> Aucun succès de paroisse trouvé.</p>
                                     @endforelse
                                 </tbody>
                             </table>
