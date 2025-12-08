@@ -19,23 +19,23 @@
         <div class="container">
             <div class="row g-4">
                 <!-- Feature Card 1 -->
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-4 col-md-6 col-sm-12">
                     <div class="feature-card">
                         <div class="feature-card-icon">
                             <i class="fas fa-calendar-alt"></i>
                         </div>
                         <h3 class="feature-card-title">Calendrier Intuitif</h3>
-                        <p class="feature-card-description">Visualisez et gérez l’ensemble de vos messes sur un calendrier
+                        <p class="feature-card-description">Visualisez et gérez l'ensemble de vos messes sur un calendrier
                             interactif et facile à utiliser.</p>
                         <a href="#calendrier" class="feature-link">En savoir plus <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
 
                 <!-- Feature Card 2 -->
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-4 col-md-6 col-sm-12">
                     <div class="feature-card">
                         <div class="feature-card-icon">
-                            <i class="fa-solid fa-user-group">‌</i>
+                            <i class="fa-solid fa-user-group"></i>
                         </div>
                         <h3 class="feature-card-title">Gestion des Fidèles</h3>
                         <p class="feature-card-description">Suivez facilement les demandes des fidèles et gérez les
@@ -45,10 +45,10 @@
                 </div>
 
                 <!-- Feature Card 3 -->
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-4 col-md-6 col-sm-12">
                     <div class="feature-card">
                         <div class="feature-card-icon">
-                            <i class="fa-solid fa-table-cells-large">‌</i>
+                            <i class="fa-solid fa-table-cells-large"></i>
                         </div>
                         <h3 class="feature-card-title">Tableau de bord</h3>
                         <p class="feature-card-description">Analysez vos statistiques avec des graphiques détaillés et des
@@ -58,10 +58,10 @@
                 </div>
 
                 <!-- Feature Card 4 -->
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-4 col-md-6 col-sm-12">
                     <div class="feature-card">
                         <div class="feature-card-icon">
-                            <i class="fa-solid fa-circle-check">‌</i>
+                            <i class="fa-solid fa-circle-check"></i>
                         </div>
                         <h3 class="feature-card-title">Validation Rapide</h3>
                         <p class="feature-card-description">Approuvez ou rejetez les demandes de messes en un clic, avec
@@ -70,12 +70,11 @@
                     </div>
                 </div>
 
-
                 <!-- Feature Card 5 -->
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-4 col-md-6 col-sm-12">
                     <div class="feature-card">
                         <div class="feature-card-icon">
-                            <i class="fa-solid fa-bolt">‌</i>
+                            <i class="fa-solid fa-bolt"></i>
                         </div>
                         <h3 class="feature-card-title">Notifications en Temps Réel</h3>
                         <p class="feature-card-description">Restez informé de tous les changements avec des notifications
@@ -85,10 +84,10 @@
                 </div>
 
                 <!-- Feature Card 6 -->
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-4 col-md-6 col-sm-12">
                     <div class="feature-card">
                         <div class="feature-card-icon">
-                            <i class="fa-solid fa-shield">‌</i>
+                            <i class="fa-solid fa-shield"></i>
                         </div>
                         <h3 class="feature-card-title">Sécurité Garantie</h3>
                         <p class="feature-card-description">Vos données sont protégées avec les plus hauts standards de
@@ -110,12 +109,12 @@
             </div>
 
             <!-- Feature Detail 1 - Calendrier Intuitif -->
-            <div class="feature-detail" id="calendrier">
-                <div class="row align-items-center">
-                    <div class="col-lg-6 order-lg-1">
+            <div class="feature-detail mb-5" id="calendrier">
+                <div class="row align-items-center g-4">
+                    <div class="col-lg-6 order-lg-1 order-2">
                         <div class="feature-detail-content">
                             <h3 class="feature-detail-title">Calendrier Intuitif</h3>
-                            <p class="feature-detail-description">Visualisez et gérez l’ensemble de vos messes sur un
+                            <p class="feature-detail-description">Visualisez et gérez l'ensemble de vos messes sur un
                                 calendrier interactif et facile à utiliser.</p>
                             <ul class="feature-list">
                                 <li><i class="fas fa-check-circle"></i> Vue mensuelle, hebdomadaire et journalière</li>
@@ -126,59 +125,51 @@
                             </ul>
                         </div>
                     </div>
-                    <div class="col-lg-6 order-lg-2">
-                        <div class="container-fluid d-flex justify-content-center">
-                            <div class="feat-card d-flex flex-wrap align-items-center shadow position-relative"
-                                style="border: 1px solid #c2a16d; border-radius: 20px; padding: 65px;">
-
+                    <div class="col-lg-6 order-lg-2 order-1">
+                        <div class="container-fluid">
+                            <div class="feat-card d-flex flex-column flex-md-row align-items-center shadow position-relative"
+                                style="border: 1px solid #c2a16d; border-radius: 20px; padding: 30px;">
                                 <!-- Texte -->
-                                <div class="feature-text col-lg-6 col-md-6 p-4">
+                                <div class="feature-text col-lg-6 col-md-6 p-3 p-md-4">
                                     <h4 class="text-primar">
                                         Processus de Validation de messe par le fidèle lui-même
                                         depuis son téléphone
                                     </h4>
                                 </div>
-
                                 <!-- Image téléphone -->
                                 <div class="feature-image col-lg-6 col-md-6 text-center position-relative overflow-visible">
                                     <img src="{{ asset('assets/fonctionnalite/img/demande_phone.png') }}"
-                                        alt="Validation Mobile" class="phone-img">
+                                        alt="Validation Mobile" class="phone-img img-fluid">
                                 </div>
-
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
             <!-- Feature Detail 2 - Gestion des Fidèles -->
-            <div class="feature-detail" id="fideles">
-                <div class="row align-items-center">
-                    <div class="col-lg-6 order-lg-1">
-                        <div class="container-fluid d-flex justify-content-center">
-                            <div class="feat-card d-flex flex-wrap align-items-center shadow position-relative"
-                                style="border: 1px solid #c2a16d; border-radius: 20px; padding: 65px;">
-
-
+            <div class="feature-detail mb-5" id="fideles">
+                <div class="row align-items-center g-4">
+                    <div class="col-lg-6 order-lg-1 order-1">
+                        <div class="container-fluid">
+                            <div class="feat-card d-flex flex-column flex-md-row align-items-center shadow position-relative"
+                                style="border: 1px solid #c2a16d; border-radius: 20px; padding: 30px;">
                                 <!-- Image téléphone -->
                                 <div class="feature-image col-lg-6 col-md-6 text-center position-relative overflow-visible">
                                     <img src="{{ asset('assets/fonctionnalite/img/dash_photo.png') }}"
-                                        alt="Validation Mobile" class="phone-img">
+                                        alt="Validation Mobile" class="phone-img img-fluid">
                                 </div>
-
                                 <!-- Texte -->
-                                <div class="feature-text col-lg-6 col-md-6 p-4">
+                                <div class="feature-text col-lg-6 col-md-6 p-3 p-md-4">
                                     <h4 class="text-primar">
                                         Processus de Validation de messe par le fidèle lui-même
                                         depuis son téléphone
                                     </h4>
                                 </div>
-
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-6 order-lg-2">
+                    <div class="col-lg-6 order-lg-2 order-2">
                         <div class="feature-detail-content">
                             <h3 class="feature-detail-title">Gestion des Fidèles</h3>
                             <p class="feature-detail-description">Suivez chaque membre de votre communauté et gérez toutes
@@ -195,34 +186,10 @@
                 </div>
             </div>
 
-            <!-- Feature Detail 3 - Calendrier Intuitif (repeat for demonstration) -->
-            <div class="feature-detail" id="notifications">
-                <div class="row align-items-center">
-
-                    <div class="col-lg-6 order-lg-2">
-                        <div class="container-fluid d-flex justify-content-center">
-                            <div class="feat-card d-flex flex-wrap align-items-center shadow position-relative"
-                                style="border: 1px solid #c2a16d; border-radius: 20px; padding: 65px;">
-
-                                <!-- Image téléphone -->
-                                <div
-                                    class="feature-image col-lg-6 col-md-6 text-center position-relative overflow-visible">
-                                    <img src="{{ asset('assets/fonctionnalite/img/Free_MacBook_Pro_3.png') }}"
-                                        alt="Validation Mobile" class="phone-img">
-                                </div>
-                                <!-- Texte -->
-                                <div class="feature-text col-lg-6 col-md-6 p-4">
-                                    <h4 class="text-primar">
-                                        Processus de Validation de messe par le fidèle lui-même
-                                        depuis son téléphone
-                                    </h4>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-6  order-lg-1">
+            <!-- Feature Detail 3 - Notifications -->
+            <div class="feature-detail mb-5" id="notifications">
+                <div class="row align-items-center g-4">
+                    <div class="col-lg-6 order-lg-1 order-2">
                         <div class="feature-detail-content">
                             <h3 class="feature-detail-title">Calendrier Intuitif</h3>
                             <p class="feature-detail-description">Ne manquez plus jamais une messe importante grâce à notre
@@ -234,6 +201,26 @@
                                 <li><i class="fas fa-check-circle"></i> Alertes de nouvelles demandes</li>
                                 <li><i class="fas fa-check-circle"></i> Préférences personnalisables</li>
                             </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 order-lg-2 order-1">
+                        <div class="container-fluid">
+                            <div class="feat-card d-flex flex-column flex-md-row align-items-center shadow position-relative"
+                                style="border: 1px solid #c2a16d; border-radius: 20px; padding: 30px;">
+                                <!-- Image téléphone -->
+                                <div
+                                    class="feature-image col-lg-6 col-md-6 text-center position-relative overflow-visible">
+                                    <img src="{{ asset('assets/fonctionnalite/img/Free_MacBook_Pro_3.png') }}"
+                                        alt="Validation Mobile" class="phone-img img-fluid">
+                                </div>
+                                <!-- Texte -->
+                                <div class="feature-text col-lg-6 col-md-6 p-3 p-md-4">
+                                    <h4 class="text-primar">
+                                        Processus de Validation de messe par le fidèle lui-même
+                                        depuis son téléphone
+                                    </h4>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -256,8 +243,8 @@
 
     <style>
         /* ========================================
-                                                                                                                                                                                                                                   VARIABLES & RESET
-                                                                                                                                                                                                                                ======================================== */
+                VARIABLES & RESET
+                ======================================== */
         :root {
             --primary-color: #D4A574;
             --primary-dark: #B8895F;
@@ -276,40 +263,9 @@
             color: var(--text-dark);
         }
 
-        /* Image téléphone : agrandie en largeur + hauteur + débordement */
-        .phone-img {
-            width: 180%;
-            /* <<< beaucoup plus large */
-            max-width: 550px;
-            /* limite max optionnelle */
-            /* height: 3000px; */
-            /* garde les proportions */
-            position: absolute;
-            top: -190px;
-            /* <<< dépasse plus haut */
-            right: -20px;
-            /* décale un peu hors du card */
-            z-index: 20;
-            transform-origin: top right;
-            transition: transform 0.3s ease;
-        }
-
-        /* Empêche le card de couper l'image */
-        .feature-image,
-        .feat-card {
-            overflow: visible !important;
-            position: relative;
-        }
-
-        /* Effet hover (optionnel) */
-        .phone-img:hover {
-            transform: scale(1.08);
-        }
-
-
         /* ========================================
-                                                                                                                                                                                                                                   HERO & HEADERS
-                                                                                                                                                                                                                                ======================================== */
+                HERO & HEADERS
+                ======================================== */
         .features-hero {
             background: #f7f4eb;
             padding: 100px 0 80px;
@@ -321,6 +277,7 @@
             font-weight: 800;
             color: var(--text-dark);
             margin-bottom: 1.5rem;
+            line-height: 1.2;
         }
 
         .text-highlight {
@@ -332,6 +289,7 @@
             color: var(--text-gray);
             max-width: 700px;
             margin: 0 auto;
+            line-height: 1.6;
         }
 
         .section-padding {
@@ -342,21 +300,24 @@
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 3rem;
+            line-height: 1.2;
         }
 
         /* ========================================
-                                                                                                                                                                                                                                   FEATURES GRID CARDS
-                                                                                                                                                                                                                                ======================================== */
+                FEATURES GRID CARDS
+                ======================================== */
         .feature-card {
             background: var(--white);
             border: 1px solid #E5E7EB;
             border-radius: 16px;
-            padding: 40px 30px;
+            padding: 30px 20px;
             transition: var(--transition);
             position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            height: 100%;
+            min-height: 300px;
         }
 
         .feature-card::before {
@@ -382,10 +343,10 @@
         }
 
         .feature-card-icon {
-            width: 70px;
-            height: 70px;
+            width: 60px;
+            height: 60px;
             background: linear-gradient(135deg, #FAF5F0 0%, #F5EBDC 100%);
-            border-radius: 14px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -397,7 +358,7 @@
         }
 
         .feature-card-icon i {
-            font-size: 2rem;
+            font-size: 1.75rem;
             color: var(--primary-color);
             transition: var(--transition);
         }
@@ -410,14 +371,16 @@
             font-size: 1.25rem;
             font-weight: 600;
             margin-bottom: 1rem;
+            line-height: 1.3;
         }
 
         .feature-card-description {
             color: var(--text-gray);
             font-size: 0.95rem;
             margin-bottom: auto;
-            line-height: 1.7;
+            line-height: 1.6;
             padding-bottom: 1rem;
+            flex-grow: 1;
         }
 
         .feature-link {
@@ -427,6 +390,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            margin-top: auto;
         }
 
         .feature-link:hover {
@@ -435,16 +399,15 @@
         }
 
         /* ========================================
-                                                                                                                                                                                                                                   DETAILED FEATURES
-                                                                                                                                                                                                                                ======================================== */
+                DETAILED FEATURES
+                ======================================== */
         .features-detailed {
             background: var(--bg-light);
         }
 
         .feature-detail {
-            margin-bottom: 100px;
-            scroll-margin-top: 100px;
-            /* Pour l'ancre */
+            margin-bottom: 80px;
+            scroll-margin-top: 80px;
         }
 
         .feature-detail:last-child {
@@ -455,6 +418,7 @@
             font-size: 2rem;
             font-weight: 700;
             margin-bottom: 1.5rem;
+            line-height: 1.2;
         }
 
         .feature-detail-description {
@@ -467,21 +431,63 @@
         .feature-list {
             list-style: none;
             padding: 0;
+            margin: 0;
         }
 
         .feature-list li {
-            padding: 10px 0;
+            padding: 8px 0;
             color: var(--text-dark);
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 12px;
+            line-height: 1.5;
         }
 
         .feature-list i {
             color: var(--primary-color);
+            flex-shrink: 0;
+            margin-top: 2px;
         }
 
-        /* Conteneur d'image standard */
+        /* Card spécifique "Validation" */
+        .feat-card {
+            background: #fff;
+            background: linear-gradient(to bottom, #e8dfd2, #c8e3ed);
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 600px;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .feature-text h4 {
+            color: #4b9aa5;
+            font-size: 18px;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        .phone-img {
+            width: 100%;
+            max-width: 250px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            transition: var(--transition);
+        }
+
+        .feat-card:hover .phone-img {
+            transform: scale(1.05);
+        }
+
+        /* Empêche le card de couper l'image */
+        .feature-image,
+        .feat-card {
+            overflow: visible !important;
+            position: relative;
+        }
+
         .feature-image-container {
             background: linear-gradient(135deg, #FAF5F0 50%, #F5EBDC 50%);
             border-radius: 24px;
@@ -496,49 +502,9 @@
             justify-content: center;
         }
 
-        .feature-big-icon {
-            font-size: 8rem;
-            color: rgba(212, 165, 116, 0.3);
-        }
-
-        /* Card spécifique " Validation" (Le design complexe) */
-        .feat-card {
-            background: #fff;
-            /* Fallback */
-            background: linear-gradient(to bottom, #e8dfd2, #c8e3ed);
-            border-radius: 25px;
-            padding:
-                20px;
-            width: 100%;
-            max-width: 600px;
-            position: relative;
-        }
-
-        .feature-text h4 {
-            color:
-                #4b9aa5;
-            font-size: 20px;
-        }
-
-        .feature-text p {
-            color: #4b9aa5;
-            font-size: 16px;
-        }
-
-        .phone-img {
-            width: 100%;
-            max-width: 250px;
-            transform: rotate(5deg);
-            transition:
-                var(--transition);
-        }
-
-        .feat-card:hover .phone-img {
-            transform: rotate(0deg) scale(1.05);
-        }
-
-        /*========================================CTA
-                                                                                                                                                                            SECTION========================================*/
+        /* ========================================
+                CTA SECTION
+                ======================================== */
         .cta-section {
             background: #faf4e6;
             padding: 100px 0;
@@ -547,21 +513,21 @@
         }
 
         .cta-title {
-            font-size:
-                2.5rem;
+            font-size: 2.5rem;
             font-weight: 800;
             margin-bottom: 1rem;
             position: relative;
             z-index: 1;
+            line-height: 1.2;
         }
 
         .cta-description {
             font-size: 1.25rem;
             color: #787a7a;
             margin-bottom: 2.5rem;
-            position:
-                relative;
+            position: relative;
             z-index: 1;
+            line-height: 1.6;
         }
 
         .btn-cta {
@@ -574,10 +540,10 @@
             display: inline-block;
             transition: var(--transition);
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-            position:
-                relative;
+            position: relative;
             z-index: 1;
             text-decoration: none;
+            font-size: 1rem;
         }
 
         .btn-cta:hover {
@@ -587,14 +553,39 @@
             transform: translateY(-2px);
         }
 
-        /*========================================RESPONSIVE========================================*/
-        @media (max-width: 992px) {
+        /* ========================================
+                RESPONSIVE
+                ======================================== */
+        @media (max-width: 1200px) {
             .hero-title {
                 font-size: 2.5rem;
             }
 
+            .section-title {
+                font-size: 2.25rem;
+            }
+
+            .feature-detail-title {
+                font-size: 1.75rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .features-hero {
+                padding: 80px 0 60px;
+            }
+
+            .hero-title {
+                font-size: 2.25rem;
+            }
+
+            .section-padding {
+                padding: 60px 0;
+            }
+
             .feature-detail {
                 text-align: center;
+                margin-bottom: 60px;
             }
 
             .feature-list li {
@@ -602,31 +593,196 @@
             }
 
             .feat-card {
-                flex-direction: column;
-                text-align: center;
+                margin-bottom: 30px;
             }
 
             .feature-image {
                 margin-top: 20px;
             }
+
+            .cta-title {
+                font-size: 2rem;
+            }
         }
 
         @media (max-width: 768px) {
             .features-hero {
-                padding: 60px 0;
+                padding: 60px 0 40px;
             }
 
             .hero-title {
-                font-size:
-                    2rem;
+                font-size: 1.75rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .section-title {
+                font-size: 1.75rem;
+                margin-bottom: 2rem;
             }
 
             .section-padding {
+                padding: 40px 0;
+            }
+
+            .feature-card {
+                padding: 25px 15px;
+                min-height: 280px;
+            }
+
+            .feature-card-icon {
+                width: 50px;
+                height: 50px;
+                margin-bottom: 1rem;
+            }
+
+            .feature-card-icon i {
+                font-size: 1.5rem;
+            }
+
+            .feature-card-title {
+                font-size: 1.1rem;
+            }
+
+            .feature-card-description {
+                font-size: 0.9rem;
+            }
+
+            .feature-detail-title {
+                font-size: 1.5rem;
+            }
+
+            .feature-detail-description {
+                font-size: 1rem;
+            }
+
+            .feature-text h4 {
+                font-size: 16px;
+            }
+
+            .phone-img {
+                max-width: 200px;
+            }
+
+            .cta-section {
                 padding: 60px 0;
             }
 
             .cta-title {
                 font-size: 1.75rem;
+            }
+
+            .cta-description {
+                font-size: 1.1rem;
+            }
+
+            .btn-cta {
+                padding: 12px 32px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero-title {
+                font-size: 1.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .feature-card {
+                min-height: 250px;
+            }
+
+            .feature-card-title {
+                font-size: 1rem;
+            }
+
+            .feature-detail-title {
+                font-size: 1.25rem;
+            }
+
+            .feature-list li {
+                font-size: 0.9rem;
+                padding: 6px 0;
+            }
+
+            .feat-card {
+                padding: 15px;
+                border-radius: 15px;
+            }
+
+            .feature-text h4 {
+                font-size: 14px;
+            }
+
+            .phone-img {
+                max-width: 150px;
+            }
+
+            .cta-title {
+                font-size: 1.5rem;
+            }
+
+            .cta-description {
+                font-size: 1rem;
+            }
+        }
+
+        /* Améliorations pour très petits écrans */
+        @media (max-width: 375px) {
+            .feature-card {
+                padding: 20px 15px;
+            }
+
+            .feature-card-icon {
+                width: 45px;
+                height: 45px;
+            }
+
+            .feature-card-icon i {
+                font-size: 1.25rem;
+            }
+
+            .feature-card-title {
+                font-size: 0.95rem;
+            }
+
+            .feature-card-description {
+                font-size: 0.85rem;
+            }
+
+            .btn-cta {
+                padding: 10px 24px;
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Correction pour l'ordre des éléments sur mobile */
+        @media (max-width: 767px) {
+            .feature-detail .row>div {
+                margin-bottom: 30px;
+            }
+
+            .feat-card {
+                flex-direction: column !important;
+                text-align: center;
+            }
+
+            .feature-text {
+                order: 2;
+                margin-top: 20px;
+            }
+
+            .feature-image {
+                order: 1;
             }
         }
     </style>
