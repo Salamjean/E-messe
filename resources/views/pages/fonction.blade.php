@@ -1,12 +1,15 @@
 @extends('pages.layouts.template')
+
 @section('content')
-    <!-- Hero Section -->
+    <!-- ========================================
+           HERO SECTION
+        ======================================== -->
     <section class="features-hero">
         <div class="container">
             <div class="row text-center">
                 <div class="col-lg-10 mx-auto">
                     <h1 class="hero-title">Explorez nos <span class="text-highlight">Fonctionnalités</span></h1>
-                    <p class="hero-subtitle">Découvrez tous les outils puissants d'E-messe pour gérer pour vos messes
+                    <p class="hero-subtitle">Découvrez tous les outils puissants d'E-messe pour gérer vos messes
                         efficacement.
                     </p>
                 </div>
@@ -14,13 +17,15 @@
         </div>
     </section>
 
-    <!-- Features Grid Section -->
+    <!-- ========================================
+           FEATURES GRID SECTION
+        ======================================== -->
     <section class="features-grid section-padding">
         <div class="container">
             <div class="row g-4">
                 <!-- Feature Card 1 -->
                 <div class="col-lg-4 col-md-6">
-                    <div class="feature-card">
+                    <div class="feature-card h-100">
                         <div class="feature-card-icon">
                             <i class="fas fa-calendar-alt"></i>
                         </div>
@@ -33,9 +38,9 @@
 
                 <!-- Feature Card 2 -->
                 <div class="col-lg-4 col-md-6">
-                    <div class="feature-card">
+                    <div class="feature-card h-100">
                         <div class="feature-card-icon">
-                            <i class="fa-solid fa-user-group">‌</i>
+                            <i class="fa-solid fa-user-group"></i>
                         </div>
                         <h3 class="feature-card-title">Gestion des Fidèles</h3>
                         <p class="feature-card-description">Suivez facilement les demandes des fidèles et gérez les
@@ -46,22 +51,22 @@
 
                 <!-- Feature Card 3 -->
                 <div class="col-lg-4 col-md-6">
-                    <div class="feature-card">
+                    <div class="feature-card h-100">
                         <div class="feature-card-icon">
-                            <i class="fa-solid fa-table-cells-large">‌</i>
+                            <i class="fa-solid fa-table-cells-large"></i>
                         </div>
                         <h3 class="feature-card-title">Tableau de bord</h3>
                         <p class="feature-card-description">Analysez vos statistiques avec des graphiques détaillés et des
                             rapports complets.</p>
-                        <a href="#notifications" class="feature-link">En savoir plus <i class="fas fa-arrow-right"></i></a>
+                        <a href="#dashboard" class="feature-link">En savoir plus <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
 
                 <!-- Feature Card 4 -->
                 <div class="col-lg-4 col-md-6">
-                    <div class="feature-card">
+                    <div class="feature-card h-100">
                         <div class="feature-card-icon">
-                            <i class="fa-solid fa-circle-check">‌</i>
+                            <i class="fa-solid fa-circle-check"></i>
                         </div>
                         <h3 class="feature-card-title">Validation Rapide</h3>
                         <p class="feature-card-description">Approuvez ou rejetez les demandes de messes en un clic, avec
@@ -70,25 +75,24 @@
                     </div>
                 </div>
 
-
                 <!-- Feature Card 5 -->
                 <div class="col-lg-4 col-md-6">
-                    <div class="feature-card">
+                    <div class="feature-card h-100">
                         <div class="feature-card-icon">
-                            <i class="fa-solid fa-bolt">‌</i>
+                            <i class="fa-solid fa-bolt"></i>
                         </div>
                         <h3 class="feature-card-title">Notifications en Temps Réel</h3>
                         <p class="feature-card-description">Restez informé de tous les changements avec des notifications
                             intelligentes.</p>
-                        <a href="#multiparoisse" class="feature-link">En savoir plus <i class="fas fa-arrow-right"></i></a>
+                        <a href="#notifications" class="feature-link">En savoir plus <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
 
                 <!-- Feature Card 6 -->
                 <div class="col-lg-4 col-md-6">
-                    <div class="feature-card">
+                    <div class="feature-card h-100">
                         <div class="feature-card-icon">
-                            <i class="fa-solid fa-shield">‌</i>
+                            <i class="fa-solid fa-shield"></i>
                         </div>
                         <h3 class="feature-card-title">Sécurité Garantie</h3>
                         <p class="feature-card-description">Vos données sont protégées avec les plus hauts standards de
@@ -100,7 +104,9 @@
         </div>
     </section>
 
-    <!-- Detailed Features Section -->
+    <!-- ========================================
+           DETAILED FEATURES SECTION
+        ======================================== -->
     <section class="features-detailed section-padding">
         <div class="container">
             <div class="row text-center mb-5">
@@ -109,10 +115,10 @@
                 </div>
             </div>
 
-            <!-- Feature Detail 1 - Calendrier Intuitif -->
+            <!-- Detail 1: Calendrier Intuitif -->
             <div class="feature-detail" id="calendrier">
                 <div class="row align-items-center">
-                    <div class="col-lg-6 order-lg-1">
+                    <div class="col-lg-6 order-lg-1 mb-4 mb-lg-0">
                         <div class="feature-detail-content">
                             <h3 class="feature-detail-title">Calendrier Intuitif</h3>
                             <p class="feature-detail-description">Visualisez et gérez l’ensemble de vos messes sur un
@@ -122,63 +128,57 @@
                                 <li><i class="fas fa-check-circle"></i> Ajout rapide de nouvelles messes</li>
                                 <li><i class="fas fa-check-circle"></i> Filtrage par type de messe et paroisse</li>
                                 <li><i class="fas fa-check-circle"></i> Synchronisation en temps réel</li>
-                                <li><i class="fas fa-check-circle"></i> Exportation au format iCal</li>
                             </ul>
                         </div>
                     </div>
                     <div class="col-lg-6 order-lg-2">
-                        <div class="container-fluid d-flex justify-content-center">
-                            <div class="feat-card d-flex flex-wrap align-items-center shadow position-relative"
-                                style="border: 1px solid #c2a16d; border-radius: 20px; padding: 65px;">
-
-                                <!-- Texte -->
-                                <div class="feature-text col-lg-6 col-md-6 p-4">
-                                    <h4 class="text-primar">
-                                        Processus de Validation de messe par le fidèle lui-même
-                                        depuis son téléphone
-                                    </h4>
-                                </div>
-
-                                <!-- Image téléphone -->
-                                <div class="feature-image col-lg-6 col-md-6 text-center position-relative overflow-visible">
-                                    <img src="{{ asset('assets/fonctionnalite/img/demande_phone.png') }}"
-                                        alt="Validation Mobile" class="phone-img">
-                                </div>
-
-                            </div>
+                        <!-- Image Standardisée pour le calendrier -->
+                        <div class="feature-image-container">
+                            <!-- Remplacez l'icone par une image de calendrier si disponible -->
+                            <i class="fas fa-calendar-alt feature-big-icon"></i>
+                            <div class="gradient-overlay blue-gradient"></div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
-            <!-- Feature Detail 2 - Gestion des Fidèles -->
-            <div class="feature-detail" id="fideles">
+            <!-- Detail 2: Validation Rapide (Le design Phone Card convient mieux ici) -->
+            <div class="feature-detail" id="validation">
                 <div class="row align-items-center">
+                    <div class="col-lg-6 order-lg-2 mb-4 mb-lg-0">
+                        <div class="feature-detail-content ps-lg-4">
+                            <h3 class="feature-detail-title">Validation Simplifiée</h3>
+                            <p class="feature-detail-description">Gérez les demandes de messes entrantes avec une interface
+                                conçue pour la rapidité.</p>
+                            <ul class="feature-list">
+                                <li><i class="fas fa-check-circle"></i> Validation en un clic</li>
+                                <li><i class="fas fa-check-circle"></i> Notification automatique au fidèle</li>
+                                <li><i class="fas fa-check-circle"></i> Gestion des conflits d'horaires</li>
+                            </ul>
+                        </div>
+                    </div>
                     <div class="col-lg-6 order-lg-1">
-                        <div class="container-fluid d-flex justify-content-center">
-                            <div class="feat-card d-flex flex-wrap align-items-center shadow position-relative"
-                                style="border: 1px solid #c2a16d; border-radius: 20px; padding: 65px;">
-
-
-                                <!-- Image téléphone -->
-                                <div class="feature-image col-lg-6 col-md-6 text-center position-relative overflow-visible">
-                                    <img src="{{ asset('assets/fonctionnalite/img/dash_photo.png') }}"
+                        <!-- Design Spécifique Phone Card -->
+                        <div class="container d-flex justify-content-center">
+                            <div class="feat-card d-flex flex-wrap align-items-center shadow">
+                                <div class="feature-text col-lg-6 col-md-6 p-4">
+                                    <h4 class="fw-bold text-primary">Processus de Validation</h4>
+                                    <p class="text-muted m-0">Approbation instantanée depuis le tableau de bord.</p>
+                                </div>
+                                <div class="feature-image col-lg-6 col-md-6 text-center position-relative">
+                                    <img src="{{ asset('assets/fonctionnalite/img/demande_phone.png') }}"
                                         alt="Validation Mobile" class="phone-img">
                                 </div>
-
-                                <!-- Texte -->
-                                <div class="feature-text col-lg-6 col-md-6 p-4">
-                                    <h4 class="text-primar">
-                                        Processus de Validation de messe par le fidèle lui-même
-                                        depuis son téléphone
-                                    </h4>
-                                </div>
-
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-6 order-lg-2">
+                </div>
+            </div>
+
+            <!-- Detail 3: Gestion des Fidèles -->
+            <div class="feature-detail" id="fideles">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 order-lg-1 mb-4 mb-lg-0">
                         <div class="feature-detail-content">
                             <h3 class="feature-detail-title">Gestion des Fidèles</h3>
                             <p class="feature-detail-description">Suivez chaque membre de votre communauté et gérez toutes
@@ -187,61 +187,52 @@
                                 <li><i class="fas fa-check-circle"></i> Base de données centralisée</li>
                                 <li><i class="fas fa-check-circle"></i> Historique complet des messes</li>
                                 <li><i class="fas fa-check-circle"></i> Notes privées et commentaires</li>
-                                <li><i class="fas fa-check-circle"></i> Recherche avancée</li>
                                 <li><i class="fas fa-check-circle"></i> Gestion des intentions personnelles</li>
                             </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 order-lg-2">
+                        <div class="feature-image-container">
+                            <img src="{{ asset('assets/fonctionnalite/img/logo_phone.png') }}" alt="Gestion Fidèles"
+                                class="img-fluid floating-img">
+                            <div class="gradient-overlay"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Feature Detail 3 - Calendrier Intuitif (repeat for demonstration) -->
+            <!-- Detail 4: Notifications (Corrigé le titre qui était 'Calendrier') -->
             <div class="feature-detail" id="notifications">
                 <div class="row align-items-center">
-
-                    <div class="col-lg-6 order-lg-2">
-                        <div class="container-fluid d-flex justify-content-center">
-                            <div class="feat-card d-flex flex-wrap align-items-center shadow position-relative"
-                                style="border: 1px solid #c2a16d; border-radius: 20px; padding: 65px;">
-
-                                <!-- Image téléphone -->
-                                <div
-                                    class="feature-image col-lg-6 col-md-6 text-center position-relative overflow-visible">
-                                    <img src="{{ asset('assets/fonctionnalite/img/Free_MacBook_Pro_3.png') }}"
-                                        alt="Validation Mobile" class="phone-img">
-                                </div>
-                                <!-- Texte -->
-                                <div class="feature-text col-lg-6 col-md-6 p-4">
-                                    <h4 class="text-primar">
-                                        Processus de Validation de messe par le fidèle lui-même
-                                        depuis son téléphone
-                                    </h4>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-6  order-lg-1">
-                        <div class="feature-detail-content">
-                            <h3 class="feature-detail-title">Calendrier Intuitif</h3>
+                    <div class="col-lg-6 order-lg-2 mb-4 mb-lg-0">
+                        <div class="feature-detail-content ps-lg-4">
+                            <h3 class="feature-detail-title">Notifications Intelligentes</h3>
                             <p class="feature-detail-description">Ne manquez plus jamais une messe importante grâce à notre
                                 système de rappels automatiques et notifications personnalisées.</p>
                             <ul class="feature-list">
                                 <li><i class="fas fa-check-circle"></i> Alertes par email et SMS</li>
                                 <li><i class="fas fa-check-circle"></i> Rappels d'anniversaires de décès</li>
-                                <li><i class="fas fa-check-circle"></i> Notifications de validation</li>
                                 <li><i class="fas fa-check-circle"></i> Alertes de nouvelles demandes</li>
                                 <li><i class="fas fa-check-circle"></i> Préférences personnalisables</li>
                             </ul>
                         </div>
                     </div>
+                    <div class="col-lg-6 order-lg-1">
+                        <div class="feature-image-container">
+                            <img src="{{ asset('assets/fonctionnalite/img/Free_MacBook_Pro_3.png') }}" alt="Notifications"
+                                class="img-fluid">
+                            <div class="gradient-overlay blue-gradient"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
         </div>
     </section>
 
-    <!-- CTA Section -->
+    <!-- ========================================
+           CTA SECTION
+        ======================================== -->
     <section class="cta-section">
         <div class="container">
             <div class="row justify-content-center text-center">
@@ -256,8 +247,8 @@
 
     <style>
         /* ========================================
-                                                                                                                                                                                                                                           VARIABLES & RESET
-                                                                                                                                                                                                                                        ======================================== */
+               VARIABLES & RESET
+            ======================================== */
         :root {
             --primary-color: #D4A574;
             --primary-dark: #B8895F;
@@ -276,40 +267,9 @@
             color: var(--text-dark);
         }
 
-        /* Image téléphone : agrandie en largeur + hauteur + débordement */
-        .phone-img {
-            width: 180%;
-            /* <<< beaucoup plus large */
-            max-width: 550px;
-            /* limite max optionnelle */
-            /* height: 3000px; */
-            /* garde les proportions */
-            position: absolute;
-            top: -190px;
-            /* <<< dépasse plus haut */
-            right: -20px;
-            /* décale un peu hors du card */
-            z-index: 20;
-            transform-origin: top right;
-            transition: transform 0.3s ease;
-        }
-
-        /* Empêche le card de couper l'image */
-        .feature-image,
-        .feat-card {
-            overflow: visible !important;
-            position: relative;
-        }
-
-        /* Effet hover (optionnel) */
-        .phone-img:hover {
-            transform: scale(1.08);
-        }
-
-
         /* ========================================
-                                                                                                                                                                                                                                           HERO & HEADERS
-                                                                                                                                                                                                                                        ======================================== */
+               HERO & HEADERS
+            ======================================== */
         .features-hero {
             background: #f7f4eb;
             padding: 100px 0 80px;
@@ -345,8 +305,8 @@
         }
 
         /* ========================================
-                                                                                                                                                                                                                                           FEATURES GRID CARDS
-                                                                                                                                                                                                                                        ======================================== */
+               FEATURES GRID CARDS
+            ======================================== */
         .feature-card {
             background: var(--white);
             border: 1px solid #E5E7EB;
@@ -435,8 +395,8 @@
         }
 
         /* ========================================
-                                                                                                                                                                                                                                           DETAILED FEATURES
-                                                                                                                                                                                                                                        ======================================== */
+               DETAILED FEATURES
+            ======================================== */
         .features-detailed {
             background: var(--bg-light);
         }
@@ -483,10 +443,9 @@
 
         /* Conteneur d'image standard */
         .feature-image-container {
-            background: linear-gradient(135deg, #FAF5F0 50%, #F5EBDC 50%);
+            background: linear-gradient(135deg, #FAF5F0 0%, #F5EBDC 100%);
             border-radius: 24px;
-            width: 300% !important;
-            padding: 80px;
+            padding: 40px;
             text-align: center;
             position: relative;
             border: 2px solid #f0e6d9;
@@ -494,77 +453,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Ajout pour gérer les images agrandies */
-            overflow: visible !important;
-            /* Permet à l'image de dépasser */
-        }
-
-        /* Si vous avez une image à l'intérieur */
-        .feature-image-container img {
-            transform: scale(3, 2);
-            /* Largeur ×3, Hauteur ×2 */
-            transform-origin: center center;
-            /* Agrandit depuis le centre */
-            /* Ou utilisez ces alternatives : */
-            /* width: 300% !important;  Largeur ×3 */
-            /* height: 200% !important; Hauteur ×2 */
-            max-width: none !important;
-            /* Enlève les limitations */
-            object-fit: contain;
-            /* Garde les proportions */
-        }
-
-        /* Alternative avec width/height */
-        .feature-image-container .large-image {
-            width: 300% !important;
-            /* 3 fois plus large */
-            height: 200% !important;
-            /* 2 fois plus haute */
-            position: relative;
-            transform-origin: center;
-            object-fit: contain;
-            z-index: 10;
-        }
-
-        /* Version avec position absolute pour mieux contrôler */
-        .feature-image-container .zoomed-image {
-            position: absolute;
-            width: 300%;
-            /* ×3 en largeur */
-            height: 200%;
-            /* ×2 en hauteur */
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(1);
-            /* Centre l'image */
-            object-fit: contain;
-            z-index: 2;
-        }
-
-        /* Pour que le conteneur ne coupe pas l'image */
-        .feature-image-wrapper {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            overflow: visible;
-        }
-
-        /* Si vous voulez que l'image soit responsive malgré l'agrandissement */
-        @media (max-width: 768px) {
-            .feature-image-container {
-                padding: 40px;
-                /* Réduit le padding sur mobile */
-            }
-
-            .feature-image-container img {
-                transform: scale(2, 1.5);
-                /* Réduit l'agrandissement sur mobile */
-                /* Ou */
-                width: 200% !important;
-                /* ×2 au lieu de ×3 */
-                height: 150% !important;
-                /* ×1.5 au lieu de ×2 */
-            }
         }
 
         .feature-big-icon {
@@ -572,22 +460,20 @@
             color: rgba(212, 165, 116, 0.3);
         }
 
-        /* Card spécifique " Validation" (Le design complexe) */
+        /* Card spécifique "Validation" (Le design complexe) */
         .feat-card {
             background: #fff;
             /* Fallback */
             background: linear-gradient(to bottom, #e8dfd2, #c8e3ed);
             border-radius: 25px;
-            padding:
-                20px;
+            padding: 20px;
             width: 100%;
             max-width: 600px;
             position: relative;
         }
 
         .feature-text h4 {
-            color:
-                #4b9aa5;
+            color: #4b9aa5;
             font-size: 20px;
         }
 
@@ -600,16 +486,16 @@
             width: 100%;
             max-width: 250px;
             transform: rotate(5deg);
-            transition:
-                var(--transition);
+            transition: var(--transition);
         }
 
         .feat-card:hover .phone-img {
             transform: rotate(0deg) scale(1.05);
         }
 
-        /*========================================CTA
-                                                                                                                                                                                    SECTION========================================*/
+        /* ========================================
+               CTA SECTION
+            ======================================== */
         .cta-section {
             background: #faf4e6;
             padding: 100px 0;
@@ -618,8 +504,7 @@
         }
 
         .cta-title {
-            font-size:
-                2.5rem;
+            font-size: 2.5rem;
             font-weight: 800;
             margin-bottom: 1rem;
             position: relative;
@@ -630,8 +515,7 @@
             font-size: 1.25rem;
             color: #787a7a;
             margin-bottom: 2.5rem;
-            position:
-                relative;
+            position: relative;
             z-index: 1;
         }
 
@@ -645,8 +529,7 @@
             display: inline-block;
             transition: var(--transition);
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-            position:
-                relative;
+            position: relative;
             z-index: 1;
             text-decoration: none;
         }
@@ -657,7 +540,9 @@
             transform: translateY(-2px);
         }
 
-        /*========================================RESPONSIVE========================================*/
+        /* ========================================
+               RESPONSIVE
+            ======================================== */
         @media (max-width: 992px) {
             .hero-title {
                 font-size: 2.5rem;
@@ -687,8 +572,7 @@
             }
 
             .hero-title {
-                font-size:
-                    2rem;
+                font-size: 2rem;
             }
 
             .section-padding {
