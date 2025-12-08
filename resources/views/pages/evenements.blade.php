@@ -23,7 +23,7 @@
             <div class="row">
                 <!-- Messes Quotidiennes -->
                 <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="event-card event-card-bronze">
+                    <div class="event-card event-card-yellow">
                         <div class="event-icon">
                             <i class="fas fa-calendar-day"></i>
                         </div>
@@ -42,7 +42,7 @@
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="event-card event-card-yellow">
                         <div class="event-icon">
-                            <i class="fas fa-star"></i>
+                            <i class="fas fa-calendar-day"></i>
                         </div>
                         <h3>Événements Spéciaux</h3>
                         <p class="event-description">Organisez vos événements religieux importants sans stress</p>
@@ -57,9 +57,9 @@
 
                 <!-- Événements Paroisses -->
                 <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="event-card event-card-red">
+                    <div class="event-card event-card-yellow">
                         <div class="event-icon">
-                            <i class="fas fa-users"></i>
+                            <i class="fas fa-calendar-day"></i>
                         </div>
                         <h3>Événements Paroisses</h3>
                         <p class="event-description">Traitez avec respect les occasions importantes de votre communauté</p>
@@ -346,7 +346,7 @@
         }
 
         .btn-cta {
-            background-color: #8b6f47;
+            background-color: #D4A574;
             color: #fff;
             padding: 14px 40px;
             border-radius: 8px;
@@ -359,9 +359,10 @@
         }
 
         .btn-cta:hover {
-            background-color: #6f5838;
+            background-color: #fff;
             transform: translateY(-2px);
-            color: #fff;
+            color: #D4A574;
+            border: 1px solid #D4A574;
             text-decoration: none;
         }
 

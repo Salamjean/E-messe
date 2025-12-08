@@ -256,8 +256,8 @@
 
     <style>
         /* ========================================
-                                                                                                                                                                                                                               VARIABLES & RESET
-                                                                                                                                                                                                                            ======================================== */
+                                                                                                                                                                                                                                   VARIABLES & RESET
+                                                                                                                                                                                                                                ======================================== */
         :root {
             --primary-color: #D4A574;
             --primary-dark: #B8895F;
@@ -308,8 +308,8 @@
 
 
         /* ========================================
-                                                                                                                                                                                                                               HERO & HEADERS
-                                                                                                                                                                                                                            ======================================== */
+                                                                                                                                                                                                                                   HERO & HEADERS
+                                                                                                                                                                                                                                ======================================== */
         .features-hero {
             background: #f7f4eb;
             padding: 100px 0 80px;
@@ -345,8 +345,8 @@
         }
 
         /* ========================================
-                                                                                                                                                                                                                               FEATURES GRID CARDS
-                                                                                                                                                                                                                            ======================================== */
+                                                                                                                                                                                                                                   FEATURES GRID CARDS
+                                                                                                                                                                                                                                ======================================== */
         .feature-card {
             background: var(--white);
             border: 1px solid #E5E7EB;
@@ -435,8 +435,8 @@
         }
 
         /* ========================================
-                                                                                                                                                                                                                               DETAILED FEATURES
-                                                                                                                                                                                                                            ======================================== */
+                                                                                                                                                                                                                                   DETAILED FEATURES
+                                                                                                                                                                                                                                ======================================== */
         .features-detailed {
             background: var(--bg-light);
         }
@@ -538,7 +538,7 @@
         }
 
         /*========================================CTA
-                                                                                                                                                                        SECTION========================================*/
+                                                                                                                                                                            SECTION========================================*/
         .cta-section {
             background: #faf4e6;
             padding: 100px 0;
@@ -581,8 +581,9 @@
         }
 
         .btn-cta:hover {
-            background: #d6bc85;
-            color: #000;
+            background: white;
+            border: 2px solid #d6bc85;
+            color: #d6bc85;
             transform: translateY(-2px);
         }
 

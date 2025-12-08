@@ -180,7 +180,7 @@
                         toute simplicité
                     </p>
                     <a href="{{ route('register') }}" class="btn btn-cta">
-                        <i class="fas fa-rocket"></i> Commencer maintenant
+                        <i class="fa fa-download"></i> Télécharger l'App
                     </a>
                 </div>
             </div>
@@ -193,17 +193,18 @@
             <div class="row justify-content-center">
                 <div class="col-lg-8 text-center">
                     <h2 class="section-title">Télécharger E-MESSE</h2>
-                    <p class="section-subtitle mb-4">Disponible sur Google Play</p>
+
 
                     <div class="download-card">
                         <div class="download-icon">
                             <i class="fab fa-android"></i>
                         </div>
                         <p class="download-text">
-                            Téléchargez notre application mobile pour accéder à E-MESSE où que vous soyez
+                        <h2 class="section-subtitle mb-4 fw-bold" style="color: #000000;">Disponible sur Google Play</h2>
+                        Téléchargez notre application mobile pour accéder à E-MESSE où que vous soyez
                         </p>
                         <a href="#" class="btn btn-google-play">
-                            <i class="fab fa-google-play"></i> Télécharger maintenant
+                            <i class="fas fa-download"></i> Télécharger maintenant
                         </a>
                         <p class="download-info">
                             L'application E-MESSE est disponible gratuitement
@@ -306,12 +307,6 @@
             animation: fadeInUp 1s ease;
         }
 
-        /* .hero-buttons {
-                                                        display: flex;
-                                                        gap: 20px;
-                                                        flex-wrap: wrap;
-                                                        animation: fadeInUp 1.2s ease;
-                                                    } */
 
         .btn {
             padding: 14px 32px;
@@ -328,15 +323,16 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-gold) 0%, var(--dark-gold) 100%);
-            color: var(--white);
+            background: var(--primary-gold);
             box-shadow: 0 6px 20px rgba(197, 165, 114, 0.3);
         }
 
         .btn-primary:hover {
+            background: #ffffff;
             transform: translateY(-3px);
+            border: 2px solid var(--primary-gold);
             box-shadow: 0 10px 30px rgba(197, 165, 114, 0.4);
-            color: var(--white);
+            color: var(--primary-gold);
         }
 
         .btn-outline-primary {
@@ -346,7 +342,7 @@
         }
 
         .btn-outline-primary:hover {
-            background: #d9d9d9;
+            background: #a3a3a3;
             color: #000;
             border: 2px solid #f2ece1;
             transform: translateY(-3px);
@@ -354,6 +350,13 @@
 
         /* Hero Image */
         .hero-image-container {
+            background-color: #f2ece1;
+            position: relative;
+            animation: fadeInRight 1s ease;
+        }
+
+        .container {
+            background-color: fafcfc;
             position: relative;
             animation: fadeInRight 1s ease;
         }
@@ -557,14 +560,15 @@
 
         /* Testimonials Section */
         .testimonials-section {
-            background: linear-gradient(135deg, #FBF8F3 0%, #F5EFE6 100%);
+            background: #ffffff;
         }
 
         .testimonial-card {
             background: var(--white);
             padding: 35px;
             border-radius: 20px;
-            box-shadow: 0 10px 30px var(--shadow);
+            border: 3px solid #F3F4F6;
+            /* box-shadow: 0 1px 10px var(--shadow); */
             height: 100%;
             transition: all 0.4s ease;
         }
@@ -646,10 +650,10 @@
         }
 
         .btn-cta:hover {
-            /* transform: translateY(-3px); */
-            background: #c1a467ff !important;
-            /* box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3); */
-            /* color: var(--primary-gold); */
+            color: #d6bc85;
+            background: #ffffffff !important;
+            border: 2px solid #d6bc85;
+
         }
 
         /* Download Section */
@@ -658,10 +662,10 @@
         }
 
         .download-card {
-            background: linear-gradient(135deg, #FBF8F3 0%, #F5EFE6 100%);
+            background: #f5f9fa;
             padding: 60px 40px;
             border-radius: 25px;
-            box-shadow: 0 10px 40px var(--shadow);
+            box-shadow: 0 8px 20px var(--shadow);
             border: 3px solid var(--light-gold);
         }
 
@@ -691,18 +695,19 @@
         }
 
         .btn-google-play {
-            background: #d6bc85;
+            background: #c4a35a;
             color: #ffffff;
             font-size: 1.1rem;
             padding: 16px 40px;
-            box-shadow: 0 6px 20px #d6bc85;
+            box-shadow: 0 6px 20px #c4a35a;
         }
 
         .btn-google-play:hover {
-            background: #cbb482ff;
+            background: #ffffffff;
             transform: translateY(-3px);
-            box-shadow: 0 10px 30px #d6bc85;
-            color: #ffffff;
+            box-shadow: 0 4px 10px #c4a35a;
+            border: 1px solid #c4a35a;
+            color: #c4a35a;
         }
 
         .download-info {

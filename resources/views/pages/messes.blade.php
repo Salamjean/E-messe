@@ -5,7 +5,7 @@
         <div class="container">
             <div class="row text-center">
                 <div class="col-lg-10 mx-auto">
-                    <h1 class="hero-title">Gérez vos <span class="text-highlight">Messe</span> Facilement</h1>
+                    <h1 class="hero-title">Gérez vos <span class="text-highlight">Messe Facilement</span> </h1>
                     <p class="hero-subtitle">Simplifiez la gestion de vos messes du debut à la fin</p>
                 </div>
             </div>
@@ -77,6 +77,7 @@
                         <p class="use-case-description">Gérez les réservations massives pour la messe de Noël avec
                             confirmation automatique
                         </p>
+                        <hr>
                         <ul class="use-case-list">
                             <li><i class="fas fa-circle"></i>
                                 Jusqu’à 500 + réservations</li>
@@ -94,6 +95,7 @@
                         <h3 class="use-case-title">Mariage</h3>
                         <p class="use-case-description">Organisez le mariage avec tous les détails spécifiques et
                             coordonnations</p>
+                        <hr>
                         <ul class="use-case-list">
                             <li><i class="fas fa-circle"></i> Invitations personnalisées</li>
                             <li><i class="fas fa-circle"></i> Confirmations instantanées</li>
@@ -107,6 +109,7 @@
                     <div class="use-case-card">
                         <h3 class="use-case-title">Funérailles</h3>
                         <p class="use-case-description">Facilite les arrangements funéraires avec respect et efficacité</p>
+                        <hr>
                         <ul class="use-case-list">
                             <li><i class="fas fa-circle"></i>Notifications urgentes</li>
                             <li><i class="fas fa-circle"></i>Accès prioritaire</li>
@@ -120,6 +123,7 @@
                     <div class="use-case-card">
                         <h3 class="use-case-title">Messes Quotidiennes</h3>
                         <p class="use-case-description">Suivez les réservations récurrentes et automatisez le processus</p>
+                        <hr>
                         <ul class="use-case-list">
                             <li><i class="fas fa-circle"></i>Planification récurrente</li>
                             <li><i class="fas fa-circle"></i>Rappels automatiques</li>
@@ -175,7 +179,7 @@
                 <div class="col-lg-8 mx-auto">
                     <h2 class="cta-title">Commencez à Gérer vos Messes Aujourd'hui</h2>
                     <p class="cta-subtitle">Rejoignez les centaines de paroisses qui font confiance à E-MESSE</p>
-                    <a href="#" class="btn btn-cta"><i class="fas fa-download"></i> Télécharger App</a>
+                    <a href="#" class="btn btn-cta"><i class="fas fa-download"></i> Télécharger l'App</a>
                 </div>
             </div>
         </div>
@@ -183,8 +187,8 @@
 
     <style>
         /* ========================================
-                                                                           GLOBAL STYLES
-                                                                        ======================================== */
+                                                                                                                               GLOBAL STYLES
+                                                                                                                            ======================================== */
         :root {
             --primary-gold: #D4A574;
             --primary-dark: #B8895F;
@@ -210,8 +214,8 @@
         }
 
         /* ========================================
-                                                                           HERO SECTION
-                                                                        ======================================== */
+                                                                                                                               HERO SECTION
+                                                                                                                            ======================================== */
         .messe-hero {
             background: #f7f4eb;
             padding: 120px 0 100px;
@@ -239,8 +243,8 @@
         }
 
         /* ========================================
-                                                                           SECTION TITLES
-                                                                        ======================================== */
+                                                                                                                               SECTION TITLES
+                                                                                                                            ======================================== */
         .section-title-dark {
             font-size: 2.5rem;
             font-weight: 700;
@@ -249,8 +253,8 @@
         }
 
         /* ========================================
-                                                                           HOW IT WORKS SECTION
-                                                                        ======================================== */
+                                                                                                                               HOW IT WORKS SECTION
+                                                                                                                            ======================================== */
         .how-it-works-section {
             background: var(--white);
         }
@@ -302,16 +306,17 @@
         }
 
         /* ========================================
-                                                                           USE CASES SECTION
-                                                                        ======================================== */
+                                                                                                                               USE CASES SECTION
+                                                                                                                            ======================================== */
         .use-cases-section {
             background: #f0f0f0;
         }
 
         .use-case-card {
             background: var(--white);
-            border: 1px solid #E5E7EB;
+            /* border: 1px solid #E5E7EB; */
             border-radius: 16px;
+            border: 1px solid #b9b0b0ff;
             padding: 40px 30px;
             height: 100%;
             transition: var(--transition);
@@ -319,9 +324,8 @@
         }
 
         .use-case-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--primary-gold);
+            background: var(--white);
+
         }
 
         .use-case-title {
@@ -360,8 +364,8 @@
         }
 
         /* ========================================
-                                                                           IMPACT SECTION
-                                                                        ======================================== */
+                                                                                                                               IMPACT SECTION
+                                                                                                                            ======================================== */
         .impact-section {
             background: var(--white);
         }
@@ -395,8 +399,8 @@
         }
 
         /* ========================================
-                                                                           FINAL CTA SECTION
-                                                                        ======================================== */
+                                                                                                                               FINAL CTA SECTION
+                                                                                                                            ======================================== */
         .final-cta-section {
             background: var(--bg-cream);
             position: relative;
@@ -435,7 +439,7 @@
             background: var(--primary-gold);
             color: var(--white);
             padding: 16px 48px;
-            border-radius: 50px;
+            border-radius: 15px;
             font-weight: 600;
             font-size: 1.1rem;
             border: none;
@@ -448,15 +452,16 @@
         }
 
         .btn-cta:hover {
-            background: var(--primary-dark);
-            color: var(--white);
+            background: #ffffffff;
+            color: #D4A574;
+            border: 1px solid #D4A574;
             transform: translateY(-2px);
             box-shadow: 0 12px 32px rgba(212, 165, 116, 0.4);
         }
 
         /* ========================================
-                                                                           RESPONSIVE DESIGN
-                                                                        ======================================== */
+                                                                                                                               RESPONSIVE DESIGN
+                                                                                                                            ======================================== */
         @media (max-width: 992px) {
             .hero-title {
                 font-size: 2.5rem;
