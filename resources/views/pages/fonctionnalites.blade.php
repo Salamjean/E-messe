@@ -243,8 +243,8 @@
 
     <style>
         /* ========================================
-                    VARIABLES & RESET
-                    ======================================== */
+                                VARIABLES & RESET
+                                ======================================== */
         :root {
             --primary-color: #D4A574;
             --primary-dark: #B8895F;
@@ -264,8 +264,8 @@
         }
 
         /* ========================================
-                    HERO & HEADERS
-                    ======================================== */
+                                HERO & HEADERS
+                                ======================================== */
         .features-hero {
             background: #f7f4eb;
             padding: 100px 0 80px;
@@ -304,8 +304,8 @@
         }
 
         /* ========================================
-                    FEATURES GRID CARDS
-                    ======================================== */
+                                FEATURES GRID CARDS
+                                ======================================== */
         .feature-card {
             background: var(--white);
             border: 1px solid #E5E7EB;
@@ -399,8 +399,8 @@
         }
 
         /* ========================================
-                    DETAILED FEATURES
-                    ======================================== */
+                                DETAILED FEATURES
+                                ======================================== */
         .features-detailed {
             background: var(--bg-light);
         }
@@ -503,14 +503,14 @@
         }
 
         .phone-img {
-            width: 180%;
+            width: 100%;
             /* <<< beaucoup plus large */
             max-width: 550px;
             /* limite max optionnelle */
             /* height: 3000px; */
             /* garde les proportions */
             position: absolute;
-            top: -190px;
+            top: -150px;
             /* <<< dépasse plus haut */
             right: -20px;
             /* décale un peu hors du card */
@@ -520,8 +520,8 @@
         }
 
         /* ========================================
-                    CTA SECTION
-                    ======================================== */
+                                CTA SECTION
+                                ======================================== */
         .cta-section {
             background: #faf4e6;
             padding: 100px 0;
@@ -571,8 +571,8 @@
         }
 
         /* ========================================
-                    RESPONSIVE
-                    ======================================== */
+                                RESPONSIVE
+                                ======================================== */
         @media (max-width: 1200px) {
             .hero-title {
                 font-size: 2.5rem;
