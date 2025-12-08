@@ -14,7 +14,8 @@
     <!-- endinject -->
     <!-- Plugin css for this page -->
     <link rel="stylesheet" href="{{ asset('assetsPoste/assets/vendors/flag-icon-css/css/flag-icon.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assetsPoste/assets/vendors/jvectormap/jquery-jvectormap.cs') }}s">
+    <!-- Correction ici: le .css était coupé dans votre code original -->
+    <link rel="stylesheet" href="{{ asset('assetsPoste/assets/vendors/jvectormap/jquery-jvectormap.css') }}">
     <!-- End plugin css for this page -->
     <!-- Layout styles -->
     <link rel="stylesheet" href="{{ asset('assetsPoste/assets/css/demo/style.css') }}">
@@ -24,6 +25,23 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Force le wrapper principal à prendre toute la hauteur */
+        .page-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Pousse le footer vers le bas */
+        .page-wrapper>footer,
+        .page-wrapper>.footer,
+        /* Cible le dernier élément (le footer) si les classes ci-dessus ne correspondent pas */
+        .page-wrapper> :last-child {
+            margin-top: auto;
+        }
+    </style>
 </head>
 
 <body>
@@ -36,8 +54,15 @@
             <!-- partial:partials/_navbar.html -->
             @include('admin.layouts.navbar')
             <!-- partial -->
+
+            <!-- Ajout des classes pour le sticky footer -->
             <div class="page-wrapper mdc-toolbar-fixed-adjust">
+
+                <!-- Le contenu de la page s'affiche ici -->
                 @yield('content')
+
+                <!-- Le footer sera toujours poussé en bas -->
+                @include('admin.layouts.footer')
             </div>
         </div>
     </div>

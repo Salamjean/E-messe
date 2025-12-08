@@ -42,7 +42,9 @@
             <div class="page-wrapper mdc-toolbar-fixed-adjust">
                 @yield('content')
             </div>
+            @include('paroisse.layouts.footer')
         </div>
+
     </div>
 
     <!-- jQuery (DOIT ÊTRE LE PREMIER) -->
@@ -79,3 +81,19 @@
 </body>
 
 </html>
+<style>
+    /* Force le wrapper principal à prendre toute la hauteur */
+    .page-wrapper {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    /* Pousse le footer vers le bas */
+    .page-wrapper>footer,
+    .page-wrapper>.footer,
+    /* Cible le dernier élément (le footer) si les classes ci-dessus ne correspondent pas */
+    .page-wrapper> :last-child {
+        margin-top: auto;
+    }
+</style>
