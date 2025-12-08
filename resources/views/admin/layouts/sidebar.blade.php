@@ -1,66 +1,132 @@
 <aside class="mdc-drawer mdc-drawer--dismissible mdc-drawer--open" style="background-color: red">
-      <div class="mdc-drawer__header" >
-        <a href="{{route('admin.dashboard')}}" class="brand-logo">
-          <img src="{{asset('assets/assets/images/kks.jpeg')}}" style="width: 40%;padding:0 50px" alt="logo">
+    <div class="mdc-drawer__header">
+        <a href="{{ route('admin.dashboard') }}" class="brand-logo">
+            <img src="{{ asset('assets/assets/images/kks.jpeg') }}" style="width: 40%;padding:0 50px" alt="logo">
         </a>
-      </div>
-      <div class="mdc-drawer__content">
+    </div>
+    <div class="mdc-drawer__content">
         <div class="user-info">
-          <p class="name text-center"> {{Auth::guard('admin')->user()->name.' '.Auth::guard('admin')->user()->prenom}} </p>
-          <p class="email text-center">{{Auth::guard('admin')->user()->email}}</p>
+            <p class="name text-center">
+                {{ Auth::guard('admin')->user()->name . ' ' . Auth::guard('admin')->user()->prenom }} </p>
+            <p class="email text-center">{{ Auth::guard('admin')->user()->email }}</p>
         </div>
         <div class="mdc-list-group">
-          <nav class="mdc-list mdc-drawer-menu">
-            <div class="mdc-list-item mdc-drawer-item">
-              <a class="mdc-drawer-link" href="{{route('admin.dashboard')}}">
-                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">home</i>
-                Tableau de bord
-              </a>
-            </div>
-            <div class="mdc-list-item mdc-drawer-item">
-              <a class="mdc-drawer-link" href="{{route('paroisse.create')}}">
-                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">save</i>
-                Ajout Paroisse
-              </a>
-            </div>
-            <div class="mdc-list-item mdc-drawer-item">
-              <a class="mdc-drawer-link" href="{{route('paroisse.index')}}">
-                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">grid_on</i>
-                Liste Paroisse
-              </a>
-            </div>
-            <div class="mdc-list-item mdc-drawer-item">
-              <a class="mdc-drawer-link" href="{{route('admin.user.index')}}">
-                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">dashboard</i>
-                Listes des utilisateurs 
-              </a>
-            </div>
-            <div class="mdc-list-item mdc-drawer-item">
-              <a class="mdc-expansion-panel-link" href="#" data-toggle="expansionPanel" data-target="ui-sub-menu">
-                <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">dashboard</i>
-                Retrait 
-                  
-                  <i class="mdc-drawer-arrow material-icons">chevron_right</i>
-                  @if($pendingWithdrawalsCount > 0)
-                      <span class="badge badge-pill ms-2" style="left:100px">{{ $pendingWithdrawalsCount }}</span>
-                  @endif
-              </a>
-              <div class="mdc-expansion-panel" id="ui-sub-menu">
-                <nav class="mdc-list mdc-drawer-submenu">
-                  <div class="mdc-list-item mdc-drawer-item">
-                    <a class="mdc-drawer-link" href="{{route('admin.paroisse.index')}}">
-                      Demande Retrait
+            <nav class="mdc-list mdc-drawer-menu">
+                <div class="mdc-list-item mdc-drawer-item">
+                    <a class="mdc-drawer-link" href="{{ route('admin.dashboard') }}">
+                        <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon"
+                            aria-hidden="true">home</i>
+                        Tableau de bord
                     </a>
-                  </div>
-                  <div class="mdc-list-item mdc-drawer-item">
-                    <a class="mdc-drawer-link" href="{{route('admin.paroisse.history')}}">
-                      Historiques
+                </div>
+                <div class="mdc-list-item mdc-drawer-item">
+                    <a class="mdc-drawer-link" href="{{ route('paroisse.create') }}">
+                        <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon"
+                            aria-hidden="true">save</i>
+                        Ajout Paroisse
                     </a>
-                  </div>
-                </nav>
-              </div>
-            </div>
-            {{-- <div class="mdc-list-item mdc-drawer-item">
+                </div>
+                <div class="mdc-list-item mdc-drawer-item">
+                    <a class="mdc-drawer-link" href="{{ route('paroisse.index') }}">
+                        <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon"
+                            aria-hidden="true">grid_on</i>
+                        Liste Paroisse
+                    </a>
+                </div>
+                <div class="mdc-list-item mdc-drawer-item">
+                    <a class="mdc-drawer-link" href="{{ route('admin.user.index') }}">
+                        <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon"
+                            aria-hidden="true">dashboard</i>
+                        Listes des utilisateurs
+                    </a>
+                </div>
+                <div class="mdc-list-item mdc-drawer-item">
+                    <a class="mdc-expansion-panel-link" href="#" data-toggle="expansionPanel"
+                        data-target="ui-sub-menu">
+                        <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon"
+                            aria-hidden="true">dashboard</i>
+                        Retrait
+
+                        <i class="mdc-drawer-arrow material-icons">chevron_right</i>
+                        @if ($pendingWithdrawalsCount > 0)
+                            <span class="badge badge-pill ms-2" style="left:100px">{{ $pendingWithdrawalsCount }}</span>
+                        @endif
+                    </a>
+                    <div class="mdc-expansion-panel" id="ui-sub-menu">
+                        <nav class="mdc-list mdc-drawer-submenu">
+                            <div class="mdc-list-item mdc-drawer-item">
+                                <a class="mdc-drawer-link" href="{{ route('admin.paroisse.index') }}">
+                                    Demande Retrait
+                                </a>
+                            </div>
+                            <div class="mdc-list-item mdc-drawer-item">
+                                <a class="mdc-drawer-link" href="{{ route('admin.paroisse.history') }}">
+                                    Historiques
+                                </a>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+                <div class="mdc-list-item mdc-drawer-item">
+                    <a class="mdc-expansion-panel-link" href="#" data-toggle="expansionPanel"
+                        data-target="website-content-menu">
+                        <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon"
+                            aria-hidden="true">language</i>
+                        Site Web
+
+                        <i class="mdc-drawer-arrow material-icons">chevron_right</i>
+                    </a>
+                    <div class="mdc-expansion-panel" id="website-content-menu">
+                        <nav class="mdc-list mdc-drawer-submenu">
+                            <div class="mdc-list-item mdc-drawer-item">
+                                <a class="mdc-drawer-link" href="{{ route('content.contact-messages.index') }}">
+                                    Messages Contact
+                                </a>
+                            </div>
+                            <div class="mdc-list-item mdc-drawer-item">
+                                <a class="mdc-drawer-link" href="{{ route('content.home-statistics') }}">
+                                    Statistiques Accueil
+                                </a>
+                            </div>
+                            <div class="mdc-list-item mdc-drawer-item">
+                                <a class="mdc-drawer-link" href="{{ route('content.testimonials.index') }}">
+                                    Témoignages
+                                </a>
+                            </div>
+                            <div class="mdc-list-item mdc-drawer-item">
+                                <a class="mdc-drawer-link" href="{{ route('content.parish-success.index') }}">
+                                    Succès Paroisses
+                                </a>
+                            </div>
+                            <div class="mdc-list-item mdc-drawer-item">
+                                <a class="mdc-drawer-link" href="{{ route('content.parish-faqs.index') }}">
+                                    FAQs Paroisses
+                                </a>
+                            </div>
+                            <div class="mdc-list-item mdc-drawer-item">
+                                <a class="mdc-drawer-link" href="{{ route('content.advantage-impacts.index') }}">
+                                    Impacts Avantages
+                                </a>
+                            </div>
+                            <div class="mdc-list-item mdc-drawer-item">
+                                <a class="mdc-drawer-link" href="{{ route('content.contact-infos.index') }}">
+                                    Infos Contact
+                                </a>
+                            </div>
+                            <div class="mdc-list-item mdc-drawer-item">
+                                <a class="mdc-drawer-link" href="{{ route('content.contact-faqs.index') }}">
+                                    FAQs Contact
+                                </a>
+                            </div>
+                            <div class="mdc-list-item mdc-drawer-item">
+                                <a class="mdc-drawer-link" href="{{ route('content.support-hours.index') }}">
+                                    Horaires Support
+                                </a>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+                {{-- <div class="mdc-list-item mdc-drawer-item">
               <a class="mdc-expansion-panel-link" href="#" data-toggle="expansionPanel" data-target="sample-page-submenu">
                 <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">pages</i>
                 Sample Pages
@@ -105,5 +171,5 @@
                   </div>
                 </nav>
               </div> --}}
-            </div>
-    </aside>
+        </div>
+</aside>

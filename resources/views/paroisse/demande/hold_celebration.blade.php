@@ -266,6 +266,12 @@
         font-weight: 700;
     }
 
+    table.dataTable thead th {
+        background-color: #5ea7b5;
+        color: #ffffffff !important;
+        vertical-align: middle;
+    }
+
     .page-item.active .page-link {
         background-color: #5ea7b5;
         border-color: #5ea7b5;

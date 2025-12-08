@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AuthenticateAdmin;
+use App\Http\Controllers\Admin\ContentManagementController;
 use App\Http\Controllers\Admin\Paroisse\RetraitController;
 use App\Http\Controllers\Admin\User\AdminUserController;
 use App\Http\Controllers\Home\HomeController;
@@ -21,44 +22,16 @@ use App\Http\Controllers\User\Messe\MesseController;
 use App\Http\Controllers\User\Messe\PaiementController;
 use App\Http\Controllers\User\Messe\PaiementStripeController;
 use App\Http\Controllers\User\UserDashboard;
-use Google\Auth\Credentials\ServiceAccountCredentials;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'home'])->name('home');
-
-Route::get('/get-token', function () {
-    $credentialsPath = storage_path('app/firebase_credentials.json');
-    $scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
-
-    $credentials = new ServiceAccountCredentials($scopes, $credentialsPath);
-    $token = $credentials->fetchAuthToken()['access_token'];
-
-    return $token;
-});
-
-Route::get('/test-cinetpay', function () {
-    // On force la récupération des valeurs sans cache pour le test
-    $apiKey = env('CINETPAY_API_KEY');
-    $password = env('CINETPAY_PASSWORD');
-
-    // On masque le mot de passe pour l'affichage
-    $hiddenPass = substr($password, 0, 2).'******'.substr($password, -2);
-
-    echo '<h3>Test de connexion CinetPay</h3>';
-    echo "API Key utilisée : $apiKey <br>";
-    echo "Mot de passe utilisé : $hiddenPass <br><hr>";
-
-    $response = Http::asForm()->post('https://client.cinetpay.com/v1/auth/login', [
-        'apikey' => $apiKey,
-        'password' => $password,
-    ]);
-
-    $result = $response->json();
-
-    echo '<strong>Code HTTP :</strong> '.$response->status().'<br>';
-    echo '<strong>Réponse API :</strong><br>';
-    dd($result);
-});
+Route::get('/fonctionnalites', [HomeController::class, 'fonctionnalites'])->name('fonctionnalites');
+Route::get('/messes', [HomeController::class, 'messes'])->name('messes');
+Route::get('/paroisses', [HomeController::class, 'paroisses'])->name('paroisses');
+Route::get('/evenements', [HomeController::class, 'evenements'])->name('evenements');
+Route::get('/avantages', [HomeController::class, 'avantages'])->name('avantages');
+Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
+Route::post('/contact/send', [HomeController::class, 'sendMessage'])->name('contact.send');
 
 Route::get('/forgot-password', [AuthenticateUser::class, 'showForgotPasswordForm'])->name('forgot-password.form');
 Route::post('/forgot-password', [AuthenticateUser::class, 'forgotPassword'])->name('forgot-password.send');
@@ -119,6 +92,74 @@ Route::middleware('admin')->prefix('admin')->group(function () {
         Route::post('/{id}/rejeter', [RetraitController::class, 'rejeter'])->name('admin.retraits.rejeter');
     });
     Route::get('/get-communes/{ville_id}', [ParoisseController::class, 'getCommunesByVille'])->name('admin.get.communes');
+
+    // Routes de gestion des contenus dynamiques
+
+    Route::prefix('content')->name('content.')->group(function () {
+        // Statistiques accueil
+        Route::get('/home-statistics', [ContentManagementController::class, 'homeStatistics'])->name('home-statistics');
+        Route::post('/home-statistics', [ContentManagementController::class, 'homeStatisticsUpdate'])->name('home-statistics.update');
+
+        // Témoignages
+        Route::get('/testimonials', [ContentManagementController::class, 'testimonialsIndex'])->name('testimonials.index');
+        Route::get('/testimonials/created_testimonial', [ContentManagementController::class, 'testimonialsCreate'])->name('testimonials.create');
+        Route::post('/testimonials', [ContentManagementController::class, 'testimonialsStore'])->name('testimonials.store');
+        Route::get('/testimonials/{testimonial}/edit', [ContentManagementController::class, 'testimonialsEdit'])->name('testimonials.edit');
+        Route::put('/testimonials/{testimonial}', [ContentManagementController::class, 'testimonialsUpdate'])->name('testimonials.update');
+        Route::delete('/testimonials/{testimonial}', [ContentManagementController::class, 'testimonialsDestroy'])->name('testimonials.destroy');
+
+        // Succès paroisses
+        Route::get('/parish-success', [ContentManagementController::class, 'parishSuccessIndex'])->name('parish-success.index');
+        Route::get('/parish-success/created_success', [ContentManagementController::class, 'parishSuccessCreate'])->name('parish-success.create');
+        Route::post('/parish-success', [ContentManagementController::class, 'parishSuccessStore'])->name('parish-success.store');
+        Route::get('/parish-success/{story}/edit', [ContentManagementController::class, 'parishSuccessEdit'])->name('parish-success.edit');
+        Route::put('/parish-success/{story}', [ContentManagementController::class, 'parishSuccessUpdate'])->name('parish-success.update');
+        Route::delete('/parish-success/{story}', [ContentManagementController::class, 'parishSuccessDestroy'])->name('parish-success.destroy');
+
+        // FAQs paroisses
+        Route::get('/parish-faqs', [ContentManagementController::class, 'parishFaqsIndex'])->name('parish-faqs.index');
+        Route::get('/parish-faqs/create', [ContentManagementController::class, 'parishFaqsCreate'])->name('parish-faqs.create');
+        Route::post('/parish-faqs', [ContentManagementController::class, 'parishFaqsStore'])->name('parish-faqs.store');
+        Route::get('/parish-faqs/{faq}/edit', [ContentManagementController::class, 'parishFaqsEdit'])->name('parish-faqs.edit');
+        Route::put('/parish-faqs/{faq}', [ContentManagementController::class, 'parishFaqsUpdate'])->name('parish-faqs.update');
+        Route::delete('/parish-faqs/{faq}', [ContentManagementController::class, 'parishFaqsDestroy'])->name('parish-faqs.destroy');
+
+        // Impacts avantages
+        Route::get('/advantage-impacts', [ContentManagementController::class, 'advantageImpactsIndex'])->name('advantage-impacts.index');
+        Route::get('/advantage-impacts/create', [ContentManagementController::class, 'advantageImpactsCreate'])->name('advantage-impacts.create');
+        Route::post('/advantage-impacts', [ContentManagementController::class, 'advantageImpactsStore'])->name('advantage-impacts.store');
+        Route::get('/advantage-impacts/{impact}/edit', [ContentManagementController::class, 'advantageImpactsEdit'])->name('advantage-impacts.edit');
+        Route::put('/advantage-impacts/{impact}', [ContentManagementController::class, 'advantageImpactsUpdate'])->name('advantage-impacts.update');
+        Route::delete('/advantage-impacts/{impact}', [ContentManagementController::class, 'advantageImpactsDestroy'])->name('advantage-impacts.destroy');
+
+        // Informations contact
+        Route::get('/contact-infos', [ContentManagementController::class, 'contactInfosIndex'])->name('contact-infos.index');
+        Route::get('/contact-infos/created_contact', [ContentManagementController::class, 'contactInfosCreate'])->name('contact-infos.create');
+        Route::post('/contact-infos', [ContentManagementController::class, 'contactInfosStore'])->name('contact-infos.store');
+        Route::get('/contact-infos/{info}/edit', [ContentManagementController::class, 'contactInfosEdit'])->name('contact-infos.edit');
+        Route::put('/contact-infos/{info}', [ContentManagementController::class, 'contactInfosUpdate'])->name('contact-infos.update');
+        Route::delete('/contact-infos/{info}', [ContentManagementController::class, 'contactInfosDestroy'])->name('contact-infos.destroy');
+
+        // FAQs contact
+        Route::get('/contact-faqs', [ContentManagementController::class, 'contactFaqsIndex'])->name('contact-faqs.index');
+        Route::get('/contact-faqs/create_contactfaqs', [ContentManagementController::class, 'contactFaqsCreate'])->name('contact-faqs.create');
+        Route::post('/contact-faqs', [ContentManagementController::class, 'contactFaqsStore'])->name('contact-faqs.store');
+        Route::get('/contact-faqs/{faq}/edit', [ContentManagementController::class, 'contactFaqsEdit'])->name('contact-faqs.edit');
+        Route::put('/contact-faqs/{faq}', [ContentManagementController::class, 'contactFaqsUpdate'])->name('contact-faqs.update');
+        Route::delete('/contact-faqs/{faq}', [ContentManagementController::class, 'contactFaqsDestroy'])->name('contact-faqs.destroy');
+
+        // Horaires support
+        Route::get('/support-hours', [ContentManagementController::class, 'supportHoursIndex'])->name('support-hours.index');
+        Route::get('/support-hours/created_supporthours', [ContentManagementController::class, 'supportHoursCreate'])->name('support-hours.create');
+        Route::post('/support-hours', [ContentManagementController::class, 'supportHoursStore'])->name('support-hours.store');
+        Route::get('/support-hours/{hour}/edit', [ContentManagementController::class, 'supportHoursEdit'])->name('support-hours.edit');
+        Route::put('/support-hours/{hour}', [ContentManagementController::class, 'supportHoursUpdate'])->name('support-hours.update');
+        Route::delete('/support-hours/{hour}', [ContentManagementController::class, 'supportHoursDestroy'])->name('support-hours.destroy');
+
+        // Messages de contact
+        Route::get('/contact-messages', [ContentManagementController::class, 'contactMessagesIndex'])->name('contact-messages.index');
+        Route::delete('/contact-messages/{message}', [ContentManagementController::class, 'contactMessagesDestroy'])->name('contact-messages.destroy');
+    });
 });
 
 // Les routes des @paroisses
