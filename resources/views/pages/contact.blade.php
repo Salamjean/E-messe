@@ -298,6 +298,9 @@
         }
 
         .btn-submit:hover {
+            background-color: #fff;
+            color: #C9A961;
+            border: 1px solid #C9A961;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(201, 169, 97, 0.4);
             background: linear-gradient(135deg, #B89551 0%, #A88441 100%);
