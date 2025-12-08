@@ -256,8 +256,8 @@
 
     <style>
         /* ========================================
-                                                                                                                                                                                                                                           VARIABLES & RESET
-                                                                                                                                                                                                                                        ======================================== */
+                                                                                                                                                                                                                               VARIABLES & RESET
+                                                                                                                                                                                                                            ======================================== */
         :root {
             --primary-color: #D4A574;
             --primary-dark: #B8895F;
@@ -308,8 +308,8 @@
 
 
         /* ========================================
-                                                                                                                                                                                                                                           HERO & HEADERS
-                                                                                                                                                                                                                                        ======================================== */
+                                                                                                                                                                                                                               HERO & HEADERS
+                                                                                                                                                                                                                            ======================================== */
         .features-hero {
             background: #f7f4eb;
             padding: 100px 0 80px;
@@ -345,8 +345,8 @@
         }
 
         /* ========================================
-                                                                                                                                                                                                                                           FEATURES GRID CARDS
-                                                                                                                                                                                                                                        ======================================== */
+                                                                                                                                                                                                                               FEATURES GRID CARDS
+                                                                                                                                                                                                                            ======================================== */
         .feature-card {
             background: var(--white);
             border: 1px solid #E5E7EB;
@@ -435,8 +435,8 @@
         }
 
         /* ========================================
-                                                                                                                                                                                                                                           DETAILED FEATURES
-                                                                                                                                                                                                                                        ======================================== */
+                                                                                                                                                                                                                               DETAILED FEATURES
+                                                                                                                                                                                                                            ======================================== */
         .features-detailed {
             background: var(--bg-light);
         }
@@ -485,7 +485,7 @@
         .feature-image-container {
             background: linear-gradient(135deg, #FAF5F0 50%, #F5EBDC 50%);
             border-radius: 24px;
-            width: 300% !important;
+            width: 100% !important;
             padding: 80px;
             text-align: center;
             position: relative;
@@ -494,77 +494,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Ajout pour gérer les images agrandies */
-            overflow: visible !important;
-            /* Permet à l'image de dépasser */
-        }
-
-        /* Si vous avez une image à l'intérieur */
-        .feature-image-container img {
-            transform: scale(3, 2);
-            /* Largeur ×3, Hauteur ×2 */
-            transform-origin: center center;
-            /* Agrandit depuis le centre */
-            /* Ou utilisez ces alternatives : */
-            /* width: 300% !important;  Largeur ×3 */
-            /* height: 200% !important; Hauteur ×2 */
-            max-width: none !important;
-            /* Enlève les limitations */
-            object-fit: contain;
-            /* Garde les proportions */
-        }
-
-        /* Alternative avec width/height */
-        .feature-image-container .large-image {
-            width: 300% !important;
-            /* 3 fois plus large */
-            height: 200% !important;
-            /* 2 fois plus haute */
-            position: relative;
-            transform-origin: center;
-            object-fit: contain;
-            z-index: 10;
-        }
-
-        /* Version avec position absolute pour mieux contrôler */
-        .feature-image-container .zoomed-image {
-            position: absolute;
-            width: 300%;
-            /* ×3 en largeur */
-            height: 200%;
-            /* ×2 en hauteur */
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(1);
-            /* Centre l'image */
-            object-fit: contain;
-            z-index: 2;
-        }
-
-        /* Pour que le conteneur ne coupe pas l'image */
-        .feature-image-wrapper {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            overflow: visible;
-        }
-
-        /* Si vous voulez que l'image soit responsive malgré l'agrandissement */
-        @media (max-width: 768px) {
-            .feature-image-container {
-                padding: 40px;
-                /* Réduit le padding sur mobile */
-            }
-
-            .feature-image-container img {
-                transform: scale(2, 1.5);
-                /* Réduit l'agrandissement sur mobile */
-                /* Ou */
-                width: 200% !important;
-                /* ×2 au lieu de ×3 */
-                height: 150% !important;
-                /* ×1.5 au lieu de ×2 */
-            }
         }
 
         .feature-big-icon {
@@ -609,7 +538,7 @@
         }
 
         /*========================================CTA
-                                                                                                                                                                                    SECTION========================================*/
+                                                                                                                                                                        SECTION========================================*/
         .cta-section {
             background: #faf4e6;
             padding: 100px 0;
