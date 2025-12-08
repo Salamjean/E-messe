@@ -292,18 +292,16 @@
             padding: 14px 40px;
             font-size: 1.1rem;
             font-weight: 600;
-            border-radius: 50px;
+            border-radius: 15px;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(201, 169, 97, 0.3);
         }
 
         .btn-submit:hover {
-            background-color: #fff;
+            background: #fff;
             color: #C9A961;
             border: 1px solid #C9A961;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(201, 169, 97, 0.4);
-            background: linear-gradient(135deg, #B89551 0%, #A88441 100%);
         }
 
         /* Support Hours */
@@ -318,8 +316,8 @@
 
         .support-icon {
             /* width: 40px;
-                                    height: 40px;
-                                    margin: 0 auto 25px; */
+                                            height: 40px;
+                                            margin: 0 auto 25px; */
             background: linear-gradient(135deg, #C9A961 0%, #B89551 100%);
             border-radius: 50%;
             /* display: flex; */
