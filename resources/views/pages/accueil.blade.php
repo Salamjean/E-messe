@@ -195,20 +195,27 @@
                     <h2 class="section-title">Télécharger E-MESSE</h2>
 
 
-                    <div class="download-card">
-                        <div class="download-icon">
-                            <i class="fab fa-android"></i>
+                    <div class="download-card row align-items-center">
+                        <div class="feature-image col-lg-6 col-md-6 text-center position-relative overflow-visible">
+                            <img src="{{ asset('assets/fonctionnalite/img/logo_phone.png') }}" alt="Validation Mobile"
+                                class="phone-img img-fluid">
                         </div>
-                        <p class="download-text">
-                        <h2 class="section-subtitle mb-4 fw-bold" style="color: #000000;">Disponible sur Google Play</h2>
-                        Téléchargez notre application mobile pour accéder à E-MESSE où que vous soyez
-                        </p>
-                        <a href="#" class="btn btn-google-play">
-                            <i class="fas fa-download"></i> Télécharger maintenant
-                        </a>
-                        <p class="download-info">
-                            L'application E-MESSE est disponible gratuitement
-                        </p>
+                        <div class="feature-text col-lg-6 col-md-6 p-3 p-md-4">
+                            <div class="download-icon">
+                                <i class="fab fa-android"></i>
+                            </div>
+                            <p class="download-text">
+                            <h2 class="section-subtitle mb-4 fw-bold" style="color: #000000;">Disponible sur Google Play
+                            </h2>
+                            Téléchargez notre application mobile pour accéder à E-MESSE où que vous soyez
+                            </p><br>
+                            <a href="#" class="btn btn-google-play">
+                                <i class="fas fa-download"></i> Télécharger maintenant
+                            </a>
+                            <p class="download-info">
+                                L'application E-MESSE est disponible gratuitement
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>

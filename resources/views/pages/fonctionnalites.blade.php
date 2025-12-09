@@ -128,12 +128,11 @@
                     <div class="col-lg-6 order-lg-2 order-1">
                         <div class="container-fluid">
                             <div class="feat-card d-flex flex-column flex-md-row align-items-center shadow position-relative"
-                                style="border: 1px solid #c2a16d; border-radius: 20px; padding: 30px;">
+                                style="border: 1px solid #c2a16d; border-radius: 20px; padding: 70px;">
                                 <!-- Texte -->
                                 <div class="feature-text col-lg-6 col-md-6 p-3 p-md-4">
                                     <h4 class="text-primar">
-                                        Processus de Validation de messe par le fidèle lui-même
-                                        depuis son téléphone
+                                        Processus de Validation de messe par le fidèle lui ême depuis son téléphone
                                     </h4>
                                 </div>
                                 <!-- Image téléphone -->
@@ -153,7 +152,7 @@
                     <div class="col-lg-6 order-lg-1 order-1">
                         <div class="container-fluid">
                             <div class="feat-card d-flex flex-column flex-md-row align-items-center shadow position-relative"
-                                style="border: 1px solid #c2a16d; border-radius: 20px; padding: 30px;">
+                                style="border: 1px solid #c2a16d; border-radius: 20px; padding: 70px;">
                                 <!-- Image téléphone -->
                                 <div class="feature-image col-lg-6 col-md-6 text-center position-relative overflow-visible">
                                     <img src="{{ asset('assets/fonctionnalite/img/dash_photo.png') }}"
@@ -162,8 +161,7 @@
                                 <!-- Texte -->
                                 <div class="feature-text col-lg-6 col-md-6 p-3 p-md-4">
                                     <h4 class="text-primar">
-                                        Processus de Validation de messe par le fidèle lui-même
-                                        depuis son téléphone
+                                        Tableau de bord personnel avec le statut des messes et les prochaines messes
                                     </h4>
                                 </div>
                             </div>
@@ -206,7 +204,7 @@
                     <div class="col-lg-6 order-lg-2 order-1">
                         <div class="container-fluid">
                             <div class="feat-card d-flex flex-column flex-md-row align-items-center shadow position-relative"
-                                style="border: 1px solid #c2a16d; border-radius: 20px; padding: 30px;">
+                                style="border: 1px solid #c2a16d; border-radius: 20px; padding: 70px;">
                                 <!-- Image téléphone -->
                                 <div
                                     class="feature-image col-lg-6 col-md-6 text-center position-relative overflow-visible">
@@ -214,10 +212,9 @@
                                         alt="Validation Mobile" class="phone-img img-fluid">
                                 </div>
                                 <!-- Texte -->
-                                <div class="feature-text col-lg-6 col-md-6 p-3 p-md-4">
+                                <div class="feature-text col-lg-6 col-md-6">
                                     <h4 class="text-primar">
-                                        Processus de Validation de messe par le fidèle lui-même
-                                        depuis son téléphone
+                                        Dashboard analytique avec statistiques, graphiques et métriques de performance
                                     </h4>
                                 </div>
                             </div>
@@ -243,8 +240,8 @@
 
     <style>
         /* ========================================
-                                VARIABLES & RESET
-                                ======================================== */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        VARIABLES & RESET
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ======================================== */
         :root {
             --primary-color: #D4A574;
             --primary-dark: #B8895F;
@@ -264,8 +261,8 @@
         }
 
         /* ========================================
-                                HERO & HEADERS
-                                ======================================== */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        HERO & HEADERS
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ======================================== */
         .features-hero {
             background: #f7f4eb;
             padding: 100px 0 80px;
@@ -304,8 +301,8 @@
         }
 
         /* ========================================
-                                FEATURES GRID CARDS
-                                ======================================== */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        FEATURES GRID CARDS
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ======================================== */
         .feature-card {
             background: var(--white);
             border: 1px solid #E5E7EB;
@@ -399,8 +396,8 @@
         }
 
         /* ========================================
-                                DETAILED FEATURES
-                                ======================================== */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        DETAILED FEATURES
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ======================================== */
         .features-detailed {
             background: var(--bg-light);
         }
@@ -452,11 +449,11 @@
         /* Card spécifique "Validation" */
         .feat-card {
             background: #fff;
-            background: linear-gradient(to bottom, #e8dfd2, #c8e3ed);
+            background: linear-gradient(to bottom, #e8dfd2 80%, #c8e3ed 100%);
             border-radius: 20px;
-            padding: 20px;
+            padding: 80px !important;
             width: 100%;
-            max-width: 600px;
+            max-width: 800px;
             position: relative;
             margin: 0 auto;
         }
@@ -492,7 +489,7 @@
             background: linear-gradient(135deg, #FAF5F0 50%, #F5EBDC 50%);
             border-radius: 24px;
             width: 100% !important;
-            padding: 80px;
+            padding: 100px !important;
             text-align: center;
             position: relative;
             border: 2px solid #f0e6d9;
@@ -503,25 +500,25 @@
         }
 
         .phone-img {
-            width: 100%;
+            width: 180%;
             /* <<< beaucoup plus large */
-            max-width: 550px;
+            max-width: 380px !important;
             /* limite max optionnelle */
-            /* height: 3000px; */
+            height: 370px;
             /* garde les proportions */
             position: absolute;
-            top: -150px;
+            top: -220px;
             /* <<< dépasse plus haut */
-            right: -20px;
+            right: -50px;
             /* décale un peu hors du card */
-            z-index: 20;
+            z-index: 30;
             transform-origin: top right;
             transition: transform 0.3s ease;
         }
 
         /* ========================================
-                                CTA SECTION
-                                ======================================== */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        CTA SECTION
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ======================================== */
         .cta-section {
             background: #faf4e6;
             padding: 100px 0;
@@ -571,8 +568,8 @@
         }
 
         /* ========================================
-                                RESPONSIVE
-                                ======================================== */
+                                                                                                                                                                                                                            RESPONSIVE DESIGN - AMÉLIORÉ POUR MOBILE
+                                                                                                                                                                                                                            ======================================== */
         @media (max-width: 1200px) {
             .hero-title {
                 font-size: 2.5rem;
@@ -584,6 +581,14 @@
 
             .feature-detail-title {
                 font-size: 1.75rem;
+            }
+
+            .phone-img {
+                max-width: 100px;
+            }
+
+            .computer-img {
+                max-width: 280px;
             }
         }
 
@@ -609,16 +614,44 @@
                 justify-content: center;
             }
 
-            .feat-card {
+            .feature-image-container {
+                padding: 30px;
                 margin-bottom: 30px;
             }
 
-            .feature-image {
-                margin-top: 20px;
+            .feat-card {
+                padding: 25px !important;
             }
 
             .cta-title {
                 font-size: 2rem;
+            }
+
+            .phone-img {
+                width: 50%;
+                max-width: 100px;
+                height: auto;
+                display: block;
+                margin: 0 auto;
+                transition: var(--transition);
+                /* width: 180%; */
+                /* <<< beaucoup plus large */
+                max-width: 200px !important;
+                /* limite max optionnelle */
+                /* height: 200px; */
+                /* garde les proportions */
+                position: absolute;
+                top: -20px;
+                /* <<< dépasse plus haut */
+                right: -60px;
+                /* décale un peu hors du card */
+                z-index: 10;
+                transform-origin: top right;
+                transition: transform 0.3s ease;
+            }
+
+            .computer-img {
+                max-width: 250px;
             }
         }
 
@@ -675,12 +708,57 @@
                 font-size: 1rem;
             }
 
+            .feature-image-container {
+                padding: 20px;
+                border-radius: 18px;
+            }
+
+            .feat-card {
+                padding: 20px !important;
+                border-radius: 16px;
+                flex-direction: column !important;
+            }
+
+            .feature-text {
+                order: 2;
+                margin-top: 20px;
+            }
+
+            .feature-image {
+                order: 1;
+            }
+
             .feature-text h4 {
-                font-size: 16px;
+                font-size: 1rem;
+                text-align: center;
             }
 
             .phone-img {
-                max-width: 200px;
+                width: 30%;
+                max-width: 150px;
+                height: auto;
+                display: block;
+                margin: 0 auto;
+                transition: var(--transition);
+                /* width: 180%; */
+                /* <<< beaucoup plus large */
+                max-width: 200px !important;
+                /* limite max optionnelle */
+                /* height: 200px; */
+                /* garde les proportions */
+                position: absolute;
+                top: -80px;
+                /* <<< dépasse plus haut */
+                right: -60px;
+                /* décale un peu hors du card */
+                z-index: 10;
+                transform-origin: top right;
+                transition: transform 0.3s ease;
+            }
+
+            .computer-img {
+                max-width: 220px;
+                margin: 0 auto;
             }
 
             .cta-section {
@@ -729,19 +807,44 @@
             .feature-list li {
                 font-size: 0.9rem;
                 padding: 6px 0;
+                text-align: left;
+            }
+
+            .feature-image-container {
+                padding: 15px;
+                border-radius: 16px;
             }
 
             .feat-card {
-                padding: 15px;
-                border-radius: 15px;
+                padding: 15px !important;
+                border-radius: 14px;
             }
 
             .feature-text h4 {
-                font-size: 14px;
+                font-size: 0.9rem;
             }
 
             .phone-img {
+                width: 30%;
                 max-width: 150px;
+                height: auto;
+                display: block;
+                margin: 0 auto;
+                transition: var(--transition);
+                /* width: 180%; */
+                /* <<< beaucoup plus large */
+                max-width: 200px !important;
+                /* limite max optionnelle */
+                /* height: 200px; */
+                /* garde les proportions */
+                position: absolute;
+                top: -80px;
+                /* <<< dépasse plus haut */
+                right: -60px;
+                /* décale un peu hors du card */
+                z-index: 10;
+                transform-origin: top right;
+                transition: transform 0.3s ease;
             }
 
             .cta-title {
@@ -756,7 +859,7 @@
         /* Améliorations pour très petits écrans */
         @media (max-width: 375px) {
             .feature-card {
-                padding: 20px 15px;
+                padding: 20px 12px;
             }
 
             .feature-card-icon {
@@ -776,31 +879,134 @@
                 font-size: 0.85rem;
             }
 
+            .feature-image-container {
+                padding: 12px;
+            }
+
+            .feat-card {
+                padding: 12px !important;
+            }
+
+
+            .phone-img {
+                width: 30%;
+                max-width: 150px;
+                height: auto;
+                display: block;
+                margin: 0 auto;
+                transition: var(--transition);
+                /* width: 180%; */
+                /* <<< beaucoup plus large */
+                max-width: 200px !important;
+                /* limite max optionnelle */
+                /* height: 200px; */
+                /* garde les proportions */
+                position: absolute;
+                top: -80px;
+                /* <<< dépasse plus haut */
+                right: -60px;
+                /* décale un peu hors du card */
+                z-index: 10;
+                transform-origin: top right;
+                transition: transform 0.3s ease;
+            }
+
+
+
             .btn-cta {
                 padding: 10px 24px;
                 font-size: 0.85rem;
             }
         }
 
-        /* Correction pour l'ordre des éléments sur mobile */
+        /* Correction de l'ordre des éléments sur mobile */
+        .feature-detail .row>div {
+            margin-bottom: 30px;
+        }
+
+        /* Assurer que les images sont toujours visibles */
+        .feature-image-container,
+        .feature-image,
+        .feat-card {
+            overflow: visible !important;
+        }
+
+        /* Ajustements spécifiques pour les images dans les cartes */
         @media (max-width: 767px) {
-            .feature-detail .row>div {
-                margin-bottom: 30px;
+            .feature-detail .row {
+                flex-direction: column;
+            }
+
+            .feature-detail .col-lg-6 {
+                width: 100%;
             }
 
             .feat-card {
-                flex-direction: column !important;
-                text-align: center;
+                margin: 0 auto;
+                max-width: 100%;
             }
 
             .feature-text {
-                order: 2;
-                margin-top: 20px;
+                padding-top: 20px !important;
+                text-align: left !important;
+                margin-left: 20px !important;
+                margin-right: 20px !important;
+                margin-bottom: 20px !important;
+                margin-top: 20px !important;
+                padding: 20px !important;
+                border-radius: 16px;
+                /* background-color: #fff; */
             }
 
-            .feature-image {
-                order: 1;
+            .phone-img {
+                width: 30%;
+                max-width: 150px;
+                height: auto;
+                display: block;
+                margin: 0 auto;
+                transition: var(--transition);
+                /* width: 180%; */
+                /* <<< beaucoup plus large */
+                max-width: 200px !important;
+                /* limite max optionnelle */
+                /* height: 200px; */
+                /* garde les proportions */
+                position: absolute;
+                top: -80px;
+                /* <<< dépasse plus haut */
+                right: -60px;
+                /* décale un peu hors du card */
+                z-index: 10;
+                transform-origin: top right;
+                transition: transform 0.3s ease;
             }
+
+            .feat-card:hover .phone-img {
+                transform: scale(1.05);
+            }
+
+            /* Empêche le card de couper l'image */
+            .feature-image,
+            .feat-card {
+                overflow: visible !important;
+                position: relative;
+            }
+
+            .feature-image-container {
+                background: linear-gradient(135deg, #FAF5F0 50%, #F5EBDC 50%);
+                border-radius: 24px;
+                width: 50% !important;
+                padding: 50px !important;
+                text-align: center;
+                position: relative;
+                border: 2px solid #f0e6d9;
+                min-height: 350px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+
         }
     </style>
 @endsection
