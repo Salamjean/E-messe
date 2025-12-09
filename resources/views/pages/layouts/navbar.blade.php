@@ -193,10 +193,11 @@
     }
 
     .btn-login:hover {
-        background: linear-gradient(135deg, #B89456 0%, #A67D3D 100%);
+        background: #fff;
         transform: translateY(-2px);
         box-shadow: 0 6px 16px rgba(197, 165, 114, 0.35);
-        color: #ffffff;
+        color: #C5A572;
+        border: 1px solid #C5A572;
     }
 
     .btn-login:active {

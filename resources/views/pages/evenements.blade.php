@@ -319,7 +319,7 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background-color: #8b6f47;
+            background-color: #d4a03a;
             color: #fff;
             display: flex;
             align-items: center;
