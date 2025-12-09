@@ -5,7 +5,9 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-12 text-center">
-                    <h1 class="hero-title">Organisez vos Événements</h1>
+                    <h1 class="hero-title">
+                        Organisez vos <span class="highlight-text">Événements</span>
+                    </h1>
                     <p class="hero-subtitle">Gérez tous vos événements religieux de manière simple et efficace</p>
                 </div>
             </div>
@@ -145,6 +147,17 @@
     </section>
 
     <style>
+        :root {
+            --primary-gold: #C5A572;
+            --dark-gold: #A67D3D;
+            --light-gold: #E8D5B5;
+            --bg-cream: #FBF8F3;
+            --text-dark: #2D2D2D;
+            --text-gray: #6B7280;
+            --white: #FFFFFF;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
         /* Global Styles */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -163,6 +176,12 @@
             font-weight: 700;
             color: #2d2d2d;
             margin-bottom: 1rem;
+        }
+
+        .highlight-text {
+            color: var(--primary-gold);
+            position: relative;
+            display: inline-block;
         }
 
         .hero-subtitle {
