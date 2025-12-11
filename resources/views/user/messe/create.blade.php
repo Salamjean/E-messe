@@ -1,823 +1,776 @@
 @extends('user.layouts.template')
 
 @section('content')
-<link rel="stylesheet" href="{{asset('assets/styles.css')}}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<div class="messe-container">
-    <div class="messe-header">
-        <h1>Demande de Messe</h1>
-        <p>Remplissez ce formulaire pour demander une célébration de messe selon vos intentions.</p>
+    <link rel="stylesheet" href="{{ asset('assets/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <div class="container-fluid">
+        <!-- Stepper Header -->
+        <div class="stepper-wrapper">
+            <div class="stepper-item active" data-step="1">
+                <div class="step-counter">1</div>
+                <div class="step-name">Intention de prière</div>
+            </div>
+            <div class="stepper-item" data-step="2">
+                <div class="step-counter">2</div>
+                <div class="step-name">Offrez une messe</div>
+            </div>
+            <div class="stepper-item" data-step="3">
+                <div class="step-counter">3</div>
+                <div class="step-name">Confirmation</div>
+            </div>
+            <div class="stepper-line"></div>
+        </div>
+
+        <form action="{{ route('user.messe.store') }}" method="POST" class="messe-form" id="messeForm">
+            @csrf
+
+            <!-- STEP 1: Intention -->
+            <div class="step-content active" id="step-1">
+                <div class="form-section-clean">
+                    <h2>Formulez votre intention de prière</h2>
+
+                    <div class="form-group">
+                        <label for="motif_intention">Motif de la demande *</label>
+                        <textarea id="motif_intention" name="motif_intention" rows="4" value="{{ old('motif_intention') }}"
+                            placeholder="Précisez l'intention de votre messe (défunt, action de grâces, intention particulière, etc.)" required>{{ old('motif_intention') }}</textarea>
+                        @error('motif_intention')
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                            </div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label for="interception_par">Par l'intercession de ... (Optionnel)</label>
+                        <input type="text" id="interception_par" name="interception_par" value="{{ old('interception_par') }}"
+                            placeholder="Ex: Saint Marie...">
+                        @error('interception_par')
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                            </div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="form-actions-right">
+                    <button type="button" class="btn-next" onclick="nextStep(2)">Suivant</button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Détails -->
+            <div class="step-content" id="step-2">
+                <div class="form-section-clean">
+                    <h2>Détails de la messe</h2>
+
+                    <!-- Localisation -->
+                    <div class="form-row-custom">
+                        <div class="form-group">
+                            <label for="ville_id">Ville *</label>
+                            <select id="ville_id" name="ville_id" value="{{ old('ville_id') }}" required>
+                                <option value="">Sélectionnez une ville</option>
+                                @foreach ($villes as $ville)
+                                    <option value="{{ $ville->id }}">{{ $ville->nom_ville }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="commune_id">Commune *</label>
+                            <select id="commune_id" name="commune_id" value="{{ old('commune_id') }}" required disabled>
+                                <option value="">Sélectionnez d'abord une ville</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="paroisse_id">Paroisse *</label>
+                        <select id="paroisse_id" name="paroisse_id" value="{{ old('paroisse_id') }}" required disabled>
+                            <option value="">Sélectionnez d'abord une commune</option>
+                        </select>
+                        @error('paroisse_id')
+                            <div class="error-message">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Type, Date, Heure -->
+                    <div class="form-row-custom three-cols">
+                        <div class="form-group">
+                            <label for="celebration_choisie">Type de célébration *</label>
+                            <select id="celebration_choisie" name="celebration_choisie" value="{{ old('celebration_choisie') }}" required>
+                                <option value="">Sélectionnez une option</option>
+                                <option value="Messe quotidienne">Messe quotidienne</option>
+                                <option value="Messe dominicale">Messe dominicale</option>
+                                <option value="Messe solennelle">Messe solennelle</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="date_souhaitee">Date *</label>
+                            <input type="date" id="date_souhaitee" name="date_souhaitee"
+                                value="{{ old('date_souhaitee') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="heure_souhaitee">Heure (Optionnel)</label>
+                            <input type="time" id="heure_souhaitee" name="heure_souhaitee"
+                                value="{{ old('heure_souhaitee') }}">
+                        </div>
+                    </div>
+
+                    <!-- Champs conditionnels -->
+                    <div id="jours_messe_quotidienne" class="conditional-field">
+                        <div class="form-group">
+                            <label>Jours de la semaine *</label>
+                            <div class="jours-selection">
+                                @php $jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']; @endphp
+                                @foreach ($jours as $index => $jour)
+                                    <label class="jour-checkbox">
+                                        <input type="checkbox" name="jours_quotidienne[]" value="{{ $index + 1 }}">
+                                        <span class="checkmark"></span>
+                                        {{ $jour }}
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="jours_messe_dominicale" class="conditional-field">
+                        <div class="form-group">
+                            <label>Dimanches du mois *</label>
+                            <div class="jours-selection" id="dimanches-container"></div>
+                        </div>
+                    </div>
+
+                    <!-- Montant -->
+                    <div class="form-group montant-group">
+                        <label>Montant estimé</label>
+                        <div class="input-with-icon">
+                            <input type="text" id="montant_offrande_display" readonly
+                                placeholder="Calculé automatiquement">
+                            <input type="hidden" id="montant_offrande" name="montant_offrande">
+                        </div>
+                        <small id="montant-details">Sélectionnez une paroisse et des jours pour voir le montant.</small>
+                    </div>
+
+                </div>
+
+                <div class="form-actions-between">
+                    <button type="button" class="btn-prev" onclick="prevStep(1)">Précédent</button>
+                    <button type="button" class="btn-next" onclick="nextStep(3)">Suivant</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: Confirmation -->
+            <div class="step-content" id="step-3">
+                <div class="form-section-clean">
+                    <h2>Confirmation de votre demande</h2>
+
+                    <div class="recap-container" id="recapContent">
+                        <!-- Filled by JS -->
+                    </div>
+
+                    <!-- Hidden Inputs for User Info (Required by Backend) -->
+                    <input type="hidden" name="nom_demandeur" value="{{ Auth::user()->name }}">
+                    <input type="hidden" name="email_demandeur" value="{{ Auth::user()->email }}">
+                    <input type="hidden" name="telephone_demandeur" value="{{ Auth::user()->contact }}">
+
+                    <div class="user-info-summary">
+                        <h3>Vos coordonnées</h3>
+                        <p><strong>Nom:</strong> {{ Auth::user()->name }}</p>
+                        <p><strong>Email:</strong> {{ Auth::user()->email }}</p>
+                        <p><strong>Téléphone:</strong> {{ Auth::user()->contact }}</p>
+                    </div>
+                </div>
+
+                <div class="form-actions-between">
+                    <button type="button" class="btn-prev" onclick="prevStep(2)">Précédent</button>
+                    <button type="submit" class="btn-confirm">Confirmer et payer</button>
+                </div>
+            </div>
+
+        </form>
     </div>
 
-    <form action="{{ route('user.messe.store') }}" method="POST" class="messe-form" id="messeForm">
-        @csrf
-        
-        <!-- Section: Intention de la messe -->
-        <div class="form-section">
-            <div class="section-header">
-                <div class="section-icon">🙏</div>
-                <h2>Intention de messe</h2>
-            </div>
-            
-            <div class="form-group">
-                <label for="motif_intention">Motif de la messe *</label>
-                <textarea id="motif_intention" name="motif_intention" rows="4" placeholder="Précisez l'intention de votre messe (défunt, action de grâces, intention particulière, etc.)" required>{{ old('motif_intention') }}</textarea>
-                @error('motif_intention')
-                    <div class="error-message" style="color: rgb(184, 8, 8)">
-                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                    </div>
-                @enderror
-            </div>
-
-            <div class="form-group">
-                <label for="interception_par">Interception par</label>
-                <input type="text" id="interception_par" name="interception_par" value="{{ old('interception_par') }}" placeholder="Nom de la personne qui intercédera (optionnel)">
-                @error('interception_par')
-                    <div class="error-message" style="color: rgb(184, 8, 8)">
-                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                    </div>
-                @enderror
-            </div>
-        </div>
-        
-        <!-- Section: Détails de la messe -->
-        <div class="form-section">
-            <div class="section-header">
-                <div class="section-icon">⛪</div>
-                <h2>Détails de la messe</h2>
-            </div>
-            
-            <div class="form-row1">
-                <div class="form-group">
-                    <label for="ville_id">Ville *</label>
-                    <select id="ville_id" name="ville_id" required>
-                        <option value="">Sélectionnez une ville</option>
-                        @foreach($villes as $ville)
-                            <option value="{{ $ville->id }}">{{ $ville->nom_ville }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="commune_id">Commune *</label>
-                    <select id="commune_id" name="commune_id" required disabled>
-                        <option value="">Sélectionnez d'abord une ville</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="paroisse_id">Paroisse *</label>
-                    <select id="paroisse_id" name="paroisse_id" required disabled>
-                        <option value="">Sélectionnez d'abord une commune</option>
-                    </select>
-                    @error('paroisse_id')
-                        <div class="error-message" style="color: rgb(184, 8, 8)">
-                            <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                        </div>
-                    @enderror
-                </div>
-                 <div class="form-group">
-                    <label for="celebration_choisie">Type de célébration *</label>
-                    <select id="celebration_choisie" name="celebration_choisie" required>
-                        <option value="">Sélectionnez une option</option>
-                        <option value="Messe quotidienne">Messe quotidienne</option>
-                        <option value="Messe dominicale">Messe dominicale</option>
-                        <option value="Messe solennelle">Messe solennelle</option>
-                    </select>
-                    @error('celebration_choisie')
-                        <div class="error-message" style="color: rgb(184, 8, 8)">
-                            <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                        </div>
-                    @enderror
-                </div>
-            </div>
-
-            <!-- Champs conditionnels pour les jours de messe -->
-            <div id="jours_messe_quotidienne" class="conditional-field">
-                <div class="form-group">
-                    <label>Jours de la semaine *</label>
-                    <div class="jours-selection">
-                        @php
-                            $jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
-                        @endphp
-                        @foreach($jours as $index => $jour)
-                            <label class="jour-checkbox">
-                                <input type="checkbox" name="jours_quotidienne[]" value="{{ $index + 1 }}">
-                                <span class="checkmark"></span>
-                                {{ $jour }}
-                            </label>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-
-            <div id="jours_messe_dominicale" class="conditional-field">
-                <div class="form-group">
-                    <label>Dimanches du mois *</label>
-                    <div class="jours-selection" id="dimanches-container">
-                        <!-- Les dimanches seront générés dynamiquement en JS -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Ligne avec Montant, Date et Heure -->
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="montant_offrande">Montant des demandes de messes (FCFA)</label>
-                    <div class="input-with-icon">
-                        <input type="number" id="montant_offrande" name="montant_offrande" step="0.01" min="0" readonly>
-                    </div>
-                    <small id="montant-details">Ce montant est suggéré par la paroisse sélectionnée</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="date_souhaitee">Date de début *</label>
-                    <input type="date" id="date_souhaitee" value="{{old('date_souhaitee')}}" name="date_souhaitee" required>
-                    @error('date_souhaitee')
-                        <div class="error-message" style="color: rgb(184, 8, 8)">
-                            <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                        </div>
-                    @enderror
-                </div>
-                
-                <div class="form-group">
-                    <label for="heure_souhaitee">Heure souhaitée</label>
-                    <input type="time" id="heure_souhaitee" value="{{old('heure_souhaitee')}}" name="heure_souhaitee">
-                    @error('heure_souhaitee')
-                        <div class="error-message" style="color: rgb(184, 8, 8)">
-                            <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                        </div>
-                    @enderror
-                </div>
-            </div>
-        </div>
-        
-        <!-- Section: Informations du demandeur -->
-        <div class="form-section">
-            <div class="section-header">
-                <div class="section-icon">👤</div>
-                <h2>Informations du demandeur</h2>
-            </div>
-            
-            <!-- Ligne avec Nom, Email et Téléphone -->
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="nom_demandeur">Nom et prénom *</label>
-                    <input type="text" id="nom_demandeur" name="nom_demandeur" value="{{Auth::user()->name}}" readonly>
-                </div>
-                
-                <div class="form-group">
-                    <label for="email_demandeur">Email *</label>
-                    <input type="email" id="email_demandeur" name="email_demandeur" value="{{Auth::user()->email}}" readonly>
-                </div>
-                
-                <div class="form-group">
-                    <label for="telephone_demandeur">Téléphone *</label>
-                    <input type="tel" id="telephone_demandeur" name="telephone_demandeur" value="{{Auth::user()->contact}}" readonly>
-                </div>
-            </div>
-        </div>
-        
-        <div class="form-actions">
-            <button type="button" id="btn-recapitulatif" class="btn-recapitulatif">
-                <span class="btn-icon">📋</span>
-               Soumettre la demande
-            </button>
-        </div>
-    </form>
-</div>
-
-<!-- Modal de récapitulatif -->
-<div id="recapModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Récapitulatif de votre demande</h2>
-            <span class="close">&times;</span>
-        </div>
-        <div class="modal-body">
-            <div id="recapContent">
-                <!-- Le contenu du récapitulatif sera généré ici -->
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" id="btn-modifier" class="btn-modifier">
-                <span class="btn-icon">✏️</span>
-                Modifier
-            </button>
-            <button type="button" id="btn-confirmer" class="btn-confirmer">
-                <span class="btn-icon">✓</span>
-                Confirmer et soumettre
-            </button>
-        </div>
-    </div>
-</div>
-
-<style>
-    .jours-selection {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 10px;
-        margin-top: 10px;
-    }
-    
-    .jour-checkbox {
-        display: flex;
-        align-items: center;
-        padding: 12px;
-        background: #f8f9fa;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-    }
-    
-    .jour-checkbox:hover {
-        background: #e9ecef;
-    }
-    
-    .jour-checkbox input[type="checkbox"] {
-        display: none;
-    }
-    
-    .jour-checkbox input[type="checkbox"]:checked + .checkmark {
-        background: #f35525;
-        border-color: #f35525;
-    }
-    
-    .jour-checkbox input[type="checkbox"]:checked + .checkmark::after {
-        content: '✓';
-        color: white;
-        font-size: 12px;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-    }
-    
-    .checkmark {
-        width: 20px;
-        height: 20px;
-        border: 2px solid #ced4da;
-        border-radius: 4px;
-        margin-right: 10px;
-        position: relative;
-        transition: all 0.3s ease;
-    }
-    
-    .date-checkbox {
-        display: flex;
-        align-items: center;
-        padding: 10px;
-        background: #f8f9fa;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-    }
-    
-    .date-checkbox:hover {
-        background: #e9ecef;
-    }
-    
-    .date-checkbox input[type="checkbox"] {
-        margin-right: 8px;
-    }
-    
-    #montant-details {
-        color: #f35525;
-        font-weight: 500;
-    }
-
-    textarea {
-        width: 100%;
-        padding: 12px 16px;
-        border: 2px solid #e2e8f0;
-        border-radius: 8px;
-        font-family: inherit;
-        font-size: 16px;
-        color: #2d3748;
-        background-color: #fff;
-        transition: all 0.3s ease;
-        resize: vertical;
-        min-height: 120px;
-        box-sizing: border-box;
-    }
-    
-    textarea:focus {
-        outline: none;
-        border-color: #f35525;
-        box-shadow: 0 0 0 3px rgba(243, 85, 37, 0.1);
-    }
-    
-    textarea::placeholder {
-        color: #a0aec0;
-    }
-    
-    .form-group textarea {
-        margin-top: 8px;
-    }
-
-    /* Styles pour les lignes de formulaire */
-    .form-row {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-        margin-bottom: 20px;
-    }
-    .form-row1 {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-        margin-bottom: 20px;
-    }
-
-    /* Styles pour le bouton récapitulatif */
-    .btn-recapitulatif {
-        background: #f35525;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 8px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-right: 10px;
-    }
-
-    .btn-recapitulatif:hover {
-        background: #5a6268;
-    }
-
-    /* Styles pour la modal */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-    }
-
-    .modal-content {
-        background-color: #fefefe;
-        margin: 5% auto;
-        padding: 0;
-        border-radius: 12px;
-        width: 90%;
-        max-width: 600px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        animation: modalSlideIn 0.3s ease-out;
-    }
-
-    @keyframes modalSlideIn {
-        from {
-            opacity: 0;
-            transform: translateY(-50px);
+    <style>
+        .messe-form::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: -1;
         }
-        to {
-            opacity: 1;
-            transform: translateY(0);
+
+        /* Stepper */
+        .stepper-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            position: relative;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
         }
-    }
 
-    .modal-header {
-        background: linear-gradient(135deg, #f35525, #ff6b4a);
-        color: white;
-        padding: 20px;
-        border-radius: 12px 12px 0 0;
-        display: flex;
-        justify-content: between;
-        align-items: center;
-    }
-
-    .modal-header h2 {
-        margin: 0;
-        font-size: 1.5em;
-    }
-
-    .close {
-        color: white;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-        line-height: 1;
-    }
-
-    .close:hover {
-        color: #f0f0f0;
-    }
-
-    .modal-body {
-        padding: 30px;
-        max-height: 60vh;
-        overflow-y: auto;
-    }
-
-    .recap-section {
-        margin-bottom: 25px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #e9ecef;
-    }
-
-    .recap-section:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
-    }
-
-    .recap-section h3 {
-        color: #f35525;
-        margin-bottom: 15px;
-        font-size: 1.2em;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .recap-item {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 8px;
-        padding: 8px 0;
-    }
-
-    .recap-label {
-        font-weight: 600;
-        color: #495057;
-    }
-
-    .recap-value {
-        color: #6c757d;
-        text-align: right;
-        max-width: 60%;
-    }
-
-    .recap-jours {
-        background: #f8f9fa;
-        padding: 12px;
-        border-radius: 8px;
-        margin-top: 10px;
-    }
-
-    .modal-footer {
-        padding: 20px;
-        background: #f8f9fa;
-        border-radius: 0 0 12px 12px;
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-    }
-
-    .btn-modifier {
-        background: #6c757d;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .btn-modifier:hover {
-        background: #5a6268;
-    }
-
-    .btn-confirmer {
-        background: #28a745;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .btn-confirmer:hover {
-        background: #218838;
-    }
-
-    .btn-icon {
-        margin-right: 8px;
-    }
-
-    @media (max-width: 768px) {
-        .form-row {
-            grid-template-columns: 1fr;
-            gap: 15px;
+        .stepper-line {
+            position: absolute;
+            top: 20px;
+            /* Center with circle */
+            left: 50px;
+            right: 50px;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 0;
         }
-        .form-row1 {
-            grid-template-columns: 1fr;
-            gap: 15px;
+
+        .stepper-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1;
+            background: transparent;
+            /* cover line */
+            padding: 0 10px;
+            cursor: default;
         }
-        
+
+        .step-counter {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #757575;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .step-name {
+            font-weight: 500;
+            color: #757575;
+            display: none;
+            /* Hide on small screens, show on lg */
+        }
+
+        @media(min-width: 768px) {
+            .step-name {
+                display: block;
+            }
+        }
+
+        .stepper-item.active .step-counter {
+            background: #d4af37;
+            /* Gold/Brown theme */
+            color: white;
+        }
+
+        .stepper-item.active .step-name {
+            color: #333;
+            font-weight: bold;
+        }
+
+        .stepper-item.completed .step-counter {
+            background: #4caf50;
+            color: white;
+        }
+
+        /* Form Sections */
+        .step-content {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-section-clean {
+            margin-bottom: 30px;
+        }
+
+        .form-section-clean h2 {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #444;
+        }
+
+        .form-row-custom {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-row-custom.three-cols {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        @media(max-width: 768px) {
+
+            .form-row-custom,
+            .form-row-custom.three-cols {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Inputs */
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        input[type="number"],
+        select,
         textarea {
-            font-size: 14px;
-            min-height: 100px;
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
         }
 
-        .modal-content {
-            width: 95%;
-            margin: 10% auto;
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #d4af37;
         }
 
-        .modal-footer {
-            flex-direction: column;
+        /* Buttons */
+        .form-actions-right {
+            display: flex;
+            justify-content: flex-end;
         }
 
-        .recap-item {
-            flex-direction: column;
-            gap: 5px;
+        .form-actions-between {
+            display: flex;
+            justify-content: space-between;
         }
 
-        .recap-value {
-            max-width: 100%;
-            text-align: left;
-        }
-    }
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    
-    // ---- ÉLÉMENTS DU DOM ----
-    const messeForm = document.getElementById('messeForm');
-    const villeSelect = document.getElementById('ville_id');
-    const communeSelect = document.getElementById('commune_id');
-    const paroisseSelect = document.getElementById('paroisse_id');
-    const celebrationSelect = document.getElementById('celebration_choisie');
-    const dateSouhaiteeInput = document.getElementById('date_souhaitee');
-    const montantOffrandeInput = document.getElementById('montant_offrande');
-    const montantDetails = document.getElementById('montant-details');
-    const joursQuotidienneDiv = document.getElementById('jours_messe_quotidienne');
-    const joursDominicaleDiv = document.getElementById('jours_messe_dominicale');
-    const dimanchesContainer = document.getElementById('dimanches-container');
-
-    // Modal elements
-    const modal = document.getElementById('recapModal');
-    const btnRecapitulatif = document.getElementById('btn-recapitulatif');
-    const closeBtn = document.querySelector('.modal .close');
-    const btnModifier = document.getElementById('btn-modifier');
-    const btnConfirmer = document.getElementById('btn-confirmer');
-
-    // ---- ÉTAT DE L'APPLICATION ----
-    let montantUnitaire = 0;
-
-    // =====================================================================
-    // ---- INITIALISATION ----
-    // =====================================================================
-    
-    // Définir la date minimale pour la date de début au jour actuel
-    const today = new Date().toISOString().split('T')[0];
-    dateSouhaiteeInput.setAttribute('min', today);
-
-    // =====================================================================
-    // ---- GESTION DES LISTES DÉROULANTES DÉPENDANTES ----
-    // =====================================================================
-
-    villeSelect.addEventListener('change', function() {
-        const villeId = this.value;
-        resetSelect(communeSelect, "Sélectionnez d'abord une ville");
-        resetSelect(paroisseSelect, "Sélectionnez d'abord une commune");
-        montantUnitaire = 0;
-        calculerMontantTotal();
-
-        if (villeId) {
-            fetch(`/get-communes/${villeId}`)
-                .then(response => response.json())
-                .then(data => populateSelect(communeSelect, data, 'Sélectionnez une commune', 'id', 'nom_commune'));
-        }
-    });
-
-    communeSelect.addEventListener('change', function() {
-        const communeId = this.value;
-        resetSelect(paroisseSelect, "Sélectionnez d'abord une commune");
-        montantUnitaire = 0;
-        calculerMontantTotal();
-        
-        if (communeId) {
-            fetch(`/get-paroisses/${communeId}`)
-                .then(response => response.json())
-                .then(data => populateSelect(paroisseSelect, data, 'Sélectionnez une paroisse', 'id', 'name', { 'data-montant': 'montant_offrande' }));
-        }
-    });
-
-    paroisseSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        montantUnitaire = parseFloat(selectedOption.getAttribute('data-montant')) || 0;
-        calculerMontantTotal();
-    });
-
-    // =====================================================================
-    // ---- GESTION DES CHAMPS CONDITIONNELS (TYPE DE CÉLÉBRATION) ----
-    // =====================================================================
-
-    celebrationSelect.addEventListener('change', function() {
-        joursQuotidienneDiv.style.display = 'none';
-        joursDominicaleDiv.style.display = 'none';
-
-        if (this.value === 'Messe quotidienne') {
-            joursQuotidienneDiv.style.display = 'block';
-        } else if (this.value === 'Messe dominicale') {
-            genererDimanches();
-            joursDominicaleDiv.style.display = 'block';
-        }
-        calculerMontantTotal();
-    });
-    
-    // =====================================================================
-    // ---- CALCUL DU MONTANT TOTAL ----
-    // =====================================================================
-    
-    function calculerMontantTotal() {
-        if (montantUnitaire === 0) {
-            montantOffrandeInput.value = '';
-            montantDetails.textContent = 'Veuillez sélectionner une paroisse pour voir le montant.';
-            return;
+        button {
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.1s;
         }
 
-        let nombreJoursSelectionnes = 0;
-        const celebrationType = celebrationSelect.value;
-        
-        if (celebrationType === 'Messe quotidienne') {
-            nombreJoursSelectionnes = document.querySelectorAll('input[name="jours_quotidienne[]"]:checked').length;
-        } else if (celebrationType === 'Messe dominicale') {
-            nombreJoursSelectionnes = document.querySelectorAll('input[name="jours_dominicale[]"]:checked').length;
-        } else if (celebrationType === 'Messe solennelle') {
-            nombreJoursSelectionnes = 1;
+        button:active {
+            transform: scale(0.98);
         }
-        
-        const total = montantUnitaire * nombreJoursSelectionnes;
-        montantOffrandeInput.value = total.toFixed(0);
-        
-        if (nombreJoursSelectionnes > 0) {
-            montantDetails.textContent = `Détail : ${montantUnitaire.toFixed(0)} FCFA × ${nombreJoursSelectionnes} jour(s) = ${total.toFixed(0)} FCFA`;
-        } else {
-            montantDetails.textContent = `Montant par messe : ${montantUnitaire.toFixed(0)} FCFA. Sélectionnez des jours.`;
+
+        .btn-next,
+        .btn-confirm {
+            background: #d4af37;
+            color: white;
+            font-weight: bold;
         }
-    }
 
-    // Recalculer le montant à chaque fois qu'une case est cochée/décochée
-    messeForm.addEventListener('change', function(e) {
-        if (e.target.matches('input[name="jours_quotidienne[]"]') || e.target.matches('input[name="jours_dominicale[]"]')) {
-            calculerMontantTotal();
+        .btn-next:hover,
+        .btn-confirm:hover {
+            background: #c09d2e;
         }
-    });
 
-    // =====================================================================
-    // ---- GESTION DE LA MODAL DE RÉCAPITULATIF ----
-    // =====================================================================
-    
-    btnRecapitulatif.addEventListener('click', function() {
-        if (validerFormulaire()) {
-            genererRecapitulatif();
-            modal.style.display = 'block';
+        .btn-prev {
+            background: #f5f5f5;
+            color: #666;
+            border: 1px solid #ddd;
         }
-    });
 
-    closeBtn.addEventListener('click', () => modal.style.display = 'none');
-    btnModifier.addEventListener('click', () => modal.style.display = 'none');
-    btnConfirmer.addEventListener('click', () => messeForm.submit());
-    window.addEventListener('click', (event) => {
-        if (event.target === modal) {
-            modal.style.display = 'none';
+        .btn-prev:hover {
+            background: #e0e0e0;
         }
-    });
 
-    // =====================================================================
-    // ---- FONCTIONS DE LOGIQUE (VALIDATION, GÉNÉRATION) ----
-    // =====================================================================
+        /* Conditional checkboxes */
+        .jours-selection {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
 
-    function validerFormulaire() {
-        let isValid = true;
-        let firstInvalidField = null;
+        .jour-checkbox,
+        .date-checkbox {
+            background: #f9f9f9;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            border: 1px solid #eee;
+            user-select: none;
+        }
 
-        // Validation des champs requis standards
-        messeForm.querySelectorAll('[required]').forEach(field => {
-            field.style.borderColor = ''; // Reset style
-            if (!field.value.trim() && field.offsetParent !== null) { // Check if field is visible
-                isValid = false;
-                field.style.borderColor = 'red';
-                if (!firstInvalidField) firstInvalidField = field;
+        .jour-checkbox input,
+        .date-checkbox input {
+            display: none;
+        }
+
+        .jour-checkbox.selected,
+        .date-checkbox.selected {
+            background: #fff3cd;
+            border-color: #d4af37;
+            color: #856404;
+        }
+
+        /* Recap Styles */
+        .recap-container {
+            background: #fdfdfd;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .recap-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 10px;
+        }
+
+        .recap-row:last-child {
+            border-bottom: none;
+        }
+
+        .recap-label {
+            color: #666;
+        }
+
+        .recap-val {
+            font-weight: 600;
+            color: #333;
+            text-align: right;
+        }
+
+        .user-info-summary {
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .user-info-summary h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+        }
+
+        .user-info-summary p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        /* Hidden by default */
+        .conditional-field {
+            display: none;
+            margin-top: 15px;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- State ---
+            let currentStep = 1;
+            const totalSteps = 3;
+            let montantUnitaire = 0;
+
+            // --- DOM Elements ---
+            const form = document.getElementById('messeForm');
+            const villeSelect = document.getElementById('ville_id');
+            const communeSelect = document.getElementById('commune_id');
+            const paroisseSelect = document.getElementById('paroisse_id');
+            const celebrationSelect = document.getElementById('celebration_choisie');
+            const dateSouhaiteeInput = document.getElementById('date_souhaitee');
+            const montantOffrandeInput = document.getElementById('montant_offrande');
+            const montantOffrandeDisplay = document.getElementById('montant_offrande_display');
+            const montantDetails = document.getElementById('montant-details');
+            const joursQuotidienneDiv = document.getElementById('jours_messe_quotidienne');
+            const joursDominicaleDiv = document.getElementById('jours_messe_dominicale');
+            const dimanchesContainer = document.getElementById('dimanches-container');
+            const recapContent = document.getElementById('recapContent');
+
+            // --- Initialization ---
+            const today = new Date().toISOString().split('T')[0];
+            dateSouhaiteeInput.setAttribute('min', today);
+
+            // --- Navigation Logic ---
+            window.nextStep = function(step) {
+                if (!validateStep(currentStep)) return;
+
+                // Helper to prepare next step data
+                if (step === 3) {
+                    genererRecapitulatif();
+                }
+
+                showStep(step);
+            }
+
+            window.prevStep = function(step) {
+                showStep(step);
+            }
+
+            function showStep(step) {
+                // Update Step Content
+                document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+                document.getElementById('step-' + step).classList.add('active');
+
+                // Update Stepper UI
+                document.querySelectorAll('.stepper-item').forEach(el => {
+                    const s = parseInt(el.dataset.step);
+                    el.classList.remove('active', 'completed');
+                    if (s === step) el.classList.add('active');
+                    if (s < step) el.classList.add('completed');
+                });
+
+                currentStep = step;
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+
+            function validateStep(step) {
+                let isValid = true;
+                const stepEl = document.getElementById('step-' + step);
+                const requiredInputs = stepEl.querySelectorAll('[required]');
+
+                requiredInputs.forEach(input => {
+                    if (!input.value.trim() && !input.disabled && input.offsetParent !== null) {
+                        input.style.borderColor = 'red';
+                        isValid = false;
+                    } else {
+                        input.style.borderColor = '#ddd';
+                    }
+                });
+
+                // Custom validation for checkboxes
+                if (step === 2) {
+                    const type = celebrationSelect.value;
+                    if (type === 'Messe quotidienne') {
+                        const checked = document.querySelectorAll('input[name="jours_quotidienne[]"]:checked');
+                        if (checked.length === 0) {
+                            joursQuotidienneDiv.querySelector('.jours-selection').style.border = '1px solid red';
+                            isValid = false;
+                        } else {
+                            joursQuotidienneDiv.querySelector('.jours-selection').style.border = 'none';
+                        }
+                    } else if (type === 'Messe dominicale') {
+                        const checked = document.querySelectorAll('input[name="jours_dominicale[]"]:checked');
+                        if (checked.length === 0) {
+                            joursDominicaleDiv.querySelector('.jours-selection').style.border = '1px solid red';
+                            isValid = false;
+                        } else {
+                            joursDominicaleDiv.querySelector('.jours-selection').style.border = 'none';
+                        }
+                    }
+                }
+
+                if (!isValid) alert('Veuillez remplir tous les champs obligatoires.');
+                return isValid;
+            }
+
+            // --- Checkbox Styling Logic ---
+            document.body.addEventListener('change', function(e) {
+                if (e.target.matches('input[type="checkbox"]')) {
+                    const parent = e.target.parentElement; // .jour-checkbox or .date-checkbox
+                    if (e.target.checked) parent.classList.add('selected');
+                    else parent.classList.remove('selected');
+                }
+            });
+
+            // --- Dynamic Dropdowns ---
+            villeSelect.addEventListener('change', function() {
+                const villeId = this.value;
+                resetSelect(communeSelect, "Sélectionnez d'abord une ville");
+                resetSelect(paroisseSelect, "Sélectionnez d'abord une commune");
+                montantUnitaire = 0;
+                calculerMontantTotal();
+
+                if (villeId) {
+                    fetch(`/get-communes/${villeId}`)
+                        .then(r => r.json())
+                        .then(data => populateSelect(communeSelect, data, 'Sélectionnez une commune', 'id',
+                            'nom_commune'));
+                }
+            });
+
+            communeSelect.addEventListener('change', function() {
+                const communeId = this.value;
+                resetSelect(paroisseSelect, "Sélectionnez d'abord une commune");
+                montantUnitaire = 0;
+                calculerMontantTotal();
+
+                if (communeId) {
+                    fetch(`/get-paroisses/${communeId}`)
+                        .then(r => r.json())
+                        .then(data => populateSelect(paroisseSelect, data, 'Sélectionnez une paroisse',
+                            'id', 'name', {
+                                'data-montant': 'montant_offrande'
+                            }));
+                }
+            });
+
+            paroisseSelect.addEventListener('change', function() {
+                const opt = this.options[this.selectedIndex];
+                montantUnitaire = parseFloat(opt.getAttribute('data-montant')) || 0;
+                calculerMontantTotal();
+            });
+
+            // --- Celebration Type Logic ---
+            celebrationSelect.addEventListener('change', function() {
+                joursQuotidienneDiv.style.display = 'none';
+                joursDominicaleDiv.style.display = 'none';
+
+                if (this.value === 'Messe quotidienne') {
+                    joursQuotidienneDiv.style.display = 'block';
+                } else if (this.value === 'Messe dominicale') {
+                    genererDimanches();
+                    joursDominicaleDiv.style.display = 'block';
+                }
+                calculerMontantTotal();
+            });
+
+            form.addEventListener('change', function(e) {
+                if (e.target.matches('input[name="jours_quotidienne[]"]') || e.target.matches(
+                        'input[name="jours_dominicale[]"]')) {
+                    calculerMontantTotal();
+                }
+            });
+
+            function calculerMontantTotal() {
+                if (montantUnitaire === 0) {
+                    montantOffrandeDisplay.value = '';
+                    montantDetails.innerText = 'Sélectionnez une paroisse pour voir le tarif.';
+                    return;
+                }
+
+                let count = 0;
+                const type = celebrationSelect.value;
+                if (type === 'Messe quotidienne') count = document.querySelectorAll(
+                    'input[name="jours_quotidienne[]"]:checked').length;
+                else if (type === 'Messe dominicale') count = document.querySelectorAll(
+                    'input[name="jours_dominicale[]"]:checked').length;
+                else if (type === 'Messe solennelle') count = 1;
+
+                const total = montantUnitaire * count;
+                montantOffrandeInput.value = total;
+                montantOffrandeDisplay.value = total > 0 ? total + ' FCFA' : '';
+
+                if (count > 0) montantDetails.innerText = `${montantUnitaire} FCFA x ${count} = ${total} FCFA`;
+                else montantDetails.innerText = `Tarif unitaire: ${montantUnitaire} FCFA.`;
+            }
+
+            function genererDimanches() {
+                dimanchesContainer.innerHTML = '';
+                let d = dateSouhaiteeInput.value ? new Date(dateSouhaiteeInput.value) : new Date();
+                d.setHours(0, 0, 0, 0);
+                // Find next Sunday
+                d.setDate(d.getDate() + (7 - d.getDay()) % 7);
+                if (d < new Date().setHours(0, 0, 0, 0)) d.setDate(d.getDate() +
+                    7); // Ensure future if today is passed
+
+                for (let i = 0; i < 4; i++) {
+                    const str = d.toISOString().split('T')[0];
+                    const label = d.toLocaleDateString('fr-FR', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long'
+                    });
+                    const div = document.createElement('label');
+                    div.className = 'date-checkbox';
+                    div.innerHTML = `<input type="checkbox" name="jours_dominicale[]" value="${str}"> ${label}`;
+                    dimanchesContainer.appendChild(div);
+                    d.setDate(d.getDate() + 7);
+                }
+            }
+
+            // Re-run genererDimanches if date changes (optional but good ux)
+            dateSouhaiteeInput.addEventListener('change', function() {
+                if (celebrationSelect.value === 'Messe dominicale') genererDimanches();
+            });
+
+            // --- Recap Logic ---
+            function genererRecapitulatif() {
+                const ville = villeSelect.options[villeSelect.selectedIndex]?.text || '';
+                const paroisse = paroisseSelect.options[paroisseSelect.selectedIndex]?.text || '';
+                const type = celebrationSelect.value;
+                const date = dateSouhaiteeInput.value;
+                const heure = document.getElementById('heure_souhaitee').value || 'Non spécifiée';
+                const montant = montantOffrandeDisplay.value;
+                const motif = document.getElementById('motif_intention').value;
+                const intercession = document.getElementById('interception_par').value || 'Non spécifié';
+
+                let joursStr = '';
+                if (type === 'Messe quotidienne') {
+                    const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+                    document.querySelectorAll('input[name="jours_quotidienne[]"]:checked').forEach(cb => {
+                        joursStr += days[cb.value - 1] + ', ';
+                    });
+                } else if (type === 'Messe dominicale') {
+                    document.querySelectorAll('input[name="jours_dominicale[]"]:checked').forEach(cb => {
+                        joursStr += cb.parentElement.innerText + ', ';
+                    });
+                }
+                if (joursStr) joursStr = joursStr.slice(0, -2);
+
+                recapContent.innerHTML = `
+                    <div class="recap-row"><span class="recap-label">Motif</span><span class="recap-val">${motif}</span></div>
+                    <div class="recap-row"><span class="recap-label">Intercession</span><span class="recap-val">${intercession}</span></div>
+                    <div class="recap-row"><span class="recap-label">Paroisse</span><span class="recap-val">${ville} - ${paroisse}</span></div>
+                    <div class="recap-row"><span class="recap-label">Célébration</span><span class="recap-val">${type}</span></div>
+                    ${joursStr ? `<div class="recap-row"><span class="recap-label">Jours</span><span class="recap-val">${joursStr}</span></div>` : ''}
+                    <div class="recap-row"><span class="recap-label">Début</span><span class="recap-val">${date} à ${heure}</span></div>
+                    <div class="recap-row"><span class="recap-label">Montant Total</span><span class="recap-val" style="color:#d4af37; font-size:1.1em">${montant}</span></div>
+                `;
+            }
+
+            // --- Utils ---
+            function resetSelect(sel, place) {
+                sel.innerHTML = `<option value="">${place}</option>`;
+                sel.disabled = true;
+            }
+
+            function populateSelect(sel, data, place, vk, tk, attrs = {}) {
+                sel.innerHTML = `<option value="">${place}</option>`;
+                data.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item[vk];
+                    opt.textContent = item[tk];
+                    for (let k in attrs) opt.setAttribute(k, item[attrs[k]]);
+                    sel.appendChild(opt);
+                });
+                sel.disabled = false;
             }
         });
-
-        // Validation spécifique pour les jours de messe
-        const celebrationType = celebrationSelect.value;
-        if (celebrationType === 'Messe quotidienne' && document.querySelectorAll('input[name="jours_quotidienne[]"]:checked').length === 0) {
-            isValid = false;
-            joursQuotidienneDiv.style.border = '1px solid red';
-            if (!firstInvalidField) firstInvalidField = joursQuotidienneDiv;
-        } else {
-            joursQuotidienneDiv.style.border = '';
-        }
-        
-        if (celebrationType === 'Messe dominicale' && document.querySelectorAll('input[name="jours_dominicale[]"]:checked').length === 0) {
-            isValid = false;
-            joursDominicaleDiv.style.border = '1px solid red';
-            if (!firstInvalidField) firstInvalidField = joursDominicaleDiv;
-        } else {
-            joursDominicaleDiv.style.border = '';
-        }
-
-        if (!isValid && firstInvalidField) {
-            firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            alert('Veuillez remplir tous les champs obligatoires.');
-        }
-
-        return isValid;
-    }
-
-    function genererRecapitulatif() {
-        const recapContent = document.getElementById('recapContent');
-        const formData = new FormData(messeForm);
-        
-        const ville = villeSelect.options[villeSelect.selectedIndex]?.text || 'N/A';
-        const commune = communeSelect.options[communeSelect.selectedIndex]?.text || 'N/A';
-        const paroisse = paroisseSelect.options[paroisseSelect.selectedIndex]?.text || 'N/A';
-
-        let joursSelectionnesHTML = '';
-        if (formData.get('celebration_choisie') === 'Messe quotidienne') {
-            const jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
-            const joursCoches = Array.from(document.querySelectorAll('input[name="jours_quotidienne[]"]:checked')).map(cb => `<div>• ${jours[cb.value - 1]}</div>`).join('');
-            if(joursCoches) joursSelectionnesHTML = `<div class="recap-item"><span class="recap-label">Jours sélectionnés :</span><div class="recap-value recap-jours">${joursCoches}</div></div>`;
-        } else if (formData.get('celebration_choisie') === 'Messe dominicale') {
-            const dimanchesCoches = Array.from(document.querySelectorAll('input[name="jours_dominicale[]"]:checked')).map(cb => `<div>• ${formatDateDisplay(cb.value)}</div>`).join('');
-            if(dimanchesCoches) joursSelectionnesHTML = `<div class="recap-item"><span class="recap-label">Dimanches sélectionnés :</span><div class="recap-value recap-jours">${dimanchesCoches}</div></div>`;
-        }
-
-        recapContent.innerHTML = `
-            <div class="recap-section">
-                <h3>🙏 Intention de la messe</h3>
-                <div class="recap-item"><span class="recap-label">Motif :</span><span class="recap-value">${formData.get('motif_intention')}</span></div>
-                <div class="recap-item"><span class="recap-label">Intercession par :</span><span class="recap-value">${formData.get('interception_par') || 'Non spécifié'}</span></div>
-            </div>
-            <div class="recap-section">
-                <h3>⛪ Détails de la messe</h3>
-                <div class="recap-item"><span class="recap-label">Lieu :</span><span class="recap-value">${ville} > ${commune} > ${paroisse}</span></div>
-                <div class="recap-item"><span class="recap-label">Type de célébration :</span><span class="recap-value">${formData.get('celebration_choisie')}</span></div>
-                ${joursSelectionnesHTML}
-                <div class="recap-item"><span class="recap-label">Date de début :</span><span class="recap-value">${formatDateDisplay(formData.get('date_souhaitee'))}</span></div>
-                <div class="recap-item"><span class="recap-label">Heure souhaitée :</span><span class="recap-value">${formData.get('heure_souhaitee') || 'Non spécifiée'}</span></div>
-                <div class="recap-item"><span class="recap-label">Montant total :</span><span class="recap-value" style="color: #f35525; font-weight: bold;">${formData.get('montant_offrande') || '0'} FCFA</span></div>
-            </div>
-            <div class="recap-section">
-                <h3>👤 Informations du demandeur</h3>
-                <div class="recap-item"><span class="recap-label">Nom et prénom :</span><span class="recap-value">${formData.get('nom_demandeur')}</span></div>
-                <div class="recap-item"><span class="recap-label">Email :</span><span class="recap-value">${formData.get('email_demandeur')}</span></div>
-                <div class="recap-item"><span class="recap-label">Téléphone :</span><span class="recap-value">${formData.get('telephone_demandeur')}</span></div>
-            </div>
-        `;
-    }
-
-    function genererDimanches() {
-        dimanchesContainer.innerHTML = '';
-        let dateCourante = new Date();
-        if (dateSouhaiteeInput.value) { // Start from the selected date if available
-            dateCourante = new Date(dateSouhaiteeInput.value);
-        }
-        dateCourante.setHours(0, 0, 0, 0);
-
-        // Trouver le prochain dimanche (ou le jour même si c'est un dimanche)
-        dateCourante.setDate(dateCourante.getDate() + (7 - dateCourante.getDay()) % 7);
-
-        for (let i = 0; i < 4; i++) {
-            const dateStr = dateCourante.toISOString().split('T')[0];
-            const formattedDate = dateCourante.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-            dimanchesContainer.innerHTML += `<label class="date-checkbox"><input type="checkbox" name="jours_dominicale[]" value="${dateStr}">${formattedDate}</label>`;
-            dateCourante.setDate(dateCourante.getDate() + 7);
-        }
-    }
-
-
-    // =====================================================================
-    // ---- FONCTIONS UTILITAIRES ----
-    // =====================================================================
-
-    function resetSelect(selectElement, defaultText) {
-        selectElement.innerHTML = `<option value="">${defaultText}</option>`;
-        selectElement.disabled = true;
-    }
-
-    function populateSelect(selectElement, data, placeholder, valueKey, textKey, dataAttributes = {}) {
-        selectElement.innerHTML = `<option value="">${placeholder}</option>`;
-        data.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item[valueKey];
-            option.textContent = item[textKey];
-            for (const attr in dataAttributes) {
-                option.setAttribute(attr, item[dataAttributes[attr]]);
-            }
-            selectElement.appendChild(option);
-        });
-        selectElement.disabled = false;
-    }
-
-    function formatDateDisplay(dateString) {
-        if (!dateString) return 'Non spécifiée';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    }
-
-});
-</script>
+    </script>
 @endsection

@@ -1,7 +1,11 @@
 @extends('pages.layouts.template')
 @section('content')
     <!-- Hero Section -->
-    <section class="messe-hero">
+    <section class="messe-hero"
+        style="background-image: url('{{ asset('assets/image-backgroud-site/background.png') }}'); background-size: cover; background-position: center; position: relative;">
+        <div class="overlay"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(199, 183, 183, 0.3);">
+        </div>
         <div class="container">
             <div class="row text-center">
                 <div class="col-lg-10 mx-auto">
@@ -187,8 +191,8 @@
 
     <style>
         /* ========================================
-                                                                                                                               GLOBAL STYLES
-                                                                                                                            ======================================== */
+                                                                                                                                   GLOBAL STYLES
+                                                                                                                                ======================================== */
         :root {
             --primary-gold: #D4A574;
             --primary-dark: #B8895F;
@@ -214,8 +218,8 @@
         }
 
         /* ========================================
-                                                                                                                               HERO SECTION
-                                                                                                                            ======================================== */
+                                                                                                                                   HERO SECTION
+                                                                                                                                ======================================== */
         .messe-hero {
             background: #f7f4eb;
             padding: 120px 0 100px;
@@ -243,8 +247,8 @@
         }
 
         /* ========================================
-                                                                                                                               SECTION TITLES
-                                                                                                                            ======================================== */
+                                                                                                                                   SECTION TITLES
+                                                                                                                                ======================================== */
         .section-title-dark {
             font-size: 2.5rem;
             font-weight: 700;
@@ -253,8 +257,8 @@
         }
 
         /* ========================================
-                                                                                                                               HOW IT WORKS SECTION
-                                                                                                                            ======================================== */
+                                                                                                                                   HOW IT WORKS SECTION
+                                                                                                                                ======================================== */
         .how-it-works-section {
             background: var(--white);
         }
@@ -306,8 +310,8 @@
         }
 
         /* ========================================
-                                                                                                                               USE CASES SECTION
-                                                                                                                            ======================================== */
+                                                                                                                                   USE CASES SECTION
+                                                                                                                                ======================================== */
         .use-cases-section {
             background: #f0f0f0;
         }
@@ -364,8 +368,8 @@
         }
 
         /* ========================================
-                                                                                                                               IMPACT SECTION
-                                                                                                                            ======================================== */
+                                                                                                                                   IMPACT SECTION
+                                                                                                                                ======================================== */
         .impact-section {
             background: var(--white);
         }
@@ -399,8 +403,8 @@
         }
 
         /* ========================================
-                                                                                                                               FINAL CTA SECTION
-                                                                                                                            ======================================== */
+                                                                                                                                   FINAL CTA SECTION
+                                                                                                                                ======================================== */
         .final-cta-section {
             background: var(--bg-cream);
             position: relative;
@@ -460,8 +464,8 @@
         }
 
         /* ========================================
-                                                                                                                               RESPONSIVE DESIGN
-                                                                                                                            ======================================== */
+                                                                                                                                   RESPONSIVE DESIGN
+                                                                                                                                ======================================== */
         @media (max-width: 992px) {
             .hero-title {
                 font-size: 2.5rem;

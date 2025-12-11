@@ -21,13 +21,16 @@ use App\Http\Controllers\User\Event\EventController as UserEventController;
 use App\Http\Controllers\User\Messe\MesseController;
 use App\Http\Controllers\User\Messe\PaiementController;
 use App\Http\Controllers\User\Messe\PaiementStripeController;
+use App\Http\Controllers\User\ParoisseController as UserParoisseController;
+use App\Http\Controllers\User\SettingsController;
 use App\Http\Controllers\User\UserDashboard;
+use App\Http\Controllers\User\FicheController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'home'])->name('home');
 Route::get('/fonctionnalites', [HomeController::class, 'fonctionnalites'])->name('fonctionnalites');
 Route::get('/messes', [HomeController::class, 'messes'])->name('messes');
-Route::get('/paroisses', [HomeController::class, 'paroisses'])->name('paroisses');
+Route::get('/paroisse', [HomeController::class, 'paroisses'])->name('paroisses');
 Route::get('/evenements', [HomeController::class, 'evenements'])->name('evenements');
 Route::get('/avantages', [HomeController::class, 'avantages'])->name('avantages');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
@@ -262,8 +265,15 @@ Route::middleware('auth')->prefix('user')->group(function () {
     Route::post('/create/mass', [MesseController::class, 'store'])->name('user.messe.store');
     Route::get('/mes-messes/{messe}', [MesseController::class, 'show'])->name('user.messe.show');
     Route::get('/masses/history', [MesseController::class, 'history'])->name('user.messe.history');
+    Route::get('/masses/historique_messes', [MesseController::class, 'historique_messes'])->name('user.messe.historique_messes');
+    Route::get('/masses/hold', [MesseController::class, 'hold'])->name('user.messe.hold');
     Route::delete('/mes-messes/{messe}', [MesseController::class, 'destroy'])->name('user.messe.destroy');
     Route::get('/mes-messes/{messe}/receipt', [MesseController::class, 'downloadReceipt'])->name('user.messe.receipt');
+
+    // Route pour lister les paroisses
+    Route::get('/paroisses', [UserParoisseController::class, 'index'])->name('user.paroisse.index');
+    Route::post('/paroisses/favorite/{id}', [UserParoisseController::class, 'toggleFavorite'])->name('user.paroisse.favorite');
+    Route::get('/paroisse/{paroisse}', [UserParoisseController::class, 'show'])->name('user.paroisse.show');
 
     // Routes pour le paiement
     Route::get('/messe/paiement/{reference}', [PaiementController::class, 'showPaiementForm'])->name('user.messe.paiement');
@@ -284,6 +294,15 @@ Route::middleware('auth')->prefix('user')->group(function () {
     Route::post('/paiement/{reference}/stripe/verifier', [PaiementStripeController::class, 'verifierPaiementStripe'])
         ->name('user.messe.paiement-stripe.verifier');
 
+    // Routes pour les paramètres
+    Route::prefix('settings')->name('user.settings.')->group(function () {
+        Route::get('/', [SettingsController::class, 'index'])->name('index');
+        Route::get('/profile', [SettingsController::class, 'editProfile'])->name('profile');
+        Route::put('/profile', [SettingsController::class, 'updateProfile'])->name('updateProfile');
+        Route::get('/password', [SettingsController::class, 'password'])->name('password');
+        Route::put('/password', [SettingsController::class, 'updatePassword'])->name('updatePassword');
+    });
+
     Route::prefix('user_event')->name('user_event.')->group(function () {
         Route::get('/', [UserEventController::class, 'index'])->name('index');
         Route::get('/data', [UserEventController::class, 'data'])->name('data');
@@ -291,6 +310,10 @@ Route::middleware('auth')->prefix('user')->group(function () {
         Route::get('/{event}', [UserEventController::class, 'show'])->name('show');
         Route::put('/{event}', [UserEventController::class, 'update'])->name('update');
         Route::delete('/{event}', [UserEventController::class, 'destroy'])->name('destroy');
+    });
+    Route::prefix('fiche')->name('user.fiche.')->group(function () {
+        Route::get('/', [FicheController::class, 'create'])->name('create');
+        Route::post('/', [FicheController::class, 'store'])->name('store');
     });
 
 });

@@ -23,7 +23,6 @@
         </div>
     </div>
 
-    <!-- Section Messes (En cours) -->
     <div id="messes-section">
         @if ($messess->isEmpty())
             <div class="row">
@@ -31,8 +30,8 @@
                     <div class="empty-state-icon mb-3">
                         <i class="mdi mdi-church" style="font-size: 48px; color: #ccc;"></i>
                     </div>
-                    <h4 class="text-muted">Aucune demande en cours</h4>
-                    <p class="text-muted">Vos demandes en attente ou confirmées apparaitront ici.</p>
+                    <h4 class="text-muted">Aucune célébrée</h4>
+                    <p class="text-muted">Vos demandes célébrées apparaitront ici.</p>
                 </div>
             </div>
         @else
@@ -119,6 +118,5 @@
             </div>
         @endif
     </div>
-
     @include('user.messe.partials.favorites')
 @endsection

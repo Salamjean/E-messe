@@ -1,0 +1,438 @@
+@extends('user.layouts.template')
+
+@section('content')
+    <link rel="stylesheet" href="{{ asset('css/messe-wizard.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <div class="container-fluid">
+
+        <!-- Stepper -->
+        <ul class="container stepper-wrapper">
+            <li class="stepper-item completed active" id="step-indicator-1">
+                <div class="step-counter">1</div>
+                <div class="step-name">Intention de prière</div>
+            </li>
+            <li class="stepper-item" id="step-indicator-2">
+                <div class="step-counter">2</div>
+                <div class="step-name">Offrez une messe</div>
+            </li>
+            <li class="stepper-item" id="step-indicator-3">
+                <div class="step-counter">3</div>
+                <div class="step-name">Confirmation</div>
+            </li>
+        </ul>
+
+        <!-- Wizard Form -->
+        <form action="{{ route('user.messe.store') }}" method="POST" id="messeForm" class="wizard-card">
+            @csrf
+
+            <!-- STEP 1: Intention -->
+            <div class="wizard-step active" id="step-1">
+                <h2 class="step-title">Formulez votre intention de prière</h2>
+
+                <div class="form-group">
+                    <label>Motif de la demande</label>
+                    <div class="motif-selection">
+                        <div class="motif-option" data-value="Aide">Aide</div>
+                        <div class="motif-option" data-value="Assistance">Assistance</div>
+                        <div class="motif-option" data-value="Protection">Protection</div>
+                    </div>
+                    <!-- Hidden input to store selected motif -->
+                    <input type="hidden" name="motif_selector" id="motif_selector" required>
+                    <!-- Legacy textarea for compatibility if backend expects specific text, we will append selection to it or use it as fallback -->
+                </div>
+
+                <div class="form-group">
+                    <label for="motif_intention">Précisions supplémentaires</label>
+                    <textarea id="motif_intention" name="motif_intention" class="form-control-custom"
+                        placeholder="Ajoutez des détails supplémentaires si nécessaire..." rows="4"></textarea>
+                    @error('motif_intention')
+                        <div class="text-danger mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="interception_par">Par l'intercession de ... ( Optionnel )</label>
+                    <input type="text" id="interception_par" name="interception_par" class="form-control-custom"
+                        placeholder="Ex: Saint Marie...">
+                </div>
+
+                <div class="wizard-actions">
+                    <button type="button" class="btn-wizard btn-next" onclick="nextStep(2)">Suivant</button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Offre / Paroisse / Détails -->
+            <div class="wizard-step" id="step-2">
+                <h2 class="step-title">Détails de la messe</h2>
+
+                <div class="form-group">
+                    <label for="celebration_choisie">Type de célébration</label>
+                    <select id="celebration_choisie" name="celebration_choisie" class="form-control-custom" required>
+                        <option value="">Sélectionnez une option</option>
+                        <option value="Messe quotidienne">Messe quotidienne</option>
+                        <option value="Messe dominicale">Messe dominicale</option>
+                        <option value="Messe solennelle">Messe solennelle</option>
+                        <option value="Neuvaine">Neuvaine</option>
+                    </select>
+                </div>
+
+                <!-- Mode Selection -->
+                <div class="form-group">
+                    <label>Période de la messe</label>
+                    <div class="motif-selection">
+                        <div class="motif-option type-date-option selected" data-value="date">Par Date</div>
+                        <div class="motif-option type-date-option" data-value="mois">Par Mois</div>
+                    </div>
+                    <input type="hidden" id="type_date_selection" name="type_date_selection" value="date">
+                </div>
+
+                <!-- Date Specific Input -->
+                <div id="date-specific-container">
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label for="date_souhaitee">Date</label>
+                            <input type="date" id="date_souhaitee" name="date_souhaitee" class="form-control-custom">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label for="heure_souhaitee">Heure</label>
+                            <input type="time" id="heure_souhaitee" name="heure_souhaitee" class="form-control-custom">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Month Specific Input -->
+                <div id="month-specific-container" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label for="mois_souhaite">Mois & Année</label>
+                            <input type="month" id="mois_souhaite" name="mois_souhaite" class="form-control-custom">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>Fréquence</label>
+                            <input type="text" class="form-control-custom" value="Tout le mois" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Tabs -->
+                <div class="location-tabs">
+                    <div class="location-tab" onclick="alert('Fonctionnalité GPS à venir')">
+                        <i class="fas fa-map-marker-alt"></i> Paroisse la plus proche (GPS)
+                    </div>
+                    <div class="location-tab" onclick="alert('Fonctionnalité Favoris à venir')">
+                        <i class="fas fa-heart"></i> Choisir parmi mes favoris
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Lancer une recherche manuelle</label>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label for="ville_id">Ville</label>
+                        <select id="ville_id" name="ville_id" class="form-control-custom" required>
+                            <option value="">Sélectionnez une ville</option>
+                            @foreach ($villes as $ville)
+                                <option value="{{ $ville->id }}">{{ $ville->nom_ville }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label for="commune_id">Commune</label>
+                        <select id="commune_id" name="commune_id" class="form-control-custom" required disabled>
+                            <option value="">Sélectionnez d'abord une ville</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="paroisse_id">Choisir une paroisse</label>
+                    <select id="paroisse_id" name="paroisse_id" class="form-control-custom" required disabled>
+                        <option value="">Sélectionnez d'abord une commune</option>
+                    </select>
+                </div>
+
+                <!-- Montant caché ou affiché -->
+                <div class="form-group">
+                    <label>Montant offrande (FCFA)</label>
+                    <input type="number" id="montant_offrande" name="montant_offrande" class="form-control-custom"
+                        readonly>
+                    <small id="montant-details" class="text-muted">Sélectionnez une paroisse pour voir le tarif</small>
+                </div>
+
+                <div class="wizard-actions between">
+                    <button type="button" class="btn-wizard btn-prev" onclick="prevStep(1)">Précédent</button>
+                    <button type="button" class="btn-wizard btn-next" onclick="validateStep2()">Suivant</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: Confirmation -->
+            <div class="wizard-step" id="step-3">
+                <h2 class="step-title">Récapitulatif de votre demande</h2>
+
+                <div class="recap-grid" id="recap-container">
+                    <!-- Populated by JS -->
+                </div>
+
+                <div class="wizard-actions between">
+                    <button type="button" class="btn-wizard btn-prev" onclick="prevStep(2)">Précédent</button>
+                    <!-- NOTE: This button submits the form -->
+                    <button type="submit" class="btn-wizard btn-next">Confirmer et Payer</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+        // State management
+        let currentStep = 1;
+
+        // --- DOM Elements ---
+        const motifOptions = document.querySelectorAll('.motif-option');
+        const motifInput = document.getElementById('motif_selector');
+        const motifTextarea = document.getElementById('motif_intention');
+
+        // --- Step 1 Logic: Motif Selection ---
+        motifOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all
+                motifOptions.forEach(opt => opt.classList.remove('selected'));
+                // Add to clicked
+                this.classList.add('selected');
+                // Set input value
+                motifInput.value = this.getAttribute('data-value');
+
+                // Optional: If user wants text in textarea to start with selection
+                // if(motifTextarea.value === '') motifTextarea.value = this.getAttribute('data-value') + ": ";
+            });
+        });
+
+        // --- Navigation Logic ---
+        function showStep(step) {
+            // Hide all steps
+            document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+            // Show target step
+            document.getElementById(`step-${step}`).classList.add('active');
+
+            // Update Stepper UI
+            for (let i = 1; i <= 3; i++) {
+                const ind = document.getElementById(`step-indicator-${i}`);
+                ind.classList.remove('active', 'completed');
+                if (i === step) ind.classList.add('active');
+                if (i < step) ind.classList.add('completed');
+            }
+
+            currentStep = step;
+            window.scrollTo(0, 0);
+        }
+
+        function nextStep(step) {
+            if (step === 2) {
+                // Validate Step 1
+                if (!motifInput.value && !motifTextarea.value) {
+                    alert("Veuillez sélectionner un motif ou entrer des précisions.");
+                    return;
+                }
+                // Merge motif for backend if needed. 
+                // Backend expects 'motif_intention'. We have 'motif_selector' (new) and 'motif_intention' (details).
+                // We should ensure 'motif_intention' contains everything if backend only checks that one field.
+                // But let's leave them separate in DOM and assume User fills details.
+                // If 'motif_intention' is required by backend validation, we must ensure it's not empty.
+                if (motifTextarea.value.trim() === "") {
+                    if (motifInput.value) {
+                        // If user only selected a button, copy it to textarea to satisfy backend 'required' check if it exists
+                        // Or rely on backend validation failing and showing error.
+                        // Let's AUTO-FILL textarea if empty
+                        motifTextarea.value = motifInput.value;
+                    } else {
+                        alert("Veuillez préciser votre intention.");
+                        return;
+                    }
+                }
+            }
+
+            showStep(step);
+            if (step === 3) generateRecap();
+        }
+
+        function prevStep(step) {
+            showStep(step);
+        }
+
+        function validateStep2() {
+            const p = document.getElementById('paroisse_id').value;
+            const c = document.getElementById('celebration_choisie').value;
+            const mode = document.getElementById('type_date_selection').value;
+
+            if (!p || !c) {
+                alert("Veuillez choisir une paroisse et un type de célébration.");
+                return;
+            }
+
+            if (mode === 'date') {
+                const d = document.getElementById('date_souhaitee').value;
+                const h = document.getElementById('heure_souhaitee').value;
+                if (!d || !h) {
+                    alert("Veuillez sélectionner une date et une heure.");
+                    return;
+                }
+            } else {
+                const m = document.getElementById('mois_souhaite').value;
+                if (!m) {
+                    alert("Veuillez sélectionner un mois.");
+                    return;
+                }
+            }
+
+            nextStep(3);
+        }
+
+        // --- Recap Logic ---
+        function generateRecap() {
+            const container = document.getElementById('recap-container');
+
+            // Gather Data
+            const motif = document.getElementById('motif_selector').value || "Autre";
+            const details = document.getElementById('motif_intention').value;
+            const intercession = document.getElementById('interception_par').value || "Aucune";
+
+            const villeSel = document.getElementById('ville_id');
+            const villeText = villeSel.options[villeSel.selectedIndex]?.text;
+
+            const paroisseSel = document.getElementById('paroisse_id');
+            const paroisseText = paroisseSel.options[paroisseSel.selectedIndex]?.text;
+
+            const mode = document.getElementById('type_date_selection').value;
+            const type = document.getElementById('celebration_choisie').value;
+            const montant = document.getElementById('montant_offrande').value;
+
+            let dateDisplay = "";
+            if (mode === 'date') {
+                const date = document.getElementById('date_souhaitee').value;
+                const heure = document.getElementById('heure_souhaitee').value;
+                dateDisplay = `<div class="recap-row"><span>Date</span><span>${date} à ${heure}</span></div>`;
+            } else {
+                const mois = document.getElementById('mois_souhaite').value;
+                dateDisplay = `<div class="recap-row"><span>Mois</span><span>${mois}</span></div>`;
+            }
+
+            container.innerHTML = `
+            <div class="recap-box">
+                <h3>Détails de votre demande</h3>
+                <div class="recap-row"><span>Motif</span><span>${motif}</span></div>
+                <div class="recap-row"><span>Précision</span><span>${details}</span></div>
+                <div class="recap-row"><span>Intercession</span><span>${intercession}</span></div>
+            </div>
+            
+            <div class="recap-box">
+                <h3>Détails de la Messe</h3>
+                <div class="recap-row"><span>Paroisse</span><span>${paroisseText} (${villeText})</span></div>
+                ${dateDisplay}
+                <div class="recap-row"><span>Type</span><span>${type}</span></div>
+                <div class="recap-row"><span>Montant offrande</span><span>${montant} FCFA</span></div>
+            </div>
+        `;
+        } // End Recap Logic
+
+        // --- Toggle Date/Month Logic ---
+        const dateOptions = document.querySelectorAll('.type-date-option');
+        const typeLinkInput = document.getElementById('type_date_selection');
+        const dateContainer = document.getElementById('date-specific-container');
+        const monthContainer = document.getElementById('month-specific-container');
+
+        dateOptions.forEach(opt => {
+            opt.addEventListener('click', function() {
+                dateOptions.forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+
+                typeLinkInput.value = this.getAttribute('data-value');
+                if (typeLinkInput.value === 'date') {
+                    dateContainer.style.display = 'block';
+                    monthContainer.style.display = 'none';
+
+                    // Add required attribute dynamically for browser validation if needed, 
+                    // though we use custom validation in validateStep2
+                } else {
+                    dateContainer.style.display = 'none';
+                    monthContainer.style.display = 'block';
+                }
+            });
+        });
+
+
+        // --- Dynamic Select Loading (Legacy + New) ---
+        // Copied and adapted from previous file logic
+        const villeSelect = document.getElementById('ville_id');
+        const communeSelect = document.getElementById('commune_id');
+        const paroisseSelect = document.getElementById('paroisse_id');
+        const montantInput = document.getElementById('montant_offrande');
+        const montantDetails = document.getElementById('montant-details');
+
+        let montantUnitaire = 0;
+
+        villeSelect.addEventListener('change', function() {
+            const villeId = this.value;
+            resetSelect(communeSelect, "Sélectionnez d'abord une ville");
+            resetSelect(paroisseSelect, "Sélectionnez d'abord une commune");
+
+            if (villeId) {
+                fetch(`/get-communes/${villeId}`)
+                    .then(r => r.json())
+                    .then(data => populateSelect(communeSelect, data, 'Sélectionnez une commune', 'id',
+                        'nom_commune'));
+            }
+        });
+
+        communeSelect.addEventListener('change', function() {
+            const comId = this.value;
+            resetSelect(paroisseSelect, "Sélectionnez d'abord une commune");
+            if (comId) {
+                fetch(`/get-paroisses/${comId}`)
+                    .then(r => r.json())
+                    .then(data => populateSelect(paroisseSelect, data, 'Sélectionnez une paroisse', 'id', 'name', {
+                        'data-montant': 'montant_offrande'
+                    }));
+            }
+        });
+
+        paroisseSelect.addEventListener('change', function() {
+            const opt = this.options[this.selectedIndex];
+            montantUnitaire = parseFloat(opt.getAttribute('data-montant')) || 0;
+            updateTotal();
+        });
+
+        // Existing helper functions
+        function resetSelect(el, text) {
+            el.innerHTML = `<option value="">${text}</option>`;
+            el.disabled = true;
+        }
+
+        function populateSelect(el, data, defaultText, valKey, textKey, attrs = {}) {
+            let opts = `<option value="">${defaultText}</option>`;
+            data.forEach(item => {
+                let attrStr = '';
+                for (let k in attrs) attrStr += ` ${k}="${item[attrs[k]]}"`;
+                opts += `<option value="${item[valKey]}"${attrStr}>${item[textKey]}</option>`;
+            });
+            el.innerHTML = opts;
+            el.disabled = false;
+        }
+
+        // Simplified calculation for now (assuming base price * 1 for simplicity until day selection is re-added if valid)
+        // NOTE: The previous file had day selection. The screenshot DOES NOT show checkbox for every day. 
+        // It implies a single date selection "Date".
+        // IF user wants multiple days, they might need the check boxes again. 
+        // BUT the prompt asked to follow the screenshot which shows "Date" and "Heure" inputs (Singular).
+        // I will stick to singular date for now.
+        function updateTotal() {
+            montantInput.value = montantUnitaire;
+            if (montantUnitaire > 0) montantDetails.textContent = `Tarif unitaire : ${montantUnitaire} FCFA`;
+        }
+
+        // Set min date
+        document.getElementById('date_souhaitee').min = new Date().toISOString().split('T')[0];
+    </script>
+@endsection

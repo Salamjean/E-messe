@@ -38,6 +38,18 @@ public function success(Request $request)
         $messe = $paiement->messe;
         if ($messe) {
             $messe->update(['statut' => 'en attente']);
+
+            // --- Envoi de la notification de paiement réussi ---
+            if ($messe->user) {
+                // Check user notification settings
+                if ($messe->user->emailNotif) {
+                    try {
+                        $messe->user->notify(new \App\Notifications\PaiementSuccessNotification($messe));
+                    } catch (\Exception $e) {
+                        Log::error("Échec de la notification de paiement (Messe #{$messe->id}): " . $e->getMessage());
+                    }
+                }
+            }
         }
     }
 

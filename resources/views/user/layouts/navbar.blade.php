@@ -1,40 +1,73 @@
-<nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row" style="background-color: #f35525; color:white">
-        <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
-          <a class="navbar-brand brand-logo" href="{{route('user.dashboard')}}">
-            <img src="{{asset('assets/assets/images/logo_E-messeFORME.png')}}" alt="logo" class="logo-dark" style="width: 50%"  />
-            <img src="{{asset('assets/assets/images/logo_E-messeFORME.png')}}" alt="logo-light" class="logo-light">
-          </a>
-          <a class="navbar-brand brand-logo-mini" href="{{route('user.dashboard')}}"><img src="{{asset('assets/assets/images/logo_E-messeFORME.png')}}" alt="logo" style="width: 10%" /></a>
-          <button class="navbar-toggler navbar-toggler align-self-center text-white" type="button" data-toggle="minimize">
-            <span class="icon-menu text-white"></span>
-          </button>
-        </div>
-        <div class="navbar-menu-wrapper d-flex align-items-center">
-          {{-- <h5 class="mb-0 font-weight-medium d-none d-lg-flex" style="color: white">Bienvenue Mme/M./mlle {{Auth::user()->name}}</h5> --}}
-          <ul class="navbar-nav navbar-nav-right">
-            <li class="nav-item dropdown d-none d-xl-inline-flex user-dropdown ">
-              <a class="nav-link dropdown-toggle " id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                <img class="img-xs rounded-circle ms-2" src="{{ optional(Auth::user())->profile_picture 
-                                                ? asset('storage/' . Auth::user()->profile_picture) 
-                                                : asset('assets/assets/images/avatarAn.jpg') }}" 
-                                        alt="Profile Picture"> 
-                <span class="font-weight-normal text-white">{{Auth::user()->name}}</span></a>
-              <div class="dropdown-menu dropdown-menu-right navbar-dropdown text-white"  aria-labelledby="UserDropdown">
-                <div class="dropdown-header text-center">
-                  <img class="img-xs rounded-circle ms-2" src="{{ optional(Auth::user())->profile_picture 
-                                                ? asset('storage/' . Auth::user()->profile_picture) 
-                                                : asset('assets/assets/images/avatarAn.jpg') }}" 
-                                        alt="Profile Picture"> 
-                  <p class="mb-1 mt-3">{{Auth::user()->name}}</p>
-                  <p class="font-weight-light text-muted mb-0">{{Auth::user()->user_name}}</p>
-                </div>
-                <a href="{{route('user.profile')}}" class="dropdown-item"><i class="dropdown-item-icon icon-user" style="color: #f35525"></i>Mon profil</a>
-                <a href="{{route('user.logout')}}" class="dropdown-item"><i class="dropdown-item-icon icon-power" style="color: #f35525"></i>Déconnexion</a>
-              </div>
-            </li>
-          </ul>
-          <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" style="color: white" type="button" data-toggle="offcanvas">
+<nav class="navbar fixed-top " style="z-index: 999">
+    <div
+        class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center navbar-brand-custom d-none d-lg-flex">
+        <a class="navbar-brand brand-logo" href="{{ url('/') }}" style="width: 150px;">
+            <img src="{{ asset('assets/assets/images/logo_principal.svg') }}" alt="Logo E-Messe"
+                class="logo-full navbar-logo" style="height: 80px; width: 300px;" />
+        </a>
+    </div>
+    <div class="text-center d-flex align-items-center justify-content-center navbar-brand-custom d-lg-none">
+        <a class="navbar-brand brand-logo" href="{{ url('/') }}">
+            <img src="{{ asset('assets/assets/images/logo_principal.svg') }}" alt="Logo E-Messe"
+                class="logo-full navbar-logo" style="height: 60px; width: 200px;" />
+        </a>
+    </div>
+
+    <div class="navbar-menu-wrapper d-flex align-items-stretch">
+        <!-- Bouton Toggle Sidebar (Desktop) -->
+        <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
             <span class="icon-menu"></span>
-          </button>
+        </button>
+
+        <!-- Welcome Message -->
+        <div class="welcome-message d-flex flex-column ms-3 mt-2">
+            <h4 class="mb-1 font-weight-bold text-dark">Bienvenue, {{ Auth::user()->name ?? 'Utilisateur' }} !</h4>
+            <p class="mb-0 text-muted small">Que la paix soit avec vous.</p>
         </div>
-      </nav>
+
+        <!-- Right Side -->
+        <ul class="navbar-nav navbar-nav-right ms-auto">
+            <li class="nav-item dropdown">
+                <a class="nav-link count-indicator" href="#">
+                    <i class="icon-bell text-dark icon-bell-custom"></i>
+                    <!-- <span class="count-symbol bg-danger"></span> -->
+                </a>
+            </li>
+
+            <!-- Profil Dropdown (Optionnel, sinon juste l'image) -->
+            {{-- <li class="nav-item nav-profile dropdown">
+                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" id="profileDropdown">
+                    <div class="nav-profile-img">
+                        <img src="{{ optional(Auth::user())->profile_picture ? asset('storage/' . Auth::user()->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name ?? 'User') . '&background=random&color=fff&size=40' }}"
+                            alt="image">
+                    </div>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list"
+                    aria-labelledby="profileDropdown">
+                    <h6 class="dropdown-header">
+                        {{ Auth::user()->name ?? 'Utilisateur' }}
+                    </h6>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="#">
+                        <i class="dropdown-item-icon icon-user text-primary"></i>
+                        Mon Profil
+                    </a>
+                    <form method="POST" action="#">
+                        @csrf
+                        <a class="dropdown-item" href="#"
+                            onclick="event.preventDefault(); this.closest('form').submit();">
+                            <i class="dropdown-item-icon icon-power text-primary"></i> Déconnexion
+                        </a>
+                    </form>
+                </div>
+            </li> --}}
+        </ul>
+
+        <!-- Bouton Toggle Mobile -->
+        <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button"
+            data-toggle="offcanvas">
+            <span class="icon-menu"></span>
+        </button>
+    </div>
+</nav>
+<hr>

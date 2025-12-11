@@ -1,79 +1,85 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
-  <ul class="nav">
-    <!-- Logo / Mini Brand -->
-    <li class="nav-item navbar-brand-mini-wrapper">
-      <div class="icon-container">
-        <i class="fas fa-bubbles menu-icon"></i>
-        <div class="dot-indicator bg-danger"></div>
-      </div>
-    </li>
+    <!-- Menu de Navigation -->
+    <ul class="nav"><br><br><br>
+        <!-- Accueil -->
+        <li class="nav-item {{ request()->routeIs('user.dashboard') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('user.dashboard') }}">
+                <i class="fas fa-home menu-icon"></i>
+                <span class="menu-title">Accueil</span>
+            </a>
+        </li>
 
-    <!-- Profil utilisateur -->
-    <li class="nav-item nav-profile">
-      <a href="{{ route('user.dashboard') }}" class="nav-link">
-        <div class="profile-image">
-          <img class="img-xs rounded-circle" 
-               src="{{ optional(Auth::user())->profile_picture 
-                        ? asset('storage/' . Auth::user()->profile_picture) 
-                        : asset('assets/assets/images/avatarAn.jpg') }}" 
-               alt="Profile Picture">
-          <div class="dot-indicator bg-success"></div>
+        <!-- Evénements -->
+        <li class="nav-item {{ request()->routeIs('user_event.index') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('user_event.index') }}">
+                <i class="fas fa-calendar-alt menu-icon"></i>
+                <span class="menu-title">Événements</span>
+            </a>
+        </li>
+
+        <!-- Demande de Messe -->
+        <li class="nav-item {{ request()->routeIs('user.messe.create') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('user.messe.create') }}">
+                <i class="fas fa-plus-circle menu-icon"></i>
+                <span class="menu-title">Faire demande</span>
+            </a>
+        </li>
+
+        <!-- Mes demandes -->
+        <li
+            class="nav-item {{ request()->routeIs('user.messe.index') || request()->routeIs('user.messe.show') || request()->routeIs('user.messe.history') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('user.messe.index') }}">
+                <i class="fas fa-list-alt menu-icon"></i>
+                <span class="menu-title">Mes demandes</span>
+            </a>
+        </li>
+
+        <!-- Paroisse -->
+        <li class="nav-item {{ request()->routeIs('user.paroisse.index') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('user.paroisse.index') }}">
+                <i class="fas fa-church menu-icon"></i>
+                <span class="menu-title">Paroisse</span>
+            </a>
+        </li>
+        <!-- S'identifier / Ma Fiche -->
+        <li class="nav-item {{ request()->routeIs('user.fiche.create') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('user.fiche.create') }}">
+                <i class="fas fa-id-card menu-icon"></i>
+                <span class="menu-title">S'identifier</span>
+            </a>
+        </li>
+
+        <!-- Parametres -->
+        <li
+            class="nav-item {{ request()->routeIs('user.settings.index') || request()->routeIs('user.settings.password') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('user.settings.index') }}">
+                <i class="fas fa-cog menu-icon"></i>
+                <span class="menu-title">Paramètres</span>
+            </a>
+        </li>
+    </ul>
+
+    <!-- Profil Utilisateur (Footer du Sidebar) -->
+
+    <div class="sidebar-footer">
+        <div class="user-profile d-flex align-items-center mb-3">
+            <div class="profile-image-container me-3">
+                <img class="img-xs rounded-circle"
+                    src="{{ optional(Auth::user())->profile_picture
+                        ? asset('storage/' . Auth::user()->profile_picture)
+                        : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name ?: 'User') . '&background=random&color=fff' }}"
+                    alt="Photo de profil">
+            </div>
+            <div class="profile-info">
+                <p class="profile-name mb-0 text-dark font-weight-bold text-truncate">
+                    {{ Auth::user()->name }}
+                </p>
+                <small class="profile-status text-success">
+                    <span class="status-indicator bg-success rounded-circle d-inline-block"
+                        style="width: 8px; height: 8px; margin-right: 5px;"></span>
+                    En ligne
+                </small>
+            </div>
         </div>
-        <div class="text-wrapper">
-          <p class="profile-name">{{ Auth::user()->name }}</p>
-          <p class="designation">{{ Auth::user()->user_name }}</p>
-        </div>
-      </a>
-    </li>
-
-    <!-- Catégorie Tableau de bord -->
-    <li class="nav-item nav-category">
-      <span class="nav-link">Tableau de bord</span>
-    </li>
-
-    <!-- Tableau de bord -->
-    <li class="nav-item">
-      <a class="nav-link" href="{{ route('user.dashboard') }}">
-        <span class="menu-title">Tableau de bord</span>
-        <i class="fas fa-tachometer-alt menu-icon"></i>
-      </a>
-    </li>
-
-    <!-- Evènement -->
-    <li class="nav-item">
-      <a class="nav-link" href="{{ route('user_event.index') }}">
-        <span class="menu-title">Evènement</span>
-        <i class="fas fa-calendar-alt menu-icon"></i>
-      </a>
-    </li>
-
-    <!-- Catégorie Actions -->
-    <li class="nav-item nav-category">
-      <span class="nav-link">Actions</span>
-    </li>
-
-    <!-- Demande Messe -->
-    <li class="nav-item">
-      <a class="nav-link" href="{{ route('user.messe.create') }}">
-        <span class="menu-title">Demande Messe</span>
-        <i class="fas fa-plus-square menu-icon"></i>
-      </a>
-    </li>
-
-    <!-- Messe Demandée -->
-    <li class="nav-item">
-      <a class="nav-link" href="{{ route('user.messe.index') }}">
-        <span class="menu-title">Messe Demandée</span>
-        <i class="fas fa-folder-open menu-icon"></i>
-      </a>
-    </li>
-
-    <!-- Historique Demandes -->
-    <li class="nav-item">
-      <a class="nav-link" href="{{ route('user.messe.history') }}">
-        <span class="menu-title">Historique Demandes</span>
-        <i class="fas fa-history menu-icon"></i>
-      </a>
-    </li>
-  </ul>
+    </div>
 </nav>

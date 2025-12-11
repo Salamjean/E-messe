@@ -1,7 +1,11 @@
 @extends('pages.layouts.template')
 @section('content')
     <!-- Hero Section -->
-    <section class="hero-section">
+    <section class="hero-section"
+        style="background-image: url('{{ asset('assets/image-backgroud-site/background.png') }}'); background-size: cover; background-position: center; position: relative;">
+        <div class="overlay"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(199, 183, 183, 0.3);">
+        </div>
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-12 text-center">

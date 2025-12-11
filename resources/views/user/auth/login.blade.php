@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #f35525;
-            --primary-light: rgba(243, 85, 37, 0.1);
+            --primary: #cda45e;
+            --primary-light: rgba(205, 164, 94, 0.1);
             --black: #000000;
             --white: #ffffff;
             --gray-light: #f8f9fa;
@@ -19,17 +20,17 @@
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
             --shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.12);
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Poppins', 'Segoe UI', sans-serif;
         }
-        
+
         body {
-            background: 
-                linear-gradient(rgba(238, 206, 0, 0.1), rgba(248,100,53, 0.975)),
+            background:
+                linear-gradient(rgba(238, 206, 0, 0.1), rgba(248, 100, 53, 0.975)),
                 url('{{ asset('assets/assets/images/bggg.jpg') }}');
             display: flex;
             justify-content: center;
@@ -39,7 +40,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         body::before {
             content: '';
             position: absolute;
@@ -51,7 +52,7 @@
             right: -150px;
             z-index: -1;
         }
-        
+
         body::after {
             content: '';
             position: absolute;
@@ -63,7 +64,7 @@
             left: -100px;
             z-index: -1;
         }
-        
+
         .container {
             display: flex;
             width: 100%;
@@ -75,7 +76,7 @@
             background: var(--white);
             position: relative;
         }
-        
+
         .back-button {
             position: absolute;
             top: 25px;
@@ -93,13 +94,13 @@
             transition: var(--transition);
             z-index: 10;
         }
-        
+
         .back-button:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
             color: var(--primary);
         }
-        
+
         .left-panel {
             flex: 1;
             background: linear-gradient(135deg, var(--primary) 0%, #ff7b4e 100%);
@@ -111,7 +112,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .left-panel::before {
             content: '';
             position: absolute;
@@ -122,7 +123,7 @@
             top: -50px;
             left: -50px;
         }
-        
+
         .left-panel::after {
             content: '';
             position: absolute;
@@ -133,12 +134,12 @@
             bottom: -50px;
             right: -50px;
         }
-        
+
         .left-content {
             position: relative;
             z-index: 1;
         }
-        
+
         .logo {
             font-size: 28px;
             font-weight: 700;
@@ -146,7 +147,7 @@
             display: flex;
             align-items: center;
         }
-        
+
         .logo-circle {
             width: 40px;
             height: 40px;
@@ -158,33 +159,33 @@
             margin-right: 12px;
             color: var(--primary);
         }
-        
+
         .left-panel h2 {
             font-size: 32px;
             font-weight: 700;
             margin-bottom: 20px;
             line-height: 1.3;
         }
-        
+
         .left-panel p {
             font-size: 16px;
             line-height: 1.6;
             margin-bottom: 30px;
             opacity: 0.9;
         }
-        
+
         .features {
             list-style: none;
             margin-top: 40px;
         }
-        
+
         .features li {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
             font-size: 15px;
         }
-        
+
         .features i {
             background: rgba(255, 255, 255, 0.2);
             width: 30px;
@@ -195,7 +196,7 @@
             justify-content: center;
             margin-right: 15px;
         }
-        
+
         .right-panel {
             flex: 1;
             padding: 50px;
@@ -204,25 +205,25 @@
             justify-content: center;
             background: var(--white);
         }
-        
+
         .right-panel h2 {
             font-size: 28px;
             color: var(--black);
             margin-bottom: 10px;
             font-weight: 700;
         }
-        
+
         .welcome-text {
             color: var(--gray);
             margin-bottom: 40px;
             font-size: 15px;
         }
-        
+
         .form-group {
             margin-bottom: 25px;
             position: relative;
         }
-        
+
         .form-group label {
             display: block;
             color: var(--gray-dark);
@@ -230,11 +231,11 @@
             font-size: 14px;
             font-weight: 500;
         }
-        
+
         .input-with-icon {
             position: relative;
         }
-        
+
         .input-icon {
             position: absolute;
             left: 15px;
@@ -243,7 +244,7 @@
             color: var(--gray);
             font-size: 16px;
         }
-        
+
         .form-group input {
             width: 100%;
             padding: 15px 15px 15px 45px;
@@ -253,14 +254,14 @@
             transition: var(--transition);
             background-color: var(--gray-light);
         }
-        
+
         .form-group input:focus {
             border-color: var(--primary);
             outline: none;
             background-color: var(--white);
             box-shadow: 0 0 0 3px rgba(243, 85, 37, 0.15);
         }
-        
+
         .password-toggle {
             position: absolute;
             right: 15px;
@@ -270,7 +271,7 @@
             cursor: pointer;
             font-size: 16px;
         }
-        
+
         .remember-forgot {
             display: flex;
             justify-content: space-between;
@@ -278,32 +279,32 @@
             margin-bottom: 30px;
             font-size: 14px;
         }
-        
+
         .remember {
             display: flex;
             align-items: center;
             color: var(--gray-dark);
         }
-        
+
         .remember input {
             margin-right: 8px;
             accent-color: var(--primary);
             width: 16px;
             height: 16px;
         }
-        
+
         .forgot-link {
             color: var(--primary);
             text-decoration: none;
             font-weight: 500;
             transition: var(--transition);
         }
-        
+
         .forgot-link:hover {
             color: var(--primary);
             text-decoration: underline;
         }
-        
+
         .login-button {
             background-color: var(--primary);
             color: var(--white);
@@ -319,17 +320,17 @@
             letter-spacing: 0.5px;
             box-shadow: 0 4px 15px rgba(243, 85, 37, 0.3);
         }
-        
+
         .login-button:hover {
             background-color: #e04a1b;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(243, 85, 37, 0.4);
         }
-        
+
         .login-button:active {
             transform: translateY(0);
         }
-        
+
         .separator {
             display: flex;
             align-items: center;
@@ -337,24 +338,24 @@
             color: var(--gray);
             font-size: 14px;
         }
-        
+
         .separator .line {
             flex: 1;
             height: 1px;
             background-color: #e6e6e6;
         }
-        
+
         .separator .text {
             padding: 0 15px;
         }
-        
+
         .social-login {
             display: flex;
             justify-content: center;
             gap: 15px;
             margin-bottom: 30px;
         }
-        
+
         .social-button {
             width: 50px;
             height: 50px;
@@ -367,31 +368,31 @@
             cursor: pointer;
             transition: var(--transition);
         }
-        
+
         .social-button:hover {
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             border-color: var(--primary);
         }
-        
+
         .signup-link {
             text-align: center;
             font-size: 15px;
             color: var(--gray-dark);
         }
-        
+
         .signup-link a {
             color: var(--primary);
             text-decoration: none;
             font-weight: 600;
             transition: var(--transition);
         }
-        
+
         .signup-link a:hover {
             color: var(--primary);
             text-decoration: underline;
         }
-        
+
         /* Media Queries pour le responsive */
         @media (max-width: 900px) {
             .container {
@@ -399,132 +400,132 @@
                 max-width: 500px;
                 min-height: auto;
             }
-            
+
             .left-panel {
                 padding: 30px;
                 text-align: center;
             }
-            
+
             .left-panel::before,
             .left-panel::after {
                 display: none;
             }
-            
+
             .right-panel {
                 padding: 40px 30px;
             }
-            
+
             .back-button {
                 top: 15px;
                 left: 15px;
                 width: 40px;
                 height: 40px;
             }
-            
+
             .logo img {
                 max-width: 250px;
                 margin: 0 auto;
             }
-            
+
             .features {
                 margin-top: 20px;
             }
-            
+
             .features li {
                 justify-content: center;
             }
         }
-        
+
         @media (max-width: 576px) {
             body {
                 padding: 15px;
             }
-            
+
             .container {
                 border-radius: 12px;
             }
-            
+
             .left-panel {
                 padding: 25px 20px;
             }
-            
+
             .left-panel h2 {
                 font-size: 24px;
             }
-            
+
             .left-panel p {
                 font-size: 14px;
             }
-            
+
             .right-panel {
                 padding: 30px 20px;
             }
-            
+
             .right-panel h2 {
                 font-size: 24px;
             }
-            
+
             .welcome-text {
                 font-size: 14px;
                 margin-bottom: 30px;
             }
-            
+
             .form-group {
                 margin-bottom: 20px;
             }
-            
+
             .form-group input {
                 padding: 12px 12px 12px 40px;
                 font-size: 14px;
             }
-            
+
             .input-icon {
                 left: 12px;
                 font-size: 14px;
             }
-            
+
             .password-toggle {
                 right: 12px;
                 font-size: 14px;
             }
-            
+
             .remember-forgot {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 10px;
             }
-            
+
             .login-button {
                 padding: 14px;
                 font-size: 15px;
             }
-            
+
             .social-button {
                 width: 45px;
                 height: 45px;
             }
-            
+
             .back-button {
                 top: 10px;
                 left: 10px;
                 width: 35px;
                 height: 35px;
             }
-            
+
             .logo img {
                 max-width: 200px;
             }
         }
-        
+
         @media (max-width: 400px) {
             .left-panel h2 {
                 font-size: 22px;
             }
-            
+
             .features li {
                 font-size: 14px;
             }
-            
+
             .features i {
                 width: 25px;
                 height: 25px;
@@ -532,7 +533,7 @@
                 font-size: 12px;
             }
         }
-        
+
         /* Pour les très petits appareils en mode portrait */
         @media (max-height: 600px) and (orientation: portrait) {
             body {
@@ -540,61 +541,69 @@
                 padding-top: 20px;
                 padding-bottom: 20px;
             }
-            
+
             .container {
                 max-width: 100%;
             }
         }
-        
+
         /* Pour les appareils en mode paysage */
         @media (max-height: 500px) and (orientation: landscape) {
             body {
                 padding: 10px;
             }
-            
+
             .container {
                 min-height: auto;
                 flex-direction: row;
             }
-            
-            .left-panel, .right-panel {
+
+            .left-panel,
+            .right-panel {
                 padding: 20px;
             }
-            
+
             .left-panel h2 {
                 font-size: 20px;
                 margin-bottom: 10px;
             }
-            
+
             .left-panel p {
                 margin-bottom: 15px;
                 font-size: 13px;
             }
-            
+
             .features {
                 margin-top: 15px;
             }
-            
+
             .features li {
                 margin-bottom: 10px;
                 font-size: 12px;
             }
         }
-        
+
         /* Animation d'entrée */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
+
         .left-panel {
             animation: fadeIn 0.6s ease-out 0.2s both;
         }
-        
+
         .right-panel {
             animation: fadeIn 0.6s ease-out 0.4s both;
         }
-        
+
         /* Correction pour l'image du logo */
         .logo img {
             max-width: 100%;
@@ -603,17 +612,19 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <a href="/" class="back-button" title="Retour à l'accueil">
             <i class="fas fa-arrow-left"></i>
         </a>
-        
+
         <div class="left-panel">
             <div class="left-content">
                 <h2>Découvrez notre plateforme innovante</h2>
-                <p>Connectez-vous pour accéder à votre espace personnel et découvrir toutes nos fonctionnalités exclusives.</p>
-                
+                <p>Connectez-vous pour accéder à votre espace personnel et découvrir toutes nos fonctionnalités
+                    exclusives.</p>
+
                 <ul class="features">
                     <li><i class="fas fa-check"></i> Interface intuitive et moderne</li>
                     <li><i class="fas fa-check"></i> Sécurité avancée de vos données</li>
@@ -621,19 +632,20 @@
                 </ul>
             </div>
         </div>
-        
+
         <div class="right-panel">
             <h2>Connexion</h2>
             <p class="welcome-text">Content de vous revoir ! Connectez-vous à votre compte.</p>
-            
-            <form method="POST" action="{{route('handleLogin')}}" enctype="multipart/form-data">
+
+            <form method="POST" action="{{ route('handleLogin') }}" enctype="multipart/form-data">
                 @csrf
-                <div class="form-group"> 
+                <div class="form-group">
 
                     <label for="text">Nom d'utilisateur</label>
                     <div class="input-with-icon">
                         <i class="input-icon fas fa-at"></i>
-                        <input type="text" id="email" name="user_name" value="{{old('user_name')}}" placeholder="Entrez votre nom d'utilisateur">
+                        <input type="text" id="email" name="user_name" value="{{ old('user_name') }}"
+                            placeholder="Entrez votre nom d'utilisateur">
                         @error('user_name')
                             <div class="error-message" style="color: rgb(184, 8, 8)">
                                 <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -641,7 +653,7 @@
                         @enderror
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="password">Mot de passe</label>
                     <div class="input-with-icon">
@@ -655,19 +667,19 @@
                         <i class="password-toggle fas fa-eye" onclick="togglePassword()"></i>
                     </div>
                 </div>
-                
+
                 <div class="remember-forgot">
                     <label class="remember">
                         <input type="checkbox"> Se souvenir de moi
                     </label>
-                    <a href="{{route('forgot-password.form')}}" class="forgot-link">Mot de passe oublié?</a>
+                    <a href="{{ route('forgot-password.form') }}" class="forgot-link">Mot de passe oublié?</a>
                 </div>
-                
+
                 <button type="submit" class="login-button">Se connecter</button>
             </form>
-            
+
             <div class="signup-link">
-                Pas encore de compte? <a href="{{route('register')}}">S'inscrire</a>
+                Pas encore de compte? <a href="{{ route('register') }}">S'inscrire</a>
             </div>
         </div>
     </div>
@@ -676,7 +688,7 @@
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const toggleIcon = document.querySelector('.password-toggle');
-            
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 toggleIcon.classList.remove('fa-eye');
@@ -689,4 +701,5 @@
         }
     </script>
 </body>
+
 </html>

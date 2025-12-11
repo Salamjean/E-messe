@@ -41,8 +41,8 @@
 
             <div class="page-wrapper mdc-toolbar-fixed-adjust">
                 @yield('content')
+                @include('paroisse.layouts.footer')
             </div>
-            @include('paroisse.layouts.footer')
         </div>
 
     </div>
@@ -95,5 +95,6 @@
     /* Cible le dernier élément (le footer) si les classes ci-dessus ne correspondent pas */
     .page-wrapper> :last-child {
         margin-top: auto;
+        /* color: #000; */
     }
 </style>

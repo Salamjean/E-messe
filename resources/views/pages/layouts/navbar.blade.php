@@ -3,7 +3,7 @@
         <!-- Logo -->
         <div class="navbar-logo">
             <a href="/">
-                <img src="{{ asset('assets/assets/images/sancta.png') }}" alt="E-Messe Logo">
+                <img src="{{ asset('assets/assets/images/logo_principal.svg') }}" alt="E-Messe Logo">
                 {{-- <span class="logo-text">E-Messe</span> --}}
             </a>
         </div>

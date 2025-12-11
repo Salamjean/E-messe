@@ -3,15 +3,14 @@
 namespace App\Http\Controllers\User\Messe;
 
 use App\Http\Controllers\Controller;
+use App\Models\Commune;
 use App\Models\Messe;
 use App\Models\Paiement;
 use App\Models\Paroisse;
+use App\Models\Ville;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use App\Models\Ville;
-use App\Models\Commune;
-
 use PDF;
 
 class MesseController extends Controller
@@ -19,44 +18,87 @@ class MesseController extends Controller
     public function index()
     {
         $messess = Auth::user()->messes()
-                    ->orderBy('created_at', 'desc')
-                    ->where('statut','!=','annulee')
-                    ->where('statut','!=','celebre')
-                    ->where('statut','!=','en_attente_paiement')
-                    ->get();
-        return view('user.messe.index', compact('messess'));
+            ->orderBy('created_at', 'desc')
+            ->where('statut', '!=', 'annulee')
+            ->where('statut', '!=', 'celebre')
+            ->where('statut', '!=', 'en_attente_paiement')
+            ->get();
+
+        $favorites = Auth::user()->favoris()->with(['paroisse' => function($q) {
+            $q->with('commune');
+        }])->get()->pluck('paroisse');
+
+        return view('user.messe.index', compact('messess', 'favorites'));
     }
 
     public function history()
     {
         $messess = Auth::user()->messes()
-                    ->orderBy('created_at', 'desc')
-                    ->where('statut','!=','en attente')
-                    ->where('statut','!=','confirmee')
-                    ->where('statut','!=','en_attente_paiement')
-                    ->get();
-        return view('user.messe.history',compact('messess'));
+            ->orderBy('created_at', 'desc')
+            ->where('statut', '!=', 'en attente')
+            ->where('statut', '!=', 'confirmee')
+            ->where('statut', '!=', 'en_attente_paiement')
+            ->get();
+
+        $favorites = Auth::user()->favoris()->with(['paroisse' => function($q) {
+            $q->with('commune');
+        }])->get()->pluck('paroisse');
+
+        return view('user.messe.history', compact('messess', 'favorites'));
     }
-    
+
+    public function historique_messes()
+    {
+        $messess = Auth::user()->messes()
+            ->orderBy('created_at', 'desc')
+            ->where('statut', '=', 'celebre')
+            ->get();
+
+        $favorites = Auth::user()->favoris()->with(['paroisse' => function($q) {
+            $q->with('commune');
+        }])->get()->pluck('paroisse');
+
+        return view('user.messe.historique_messes', compact('messess', 'favorites'));
+    }
+
+    public function hold()
+    {
+        $messess = Auth::user()->messes()
+            ->orderBy('created_at', 'desc')
+            ->where('statut', '!=', 'celebre')
+            ->get();
+
+        $favorites = Auth::user()->favoris()->with(['paroisse' => function($q) {
+            $q->with('commune');
+        }])->get()->pluck('paroisse');
+
+        return view('user.messe.hold', compact('messess', 'favorites'));
+    }
+
     public function create()
     {
         $villes = Ville::orderBy('nom_ville')->get();
+
         // Le reste des données que vous pourriez passer à la vue...
         return view('user.messe.create', compact('villes'));
     }
+
     // NOUVELLES MÉTHODES POUR AJAX
     public function getCommunes($ville_id)
     {
         $communes = Commune::where('ville_id', $ville_id)->orderBy('nom_commune')->get();
+
         return response()->json($communes);
     }
 
     public function getParoisses($commune_id)
     {
         $paroisses = Paroisse::where('commune_id', $commune_id)->orderBy('name')->get(['id', 'name', 'montant_offrande']);
+
         // dd($paroisses);
         return response()->json($paroisses);
     }
+
     public function store(Request $request)
     {
         // Validation des données
@@ -101,7 +143,7 @@ class MesseController extends Controller
         try {
             // Préparer les dates sélectionnées
             $datesSelectionnees = [];
-            
+
             if ($request->celebration_choisie === 'Messe quotidienne') {
                 $jours = $request->jours_quotidienne ?? [];
                 $nomsJours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
@@ -111,14 +153,13 @@ class MesseController extends Controller
                         $datesSelectionnees[] = $nomsJours[$index];
                     }
                 }
-            } 
-            elseif ($request->celebration_choisie === 'Messe dominicale') {
+            } elseif ($request->celebration_choisie === 'Messe dominicale') {
                 $datesSelectionnees = $request->jours_dominicale ?? [];
             }
-            
+
             // Convertir les dates en JSON pour stockage
-            $datesJson = !empty($datesSelectionnees) ? json_encode($datesSelectionnees) : null;
-            
+            $datesJson = ! empty($datesSelectionnees) ? json_encode($datesSelectionnees) : null;
+
             // Création de la messe avec statut "en attente de paiement"
             $messe = Messe::create([
                 'user_id' => Auth::user()->id,
@@ -137,8 +178,8 @@ class MesseController extends Controller
             ]);
 
             // Générer une référence unique pour le paiement
-            $reference = 'MESSE_' . time() . '_' . $messe->id;
-            
+            $reference = 'MESSE_'.time().'_'.$messe->id;
+
             // Créer un enregistrement de paiement
             $paiement = Paiement::create([
                 'messe_id' => $messe->id,
@@ -156,7 +197,7 @@ class MesseController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Une erreur s\'est produite lors de l\'enregistrement: ' . $e->getMessage())
+                ->with('error', 'Une erreur s\'est produite lors de l\'enregistrement: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -165,12 +206,12 @@ class MesseController extends Controller
     {
         // Récupérer la messe avec l'ID
         $messe = Messe::findOrFail($id);
-        
+
         // Vérifier que l'utilisateur peut voir cette messe
         if ($messe->user_id !== Auth::id()) {
             abort(403, 'Accès non autorisé');
         }
-        
+
         return view('user.messe.show', compact('messe'));
     }
 
@@ -178,20 +219,20 @@ class MesseController extends Controller
     {
         // Récupérer la messe avec l'ID
         $messe = Messe::findOrFail($id);
-        
+
         // Vérifier que l'utilisateur peut supprimer cette messe
         if ($messe->user_id !== Auth::id()) {
             return redirect()->back()->with('error', 'Non autorisé');
         }
-        
+
         // Vérifier que la messe peut être supprimée
         if ($messe->statut !== 'en attente') {
             return redirect()->back()->with('error', 'Seules les demandes en attente peuvent être supprimées');
         }
-        
+
         // Supprimer la demande
         $messe->delete();
-        
+
         return redirect()->route('user.messe.index')
             ->with('success', 'Demande supprimée avec succès');
     }
@@ -202,7 +243,7 @@ class MesseController extends Controller
             abort(403, 'Accès non autorisé');
         }
 
-        $messe->load('paroisse','paiements');
+        $messe->load('paroisse', 'paiements');
 
         $pdf = PDF::loadView('user.messe.receipt', compact('messe'));
 
@@ -215,9 +256,8 @@ class MesseController extends Controller
         $pdf->setOption('enable-local-file-access', true);
         $pdf->setOption('images', true);
 
-        $filename = 'reçu-messe-' . ($messe->paiements->first()->reference ?? 'M' . $messe->id) . '.pdf';
+        $filename = 'reçu-messe-'.($messe->paiements->first()->reference ?? 'M'.$messe->id).'.pdf';
 
         return $pdf->download($filename);
     }
-    
 }

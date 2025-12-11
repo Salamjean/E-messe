@@ -194,6 +194,15 @@ class PaiementController extends Controller
                 
                 DB::commit();
                 
+                // Envoi notification si activé
+                if ($messe->user && $messe->user->emailNotif) {
+                    try {
+                        $messe->user->notify(new \App\Notifications\PaiementSuccessNotification($messe));
+                    } catch (\Exception $e) {
+                        Log::error("Échec de la notification de paiement (Messe #{$messe->id}): " . $e->getMessage());
+                    }
+                }
+
                 return redirect()->route('user.messe.index')
                     ->with('success', 'Paiement effectué avec succès. Votre demande de messe est confirmée.');
             }
@@ -304,6 +313,15 @@ class PaiementController extends Controller
                     
                     DB::commit();
                     
+                    // Envoi notification si activé
+                    if ($messe->user && $messe->user->emailNotif) {
+                        try {
+                            $messe->user->notify(new \App\Notifications\PaiementSuccessNotification($messe));
+                        } catch (\Exception $e) {
+                            Log::error("Échec de la notification de paiement (Messe #{$messe->id}): " . $e->getMessage());
+                        }
+                    }
+
                     return redirect()->route('user.messe.index')
                         ->with('success', 'Paiement vérifié et confirmé avec succès.');
                 } else {

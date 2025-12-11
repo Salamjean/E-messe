@@ -22,8 +22,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Section Messes (En cours) -->
     <div id="messes-section">
         @if ($messess->isEmpty())
             <div class="row">
@@ -119,6 +117,5 @@
             </div>
         @endif
     </div>
-
     @include('user.messe.partials.favorites')
 @endsection

@@ -1,0 +1,322 @@
+/* =========================================
+   User Layout Custom Styles
+   ========================================= */
+
+/* --- Sidebar Styles --- */
+/* Main Layout Fixes - Desktop Only */
+@media (min-width: 992px) {
+    .page-body-wrapper {
+        padding-top: 70px;
+        /* Match Navbar Height */
+        min-height: 100vh;
+        display: flex;
+    }
+
+    #sidebar {
+        background-color: #ffffff !important;
+        border-right: 1px solid #e3e3e3;
+        width: 250px;
+        height: calc(100vh - 70px);
+        /* Full height minus navbar */
+        position: fixed;
+        top: 70px;
+        bottom: 0;
+        left: 0;
+        overflow-y: auto;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Push content to the right */
+    .page-body-wrapper>.container-fluid {
+        margin-left: 250px;
+        /* Match Sidebar Width */
+        width: calc(100% - 250px);
+        padding: 0;
+    }
+}
+
+/* Common Sidebar Styles (Colors, etc) */
+#sidebar {
+    background-color: #ffffff !important;
+}
+
+#sidebar .nav {
+    padding-left: 0;
+    margin-bottom: 0;
+    width: 100%;
+}
+
+/* Sidebar Nav Items */
+#sidebar .nav .nav-item {
+    margin-bottom: 5px;
+    background-color: #ffffff;
+    width: 100%;
+}
+
+#sidebar .nav .nav-item .nav-link {
+    color: #000000 !important;
+    font-weight: 500;
+    padding: 1rem 1.5rem;
+    transition: all 0.3s ease;
+    border-radius: 0 25px 25px 0;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    /* Force left alignment */
+    text-align: left;
+    background-color: #ffffff;
+}
+
+#sidebar .nav .nav-item .nav-link:hover {
+    color: #0d6efd !important;
+    /* Blue hover */
+    background-color: #ffffff;
+}
+
+#sidebar .nav .nav-item .nav-link i.menu-icon {
+    color: #000000 !important;
+    font-size: 1.125rem;
+    margin-right: 1rem;
+    vertical-align: middle;
+    transition: color 0.3s ease;
+    width: 20px;
+    /* Fixed width for alignment */
+    text-align: center;
+}
+
+#sidebar .nav .nav-item .nav-link:hover i.menu-icon {
+    color: #0d6efd !important;
+}
+
+/* Active State */
+/* Active State */
+#sidebar .nav .nav-item.active .nav-link {
+    background: linear-gradient(to right, #9e7f41, #8f7238);
+    /* Gold/Brown gradient to match mock */
+    color: #ffffff !important;
+    border-radius: 25px;
+    /* Ensure rounded pill shape */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow for depth */
+}
+
+#sidebar .nav .nav-item.active .nav-link i.menu-icon {
+    color: #ffffff !important;
+}
+
+#sidebar .nav .nav-item.active .nav-link .menu-title {
+    color: #ffffff !important;
+}
+
+/* Sidebar Profile Footer */
+.sidebar-footer {
+    margin-top: auto;
+    padding: 20px;
+    border-top: 1px solid #ffffff;
+}
+
+.profile-image-container {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
+
+.profile-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-name {
+    max-width: 120px;
+}
+
+/* --- Dashboard Cards --- */
+.card-stat {
+    border-radius: 15px;
+    border: none;
+    color: white;
+}
+
+.card-stat-pending {
+    background-color: #ffc165;
+}
+
+.card-stat-celebrated {
+    background-color: #64e39d;
+}
+
+.card-stat-upcoming {
+    background-color: #6a92d8;
+}
+
+.card-stat .icon-rounded {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.card-common {
+    border-radius: 15px;
+    border: 1px solid #e3e3e3;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    background-color: white;
+}
+
+.btn-new-reservation {
+    background-color: #d4a762;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+}
+
+.btn-new-reservation:hover {
+    background-color: #bfa752;
+    /* Slightly darker */
+    color: white;
+}
+
+.parish-icon-circle {
+    width: 60px;
+    height: 60px;
+    background-color: #add8e6;
+    border-radius: 50%;
+}
+
+/* --- Navbar Custom --- */
+.navbar-brand-custom {
+    background-color: #ffffff !important;
+}
+
+.navbar-logo {
+    max-width: 150px;
+    /* Standard desktop size */
+    height: auto;
+    transition: all 0.3s ease;
+}
+
+/* Mobile Logo Adjustments */
+@media (max-width: 991px) {
+    .navbar-logo {
+        max-width: 120px;
+        /* Smaller on tablets/mobile */
+        height: auto;
+    }
+
+    .navbar-brand-wrapper {
+        width: auto !important;
+        /* Allow wrapper to shrink */
+        padding-left: 15px;
+    }
+}
+
+
+/* --- Mes Demandes Page Custom Styles --- */
+
+/* Gold Button */
+.btn-gold {
+    background-color: #cda45e;
+    color: white;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-gold:hover {
+    background-color: #bfa752;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Filter Pills */
+.filter-pill {
+    padding: 8px 24px;
+    border-radius: 50px;
+    background-color: #fff;
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.filter-pill:hover {
+    background-color: #f8f9fa;
+    color: #333;
+    border-color: #d0d0d0;
+}
+
+.filter-pill.active {
+    background-color: #cda45e;
+    color: white;
+    border-color: #cda45e;
+}
+
+/* Request Cards */
+.request-card {
+    border: 1px solid #eee;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.request-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.icon-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.bg-icon-light {
+    background-color: #f2f2f2;
+}
+
+.bg-icon-dark {
+    background-color: #e0e0e0;
+    /* Or distinct color if needed */
+}
+
+/* Status Badges */
+.badge-pastel-red {
+    background-color: #ffcccc;
+    color: #cc0000;
+}
+
+.badge-pastel-green {
+    background-color: #ccffcc;
+    color: #006600;
+}
+
+.badge-pastel-blue {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.badge-pastel-gray {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+/* Card Typography */
+.card-title {
+    font-size: 1.1rem;
+    color: #1a1a1a;
+}
+
+.card-text {
+    font-size: 0.95rem;
+}
