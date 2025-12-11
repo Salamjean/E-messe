@@ -91,6 +91,18 @@
                     </div>
                 </div>
 
+                <!-- Déconnexion Section -->
+                <div class="card shadow-sm mb-4 border-0" style="border-radius: 15px !important;">
+                    <div class="card-body p-0">
+                        <a href="{{ route('user.logout') }}"
+                            class="d-flex align-items-center justify-content-center text-danger text-decoration-none py-3 font-weight-bold"
+                            style="border-radius: 15px; background-color: #fff0f0;">
+                            <i class="fas fa-sign-out-alt mr-2"></i>
+                            Se déconnecter
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>

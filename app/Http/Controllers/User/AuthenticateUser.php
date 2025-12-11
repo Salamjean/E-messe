@@ -90,19 +90,30 @@ class AuthenticateUser extends Controller
 
     public function handleLogin(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'user_name' => ['required', 'string', 'exists:users,user_name'],
+        $request->validate([
+            'login_id' => ['required', 'string'],
             'password' => ['required', 'string'],
         ], [
-            'user_name.required' => 'Le nom d\'utilisateur est obligatoire',
-            'user_name.exists' => 'Ce nom d\'utilisateur n\'existe pas',
+            'login_id.required' => 'L\'email ou le nom d\'utilisateur est obligatoire',
             'password.required' => 'Le mot de passe est obligatoire',
         ]);
 
-        if (! Auth::attempt($request->only('user_name', 'password'), $request->filled('remember'))) {
-            return redirect()->route('login')->withErrors([
+        $login_type = filter_var($request->login_id, FILTER_VALIDATE_EMAIL) ? 'email' : 'user_name';
+
+        // Attempt to log the user in
+        if (! Auth::attempt([$login_type => $request->login_id, 'password' => $request->password], $request->filled('remember'))) {
+            // Check if user exists to give specific error
+            $userExists = User::where($login_type, $request->login_id)->exists();
+
+            if (!$userExists) {
+                return redirect()->back()->withErrors([
+                    'login_id' => 'Ce compte n\'existe pas.',
+                ])->withInput();
+            }
+
+            return redirect()->back()->withErrors([
                 'password' => 'Mot de passe incorrect.',
-            ]);
+            ])->withInput();
         }
 
         // Mettre à jour le statut actif à 1

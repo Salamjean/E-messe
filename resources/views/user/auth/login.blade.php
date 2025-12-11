@@ -641,12 +641,12 @@
                 @csrf
                 <div class="form-group">
 
-                    <label for="text">Nom d'utilisateur</label>
+                    <label for="login_id">Email ou Nom d'utilisateur</label>
                     <div class="input-with-icon">
-                        <i class="input-icon fas fa-at"></i>
-                        <input type="text" id="email" name="user_name" value="{{ old('user_name') }}"
-                            placeholder="Entrez votre nom d'utilisateur">
-                        @error('user_name')
+                        <i class="input-icon fas fa-user"></i>
+                        <input type="text" id="login_id" name="login_id" value="{{ old('login_id') }}"
+                            placeholder="Entrez votre email ou nom d'utilisateur">
+                        @error('login_id')
                             <div class="error-message" style="color: rgb(184, 8, 8)">
                                 <i class="fas fa-exclamation-circle"></i> {{ $message }}
                             </div>
