@@ -1,17 +1,21 @@
 @extends('pages.layouts.template')
 @section('content')
     <!-- Hero Section -->
-    <section class="hero-section">
+    <section
+        class="hero-section"style="background-image: url('{{ asset('assets/image-backgroud-site/comminion.png') }}'); background-size: cover; background-position: center; position: relative;">
+        <div class="overlay"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(99, 112, 103, 0.5);">
+        </div>
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-8 mx-auto text-center">
                     <div class="hero-badge">
                         <span>Plateforme de réservation</span>
                     </div>
-                    <h1 class="hero-title">
+                    <h1 class="hero-title" style="color: #fff;">
                         Gérez vos réservations de <span class="highlight-text">messes en toute simplicité</span>
                     </h1>
-                    <p class="hero-subtitle text-center">
+                    <p class="hero-subtitle text-center" style="color: #fff;">
                         E-MESSE est une plateforme complète et intuitive qui vous permet de gérer vos
                         intentions de messe, vos réservations et vos offrandes en toute sécurité depuis n'importe où.
                     </p>
@@ -48,8 +52,9 @@
         </div>
 
         <!-- Statistics Bar -->
-        <div class="stats-bar">
-            <div class="container">
+        <div class="start shadow-sm mt-5 mb-5"
+            style="position: relative; z-index: 10; background-color: #fff; over color; box-shadow: 0 20px 20px rgba(23, 19, 19, 0.1); padding: 1px 0; border-radius: 8px; margin: 70px 50px; margin-bottom: 70px !important; margin-top: 70px !important;">
+            <div class="container mb-1 mt-2">
                 <div class="row">
                     <div class="col-md-4 text-center">
                         <div class="stat-item">
@@ -179,7 +184,7 @@
                         Rejoignez des milliers de fidèles qui utilisent E-MESSE pour gérer leurs intentions de messe en
                         toute simplicité
                     </p>
-                    <a href="{{ route('register') }}" class="btn btn-cta">
+                    <a href="#" class="btn btn-cta" data-bs-toggle="modal" data-bs-target="#downloadAppModal">
                         <i class="fa fa-download"></i> Télécharger l'App
                     </a>
                 </div>
@@ -209,7 +214,8 @@
                             </h2>
                             Téléchargez notre application mobile pour accéder à E-MESSE où que vous soyez
                             </p><br>
-                            <a href="#" class="btn btn-google-play">
+                            <a href="#" class="btn btn-google-play" data-bs-toggle="modal"
+                                data-bs-target="#downloadAppModal">
                                 <i class="fas fa-download"></i> Télécharger maintenant
                             </a>
                             <p class="download-info">
@@ -222,7 +228,16 @@
         </div>
     </section>
 
+
+
     <style>
+        .start:hover {
+
+            height: 140px;
+            background-color: #f0f0eaff !important;
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+
         /* Global Reset */
         * {
             margin: 0;

@@ -1,17 +1,19 @@
 @extends('pages.layouts.template')
 @section('content')
     <!-- Hero Section -->
-    <section class="hero-section" style="background-image: url('{{ asset('assets/image-backgroud-site/background.png') }}'); background-size: cover; background-position: center; position: relative;">
+    <section class="hero-section"
+        style="background-image: url('{{ asset('assets/image-backgroud-site/confirmation.png') }}'); background-size: cover; background-position: center; position: relative;">
         <div class="overlay"
-            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(199, 183, 183, 0.3);">
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(99, 112, 103, 0.1);">
         </div>
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-12 text-center">
-                    <h1 class="hero-title">
+                    <h1 class="hero-title" style="color: #fff;">
                         Organisez vos <span class="highlight-text">Événements</span>
                     </h1>
-                    <p class="hero-subtitle">Gérez tous vos événements religieux de manière simple et efficace</p>
+                    <p class="hero-subtitle" style="color: #fff;">Gérez tous vos événements religieux de manière simple et
+                        efficace</p>
                 </div>
             </div>
         </div>
@@ -143,7 +145,8 @@
                 <div class="col-lg-12">
                     <h2>Commencez à Organiser</h2>
                     <p>Simplifiez la gestion de vos événements religieux</p>
-                    <a href="#" class="btn btn-cta"><i class="fas fa-download"></i> Télécharger App</a>
+                    <a href="#" class="btn btn-cta" data-bs-toggle="modal" data-bs-target="#downloadAppModal"><i
+                            class="fas fa-download"></i> Télécharger App</a>
                 </div>
             </div>
         </div>

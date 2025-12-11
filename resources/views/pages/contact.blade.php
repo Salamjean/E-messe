@@ -2,15 +2,15 @@
 @section('content')
     <!-- Hero Section -->
     <section class="hero-section"
-        style="background-image: url('{{ asset('assets/image-backgroud-site/background.png') }}'); background-size: cover; background-position: center; position: relative;">
+        style="background-image: url('{{ asset('assets/image-backgroud-site/main_dieu.jpg') }}'); background-size: cover; background-position: center; position: relative;">
         <div class="overlay"
-            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(199, 183, 183, 0.3);">
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(99, 112, 103, 0.5);">
         </div>
         <div class="container" style="position: relative; z-index: 1;">
             <div class="row text-center">
                 <div class="col-lg-8 mx-auto">
-                    <h1 class="hero-title">Nous <span class="text-gold">Contacter</span></h1>
-                    <p class="hero-subtitle">Une question ? Nous sommes là pour vous aider</p>
+                    <h1 class="hero-title" style="color: #fff;">Nous <span class="text-gold">Contacter</span></h1>
+                    <p class="hero-subtitle" style="color: #fff;">Une question ? Nous sommes là pour vous aider</p>
                 </div>
             </div>
         </div>
@@ -320,8 +320,8 @@
 
         .support-icon {
             /* width: 40px;
-                                                height: 40px;
-                                                margin: 0 auto 25px; */
+                                                                height: 40px;
+                                                                margin: 0 auto 25px; */
             background: linear-gradient(135deg, #C9A961 0%, #B89551 100%);
             border-radius: 50%;
             /* display: flex; */

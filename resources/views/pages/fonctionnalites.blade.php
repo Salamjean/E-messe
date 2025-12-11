@@ -1,15 +1,18 @@
 @extends('pages.layouts.template')
 @section('content')
     <!-- Hero Section -->
-    <section class="features-hero" style="background-image: url('{{ asset('assets/image-backgroud-site/background.png') }}'); background-size: cover; background-position: center; position: relative;">
+    <section class="features-hero"
+        style="background-image: url('{{ asset('assets/image-backgroud-site/prete.png') }}'); background-size: cover; background-position: center; position: relative;">
         <div class="overlay"
-            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(199, 183, 183, 0.3);">
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(99, 112, 103, 0.1);">
         </div>
         <div class="container">
             <div class="row text-center">
                 <div class="col-lg-10 mx-auto">
-                    <h1 class="hero-title">Explorez nos <span class="text-highlight">Fonctionnalités</span></h1>
-                    <p class="hero-subtitle">Découvrez tous les outils puissants d'E-messe pour gérer pour vos messes
+                    <h1 class="hero-title" style="color: #fff;">Explorez nos <span
+                            class="text-highlight">Fonctionnalités</span></h1>
+                    <p class="hero-subtitle" style="color: #fff;">Découvrez tous les outils puissants d'E-messe pour gérer
+                        pour vos messes
                         efficacement.
                     </p>
                 </div>
@@ -157,7 +160,8 @@
                             <div class="feat-card d-flex flex-column flex-md-row align-items-center shadow position-relative"
                                 style="border: 1px solid #c2a16d; border-radius: 20px; padding: 70px;">
                                 <!-- Image téléphone -->
-                                <div class="feature-image col-lg-6 col-md-6 text-center position-relative overflow-visible">
+                                <div
+                                    class="feature-image col-lg-6 col-md-6 text-center position-relative overflow-visible">
                                     <img src="{{ asset('assets/fonctionnalite/img/dash_photo.png') }}"
                                         alt="Validation Mobile" class="phone-img img-fluid">
                                 </div>
@@ -235,7 +239,8 @@
                 <div class="col-lg-8">
                     <h2 class="cta-title">Prêt à Démarrer ?</h2>
                     <p class="cta-description">Rejoignez des centaines de paroisses qui utilisent déjà E-MESSE</p>
-                    <a href="#" class="btn btn-cta"><i class="fas fa-download"></i> Télécharger App</a>
+                    <a href="#" class="btn btn-cta" data-bs-toggle="modal" data-bs-target="#downloadAppModal"><i
+                            class="fas fa-download"></i> Télécharger App</a>
                 </div>
             </div>
         </div>
@@ -243,8 +248,8 @@
 
     <style>
         /* ========================================
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        VARIABLES & RESET
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ======================================== */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            VARIABLES & RESET
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ======================================== */
         :root {
             --primary-color: #D4A574;
             --primary-dark: #B8895F;
@@ -264,8 +269,8 @@
         }
 
         /* ========================================
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        HERO & HEADERS
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ======================================== */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            HERO & HEADERS
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ======================================== */
         .features-hero {
             background: #f7f4eb;
             padding: 100px 0 80px;
@@ -304,8 +309,8 @@
         }
 
         /* ========================================
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        FEATURES GRID CARDS
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ======================================== */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            FEATURES GRID CARDS
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ======================================== */
         .feature-card {
             background: var(--white);
             border: 1px solid #E5E7EB;
@@ -399,8 +404,8 @@
         }
 
         /* ========================================
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        DETAILED FEATURES
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ======================================== */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            DETAILED FEATURES
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ======================================== */
         .features-detailed {
             background: var(--bg-light);
         }
@@ -520,8 +525,8 @@
         }
 
         /* ========================================
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        CTA SECTION
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ======================================== */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            CTA SECTION
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ======================================== */
         .cta-section {
             background: #faf4e6;
             padding: 100px 0;
@@ -571,8 +576,8 @@
         }
 
         /* ========================================
-                                                                                                                                                                                                                            RESPONSIVE DESIGN - AMÉLIORÉ POUR MOBILE
-                                                                                                                                                                                                                            ======================================== */
+                                                                                                                                                                                                                                                RESPONSIVE DESIGN - AMÉLIORÉ POUR MOBILE
+                                                                                                                                                                                                                                                ======================================== */
         @media (max-width: 1200px) {
             .hero-title {
                 font-size: 2.5rem;

@@ -63,6 +63,7 @@ https://templatemo.com/tm-591-villa-agency
     <script src="{{ asset('assets/assets/js/counter.js') }}"></script>
     <script src="{{ asset('assets/assets/js/custom.js') }}"></script>
 
+    @include('pages.layouts.download-modal')
 </body>
 {{-- @yield('footer') --}}
 @include('pages.layouts.footer')

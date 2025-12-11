@@ -2,15 +2,16 @@
 @section('content')
     <!-- Hero Section -->
     <section class="hero-section"
-        style="background-image: url('{{ asset('assets/image-backgroud-site/background.png') }}'); background-size: cover; background-position: center; position: relative;">
+        style="background-image: url('{{ asset('assets/image-backgroud-site/confirmation.png') }}'); background-size: cover; background-position: center; position: relative;">
         <div class="overlay"
-            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(199, 183, 183, 0.3);">
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(99, 112, 103, 0.1);">
         </div>
         <div class="container" style="position: relative; z-index: 1;">
             <div class="row text-center">
                 <div class="col-lg-10 mx-auto">
-                    <h1 class="hero-title">Nos <span class="text-golden">Avantages</span></h1>
-                    <p class="hero-subtitle">Découvrez pourquoi E-Messe est la solution idéale pour votre paroisse</p>
+                    <h1 class="hero-title" style="color: #fff;">Nos <span class="text-golden">Avantages</span></h1>
+                    <p class="hero-subtitle" style="color: #fff;">Découvrez pourquoi E-Messe est la solution idéale pour
+                        votre paroisse</p>
                 </div>
             </div>
         </div>
@@ -232,7 +233,8 @@
                     <h2 class="cta-title mb-4">Prêt à découvrir ces avantages ?</h2>
                     <p class="cta-text mb-4">Rejoignez les centaines de paroisses qui ont déjà fait le choix de la
                         modernité</p>
-                    <a href="#" class="btn btn-cta"><i class="fas fa-download"></i> Télécharger App</a>
+                    <a href="#" class="btn btn-cta" data-bs-toggle="modal" data-bs-target="#downloadAppModal"><i
+                            class="fas fa-download"></i> Télécharger App</a>
                 </div>
             </div>
         </div>

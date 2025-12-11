@@ -2,15 +2,17 @@
 @section('content')
     <!-- Hero Section -->
     <section class="hero-section"
-        style="background-image: url('{{ asset('assets/image-backgroud-site/background.png') }}'); background-size: cover; background-position: center; position: relative;">
+        style="background-image: url('{{ asset('assets/image-backgroud-site/prete.png') }}'); background-size: cover; background-position: center; position: relative;">
         <div class="overlay"
-            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(199, 183, 183, 0.3);">
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(99, 112, 103, 0.1);">
         </div>
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-12 text-center">
-                    <h1 class="hero-title">Solutions pour vos <span class="highlight-text">Paroisses</span></h1>
-                    <p class="hero-subtitle">Adaptée spécifiquement aux besoins des églises et communautés religieuses</p>
+                    <h1 class="hero-title" style="color: #fff;">Solutions pour vos <span
+                            class="highlight-text">Paroisses</span></h1>
+                    <p class="hero-subtitle" style="color: #fff;">Adaptée spécifiquement aux besoins des églises et
+                        communautés religieuses</p>
                 </div>
             </div>
         </div>
@@ -225,7 +227,8 @@
                     <h2 class="mb-3">Modernisez votre Paroisse avec E-MESSE</h2>
                     <p class="mb-4">Rejoignez nos centaines de paroisses et améliorez votre organisation dès aujourd'hui
                     </p>
-                    <a href="#" class="btn btn-cta"><i class="fas fa-download"></i> Télécharger App</a>
+                    <a href="#" class="btn btn-cta" data-bs-toggle="modal" data-bs-target="#downloadAppModal"><i
+                            class="fas fa-download"></i> Télécharger App</a>
                 </div>
             </div>
         </div>
