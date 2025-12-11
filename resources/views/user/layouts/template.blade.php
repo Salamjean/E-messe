@@ -9,7 +9,7 @@
     <title>Espace - User</title>
 
     <!-- Favicon -->
-    <link rel="shortcut icon" href="{{ asset('assets/assets/images/logo E-messe.jpeg') }}" type="image/jpeg">
+    <link rel="shortcut icon" href="{{ asset('assets/assets/images/logo_principal.svg') }}" type="image/jpeg">
 
     <!-- font-awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">

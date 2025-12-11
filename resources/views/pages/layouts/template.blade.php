@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="{{ asset('assets/assets/css/templatemo-villa-agency.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/assets/css/owl.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/assets/css/animate.css') }}">
-    <link rel="shortcut icon" href="{{ asset('assets/assets/images/logo E-messe.jpeg') }}" />
+    <link rel="shortcut icon" href="{{ asset('assets/assets/images/logo_principal.svg') }}" />
     <link rel="stylesheet"href="https://unpkg.com/swiper@7/swiper-bundle.min.css" />
     <!--
 

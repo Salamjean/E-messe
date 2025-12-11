@@ -20,7 +20,7 @@
     <!-- Layout styles -->
     <link rel="stylesheet" href="{{ asset('assetsPoste/assets/css/demo/style.css') }}">
     <!-- End layout styles -->
-    <link rel="shortcut icon" href="{{ asset('assets/assets/images/logo E-messe.jpeg') }}" />
+    <link rel="shortcut icon" href="{{ asset('assets/assets/images/logo_principal.svg') }}" />
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
