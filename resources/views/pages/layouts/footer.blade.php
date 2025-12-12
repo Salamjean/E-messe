@@ -45,46 +45,14 @@
         <!-- Copyright -->
         <div class="footer-bottom">
             <div class="copyright">
-                <p>© {{ date('Y') }} E-MESSE. Tous droits réservés.</p>
+                <p>{{ date('Y') }} E-MESSE. Tous droits réservés.</p>
             </div>
         </div>
     </div>
 </footer>
 
 <style>
-    .footer-brand {
-        text-align: left;
-    }
-
-    .footer-logo {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        /* espace entre logo & texte */
-    }
-
-    .footer-logo img {
-        height: 45px;
-        /* taille du logo */
-        width: auto;
-        /* garde les proportions originales */
-        object-fit: contain;
-        /* assure un bon rendu */
-    }
-
-    .brand-name {
-        font-size: 20px;
-        font-weight: 600;
-        color: #fff;
-        /* adapte selon tes couleurs */
-    }
-
-    .footer-description {
-        margin-top: 6px;
-        font-size: 14px;
-        color: #ddd;
-    }
-
+    /* General cleanup and base styles */
     .site-footer {
         background: linear-gradient(135deg, #f5f7fa 0%, #e3e8ed 100%);
         padding: 60px 0 20px;
@@ -98,6 +66,14 @@
         padding: 0 20px;
     }
 
+    @media (min-width: 1024px) {
+
+        /* Apply on PC only (e.g., screens larger than 1024px) */
+        .footer-content {
+            margin-left: -80px !important;
+        }
+    }
+
     .footer-content {
         display: grid;
         grid-template-columns: 1.5fr 2.5fr;
@@ -109,12 +85,19 @@
         display: flex;
         flex-direction: column;
         gap: 16px;
+        /* Removed problematic fixed margins and alignments */
     }
 
     .footer-logo {
         display: flex;
         align-items: center;
         gap: 12px;
+    }
+
+    .footer-logo img {
+        height: 45px;
+        width: auto;
+        object-fit: contain;
     }
 
     .brand-name {
@@ -130,6 +113,8 @@
         line-height: 1.6;
         max-width: 300px;
         margin: 0;
+        margin-left: -13px !important;
+        /* Removed problematic fixed margins */
     }
 
     .footer-columns {
@@ -199,17 +184,44 @@
     }
 
     /* Responsive Design */
+
+    /* Tablet and small desktop screens */
     @media (max-width: 1024px) {
+        .site-footer {
+            padding: 50px 0 20px;
+            margin-top: 70px;
+        }
+
         .footer-content {
             grid-template-columns: 1fr;
+            /* Stack content vertically */
             gap: 40px;
         }
 
         .footer-columns {
             grid-template-columns: repeat(2, 1fr);
+            /* Two columns for links */
+            gap: 30px;
+        }
+
+        .footer-brand {
+            align-items: center;
+            /* Center brand content */
+            text-align: center;
+        }
+
+        .footer-logo {
+            justify-content: center;
+            /* Center logo within brand */
+        }
+
+        .footer-description {
+            max-width: 80%;
+            /* Adjust max-width for better readability */
         }
     }
 
+    /* Mobile screens */
     @media (max-width: 640px) {
         .site-footer {
             padding: 40px 0 20px;
@@ -222,12 +234,13 @@
 
         .footer-columns {
             grid-template-columns: 1fr;
-            gap: 30px;
+            /* Stack link columns vertically */
+            gap: 25px;
         }
 
         .footer-brand {
-            text-align: center;
             align-items: center;
+            text-align: center;
         }
 
         .footer-logo {
@@ -235,17 +248,24 @@
         }
 
         .footer-description {
-            text-align: center;
-            max-width: 100%;
+            max-width: 90%;
+            margin: 0 auto;
+            /* Center description text block */
         }
 
         .footer-column {
             text-align: center;
+            /* Center text for each column */
+        }
+
+        .footer-links {
+            align-items: center;
+            /* Center links within columns */
         }
 
         .footer-links li a:hover {
-            transform: translateX(0);
-            transform: scale(1.05);
+            transform: translateX(0) scale(1.05);
+            /* Adjust hover for touch devices */
         }
     }
 
