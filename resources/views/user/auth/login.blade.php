@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User - Login</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="shortcut icon" href="{{ asset('assets/assets/images/logo_principal.svg') }}" />
     <style>
         :root {
             --primary: #cda45e;
@@ -29,9 +30,9 @@
         }
 
         body {
-            background:
-                linear-gradient(rgba(238, 206, 0, 0.1), rgba(248, 100, 53, 0.975)),
+            background: linear-gradient(#c7a663, #ffffffff),
                 url('{{ asset('assets/assets/images/bggg.jpg') }}');
+            /* background-image: url('{{ asset('assets/assets/images/bggg.jpg') }}'); */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -103,7 +104,7 @@
 
         .left-panel {
             flex: 1;
-            background: linear-gradient(135deg, var(--primary) 0%, #ff7b4e 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, #bea56aff 100%);
             color: var(--white);
             padding: 50px;
             display: flex;
@@ -318,13 +319,15 @@
             transition: var(--transition);
             margin-bottom: 25px;
             letter-spacing: 0.5px;
-            box-shadow: 0 4px 15px rgba(243, 85, 37, 0.3);
+            /* box-shadow: 0 4px 15px rgba(243, 85, 37, 0.3); */
         }
 
         .login-button:hover {
-            background-color: #e04a1b;
+            color: var(--primary);
+            background-color: #ffffffff;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(243, 85, 37, 0.4);
+            border: 2px solid var(--primary);
+            /* box-shadow: 0 6px 20px rgba(243, 85, 37, 0.4); */
         }
 
         .login-button:active {

@@ -11,9 +11,9 @@
     <title>Parish login</title>
     <style>
         :root {
-            --primary-color: #f86435;
-            --secondary-color: #f86435;
-            --accent-color: #f86435;
+            --primary-color: #cda45e;
+            --secondary-color: #cda45e;
+            --accent-color: #cda45e;
             --error-color: #f72585;
             --success-color: #f86435;
             --light-color: #f8f9fa;
@@ -35,7 +35,7 @@
             min-height: 100vh;
             margin: 0;
             background:
-                linear-gradient(rgba(238, 206, 0, 0.1), rgba(248, 100, 53, 0.975)),
+                linear-gradient(#c7a663, #958b8bff),
                 url('{{ asset('assets/assets/images/bggg.jpg') }}');
             background-size: cover;
             background-position: center;
@@ -97,7 +97,7 @@
         }
 
         .subtitle {
-            color: #f86435;
+            color: var(--primary-color);
             font-size: 0.9rem;
         }
 
@@ -112,7 +112,7 @@
             left: 15px;
             top: 50%;
             transform: translateY(-50%);
-            color: #f86435;
+            color: var(--primary-color);
             transition: all var(--transition-speed) ease;
             z-index: 2;
         }
@@ -132,12 +132,12 @@
         }
 
         .input-field:focus {
-            border-color: #f86435;
+            border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
         }
 
         .input-field:focus~.input-icon {
-            color: #f86435;
+            color: var(--primary-color);
         }
 
         .input-label {
@@ -167,14 +167,14 @@
             right: 15px;
             top: 50%;
             transform: translateY(-50%);
-            color: #f86435;
+            color: var(--primary-color);
             cursor: pointer;
             transition: all var(--transition-speed) ease;
             z-index: 2;
         }
 
         .password-toggle:hover {
-            color: #f86435;
+            color: var(--primary-color);
         }
 
         .submit-btn {
@@ -206,6 +206,9 @@
         }
 
         .submit-btn:hover {
+            color: #ffffffff !important;
+            background-color: var(--primary-color) !important;
+            border: 2px solid var(--primary-color) !important;
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
             transform: translateY(-2px);
         }
@@ -215,7 +218,11 @@
         }
 
         .submit-btn:active {
-            transform: translateY(0);
+            color: #ffffffff !important;
+            background-color: var(--primary-color) !important;
+            border: 2px solid var(--primary-color) !important;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
         }
 
         .error-message {
@@ -319,7 +326,8 @@
     <form class="form-container animate__animated animate__fadeIn" method="POST"
         action="{{ route('paroisse.handleLogin') }}">
         <div class="form-header">
-            <img src="{{ asset('assets/assets/images/sancta.jpg') }}" style="height: 50%; width:25%" alt="">
+            <img src="{{ asset('assets/assets/images/logo_principal.svg') }}" style="height: 50%; width:25%"
+                alt="">
             <p class="subtitle">Entrez vos identifiants pour accéder à votre espace</p>
         </div>
 
