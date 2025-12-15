@@ -10,14 +10,13 @@
             <div class="row align-items-center">
                 <div class="col-lg-8 mx-auto text-center">
                     <div class="hero-badge">
-                        <span>Plateforme de réservation</span>
+                        <span>Plateforme de Demande de Messe</span>
                     </div>
                     <h1 class="hero-title" style="color: #fff;">
-                        Gérez vos réservations de <span class="highlight-text">messes en toute simplicité</span>
+                        Gérer Vos demandes de <span class="highlight-text">messes en toute simplicité</span>
                     </h1>
                     <p class="hero-subtitle text-center" style="color: #fff;">
-                        E-MESSE est une plateforme complète et intuitive qui vous permet de gérer vos
-                        intentions de messe, vos réservations et vos offrandes en toute sécurité depuis n'importe où.
+                        E-messe est plateforme complète intuitive qui vous permet de gérer vos demande de messe
                     </p>
                     <div class="hero-buttons content-justify-center">
                         <a href="{{ route('register') }}" class="btn btn-primary">
@@ -207,10 +206,12 @@
                         </div>
                         <div class="feature-text col-lg-6 col-md-6 p-3 p-md-4">
                             <div class="download-icon">
-                                <i class="fab fa-android"></i>
+                                <i class="fab fa-android me-2"></i>
+                                <i class="fab fa-apple"></i>
                             </div>
                             <p class="download-text">
-                            <h2 class="section-subtitle mb-4 fw-bold" style="color: #000000;">Disponible sur Google Play
+                            <h2 class="section-subtitle mb-4 fw-bold" style="color: #000000;">Disponible sur Play store et
+                                Apple Store
                             </h2>
                             Téléchargez notre application mobile pour accéder à E-MESSE où que vous soyez
                             </p><br>

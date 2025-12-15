@@ -111,7 +111,7 @@
         color: #6b7280;
         font-size: 14px;
         line-height: 1.6;
-        max-width: 300px;
+        max-width: 350px;
         margin: 0;
         margin-left: -13px !important;
         /* Removed problematic fixed margins */
