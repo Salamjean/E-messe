@@ -6,8 +6,8 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <style>
     :root {
-        --primary: #f35525;
-        --dark: #181824;
+        --primary: #c49d54;
+        --dark: #5ea7b5;
         --light: #ffffff;
         --gray: #f8f9fa;
         --border-radius: 12px;
@@ -28,7 +28,7 @@
     }
     
     .retraits-header {
-        background: linear-gradient(135deg, var(--dark) 0%, #2d2d42 100%);
+        background: linear-gradient(135deg, var(--dark));
         color: var(--light);
         border-radius: var(--border-radius);
         padding: 25px 30px;
@@ -76,7 +76,7 @@
     
     .card-modern:hover {
         transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        box-shadow:var(--box-shadow);
     }
     
     .card-header-modern {
@@ -148,7 +148,7 @@
     }
     
     .solde-card {
-        background: linear-gradient(135deg, #2d2d42 0%, var(--dark) 100%);
+        background: linear-gradient( var(--dark) 100%);
         color: white;
         border-radius: var(--border-radius);
         padding: 20px;
@@ -298,7 +298,7 @@
             <p>Consultez la liste de vos demandes de retrait en attente, de la paroisse {{ Auth::guard('paroisse')->user()->name }}!</p>
         </div>
         <div class="user-profile">
-            <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('paroisse')->user()->name) }}&background=f35525&color=fff" alt="Profile">
+            <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('paroisse')->user()->name) }}" alt="Profile">
         </div>
     </div>
 

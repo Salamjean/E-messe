@@ -1,689 +1,373 @@
 @extends('paroisse.layouts.template')
+
+@section('styles')
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+@endsection
+
 @section('content')
-<div class="messe-container">
-    <div class="messe-header">
-        <h1>Toutes les demandes de messe</h1>
-        <p>Retrouvez toutes vos demandes de célébration en cours.</p>
-        
-        <!-- Actions groupées -->
-        <div class="bulk-actions" id="bulkActions" style="display: none; margin-top: 20px;">
-            <button type="button" class="btn btn-primary" onclick="confirmAndGeneratePDF()">
-                📄 Télécharger les demandes sélectionnées en PDF
+    <div class="container-fluid mt-4"><br><br>
+
+        <div class="messe-header">
+            <h1>Liste des demandes de messes à célébrer</h1>
+            <p class="text-muted" style="color: #1b63a2ff;">Consultez, filtrez et exportez toutes les intentions de messes.
+            </p>
+        </div>
+
+        <!-- Zone d'actions groupées -->
+        <div class="bulk-actions" id="bulkActions">
+            <span class="fw-bold me-3 text-primary">
+                <i class="fas fa-check-circle"></i> <span id="selectedCount">0</span> sélectionné(s)
+            </span>
+
+            <button type="button" class="btn btn-primary btn-sm" onclick="confirmAndGeneratePDF()">
+                📄 Générer la feuille de messe (PDF)
             </button>
-            <button type="button" class="btn btn-secondary" onclick="deselectAll()">
+
+            <button type="button" class="btn btn-outline-secondary btn-sm ms-auto" onclick="deselectAll()">
                 ❌ Tout désélectionner
             </button>
         </div>
+
+        <!-- Tableau DataTable -->
+        <table id="messesTable" class="table table-hover table-striped dt-responsive nowrap" style="width:100%">
+            <thead>
+                <tr class="table-light">
+                    <th width="5%" class="text-center">
+                        <input type="checkbox" id="selectAllHeader" class="form-check-input" style="cursor: pointer;">
+                    </th>
+                    <th>Date de soumission</th>
+                    <th>Type celebration</th>
+                    <th>Noms concernés</th>
+                    <th>Date Souhaitée</th>
+                    <th>Progression</th>
+                    <th>Montant messes</th>
+                    <th width="5%">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Chargement via Ajax -->
+            </tbody>
+        </table>
     </div>
 
-    @if($filteredMessess->isEmpty())
-    <div class="empty-state">
-        <div class="empty-icon">⛪</div>
-        <h3>Aucune demande de messe</h3>
-    </div>
-    @else
-    <!-- Checkbox pour sélectionner tout -->
-    <div class="select-all-container" style="margin-bottom: 15px;">
-        <label class="checkbox-label">
-            <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
-            <span class="checkmark"></span>
-            Sélectionner toutes les demandes
-        </label>
-    </div>
+    <!-- Formulaire caché pour l'export PDF -->
+    <form id="pdfForm" action="{{ route('paroisse.messe.export-pdf') }}" method="POST" target="_blank">
+        @csrf
+        <input type="hidden" name="selected_ids" id="selectedIds">
+    </form>
 
-    <div class="messe-cards">
-        @foreach($filteredMessess as $messe)
-        @php
-            $celebrationCount = $messe->getCelebrationsCount();
-        @endphp
-        <div class="messe-card" data-status="{{ $messe->statut }}">
-            <!-- Checkbox de sélection -->
-            <div class="card-checkbox">
-                <label class="checkbox-label">
-                    <input type="checkbox" name="selected_messes[]" value="{{ $messe->id }}" 
-                           class="messe-checkbox" onchange="updateBulkActions()">
-                    <span class="checkmark"></span>
-                </label>
-            </div>
-            
-            <div class="card-header">
-                <div class="card-badge {{ str_replace(' ', '_', $messe->statut) }}">
-                    {{ ucfirst($messe->statut) }}
+    <!-- Modal de confirmation -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title">📄 Génération du PDF</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="card-date">
-                    {{ $messe->created_at->format('d/m/Y') }}
+                <div class="modal-body">
+                    <p class="fw-bold">Vous allez générer le document pour les messes sélectionnées.</p>
+                    <p class="text-muted mb-0">
+                        ⚠️ Cette action passera automatiquement le statut des messes confirmées à
+                        <span class="badge badge-celebre">Célébrée</span>.
+                    </p>
                 </div>
-            </div>
-            
-            <div class="card-content">
-                <h3 class="card-title">
-                    Messe   
-                    @if($messe->type_intention === 'Defunt')
-                        de Défunt
-                    @elseif($messe->type_intention === 'Action graces')
-                        d'action de Grâces
-                    @else
-                        d'ntention Particulière
-                    @endif
-                </h3>
-                
-                <!-- Compteur de célébrations -->
-                @php
-                    $celebrationCount = $messe->getCelebrationsCount();
-                    $progressPercentage = $celebrationCount['total'] > 0 ? ($celebrationCount['celebrated'] / $celebrationCount['total'] * 100) : 0;
-                @endphp
-                <div class="celebration-counter">
-                    <div class="celebration-progress">
-                        <div class="progress-bar" style="width: {{ $progressPercentage }}%"></div>
-                    </div>
-                    <div class="celebration-text">
-                        Célébré {{ $celebrationCount['celebrated'] }} sur {{ $celebrationCount['total'] }} fois
-                    </div>
-                </div>
-                
-                <div class="card-details">
-                    <div class="detail-item">
-                        <span class="detail-label">📅 Date souhaitée:</span>
-                        <span class="detail-value">{{ \Carbon\Carbon::parse($messe->date_souhaitee)->format('d/m/Y') }}</span>
-                    </div>
-                    
-                    @if($messe->heure_souhaitee)
-                    <div class="detail-item">
-                        <span class="detail-label">⏰ Heure:</span>
-                        <span class="detail-value">{{ $messe->heure_souhaitee }}</span>
-                    </div>
-                    @endif
-                    
-                    <div class="detail-item">
-                        <span class="detail-label">⛪ Type:</span>
-                        <span class="detail-value">{{ $messe->celebration_choisie ?? 'Non spécifié' }}</span>
-                    </div>
-                    
-                    @if($messe->montant_offrande)
-                    <div class="detail-item">
-                        <span class="detail-label">💰 Offrande:</span>
-                        <span class="detail-value">{{ number_format($messe->montant_offrande, 0, ',', ' ') }} FCFA</span>
-                    </div>
-                    @endif
-                </div>
-                
-                <div class="card-noms">
-                    <strong>Noms concernés:</strong>
-                    @php
-                        $noms = is_array($messe->nom_prenom_concernes) 
-                                ? $messe->nom_prenom_concernes 
-                                : json_decode($messe->nom_prenom_concernes, true) ?? [$messe->nom_prenom_concernes];
-                    @endphp
-                    <div class="noms-list">
-                        @foreach($noms as $nom)
-                            <span class="nom-tag">{{ $nom }}</span>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card-actions">
-                <a href="{{ route('paroisse.messe.show', ['messe' => $messe->id]) }}" class="card-action-btn view-btn">
-                    👁️ Voir détails
-                </a>
-                @if($messe->statut === 'en attente')
-                <form action="{{ route('paroisse.messe.cancel', ['messe' => $messe->id]) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('POST')
-                    <button type="submit" class="card-action-btn cancel-btn" style="background-color: rgb(199, 12, 12)" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ? Cette action est irréversible.')">
-                        🗑️ Annulée
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="proceedWithPDF()">
+                        Confirmer et Imprimer
                     </button>
-                </form>
-                @endif
+                </div>
             </div>
         </div>
-        @endforeach
     </div>
-    @endif
-</div>
+@endsection
 
-<!-- Formulaire caché pour générer le PDF -->
-<form id="pdfForm" action="{{ route('paroisse.messe.export-pdf') }}" method="POST" target="_blank">
-    @csrf
-    <input type="hidden" name="selected_ids" id="selectedIds">
-</form>
+@push('js')
+    <!-- Bibliothèques JS -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Modal de confirmation -->
-<div id="confirmationModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
-    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; width: 400px;">
-        <h3>Confirmation</h3>
-        <p>Êtes-vous sûr de vouloir marquer ces demandes comme célébrées et générer le PDF ?</p>
-        <p><strong>Note:</strong> Cette action changera le statut des demandes sélectionnées en "célébrée" après vérification que toutes les dates ont été célébrées.</p>
-        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-            <button type="button" onclick="hideConfirmationModal()" class="btn btn-secondary">Annuler</button>
-            <button type="button" onclick="proceedWithPDF()" class="btn btn-primary">Confirmer</button>
-        </div>
-    </div>
-</div>
+    <script>
+        $(document).ready(function() {
+            // Configuration DataTables
+            var table = $('#messesTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: "{{ route('demandes.messes.index') }}",
+                columns: [{
+                        data: 'checkbox',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-center'
+                    },
+                    {
+                        data: 'date_creation'
+                    },
+                    {
+                        data: 'type_celebration'
+                    },
+                    {
+                        data: 'noms'
+                    },
+                    {
+                        data: 'date_souhaitee'
+                    },
+                    {
+                        data: 'progression',
+                        orderable: false
+                    }, // Barre de progression
+                    {
+                        data: 'montant'
+                    },
+                    {
+                        data: 'actions',
+                        orderable: false,
+                        searchable: false
+                    }
+                ],
+                language: {
+                    url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json"
+                },
+                order: [
+                    [1, 'desc']
+                ], // Trier par date de création (plus récent en haut)
+                drawCallback: function() {
+                    // Restaure l'état des checkboxes si on change de page (optionnel)
+                    updateBulkActions();
+                }
+            });
+
+            // --- GESTION DES CHECKBOXES ---
+
+            // Clic sur "Tout sélectionner" dans l'en-tête
+            $('#selectAllHeader').on('change', function() {
+                var isChecked = $(this).is(':checked');
+                $('.messe-checkbox').prop('checked', isChecked);
+                updateBulkActions();
+            });
+
+            // Clic sur une checkbox individuelle
+            $('#messesTable tbody').on('change', '.messe-checkbox', function() {
+                updateBulkActions();
+
+                // Mettre à jour l'état du "Tout sélectionner"
+                var allChecked = $('.messe-checkbox:checked').length === $('.messe-checkbox').length;
+                $('#selectAllHeader').prop('checked', allChecked);
+            });
+        });
+
+        // Fonction d'affichage de la barre d'actions
+        function updateBulkActions() {
+            var selectedCount = $('.messe-checkbox:checked').length;
+            $('#selectedCount').text(selectedCount);
+
+            if (selectedCount > 0) {
+                $('#bulkActions').css('display', 'flex'); // Flex pour l'alignement
+            } else {
+                $('#bulkActions').hide();
+            }
+        }
+
+        function deselectAll() {
+            $('.messe-checkbox').prop('checked', false);
+            $('#selectAllHeader').prop('checked', false);
+            updateBulkActions();
+        }
+
+        // --- GESTION DU PDF ET MODAL ---
+
+        function confirmAndGeneratePDF() {
+            var selectedCount = $('.messe-checkbox:checked').length;
+            if (selectedCount === 0) {
+                alert('Veuillez sélectionner au moins une demande.');
+                return;
+            }
+            var myModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+            myModal.show();
+        }
+
+        function proceedWithPDF() {
+            // 1. Récupération des IDs
+            var selectedIds = [];
+            $('.messe-checkbox:checked').each(function() {
+                selectedIds.push($(this).val());
+            });
+
+            // UI Feedback
+            var updateStatusUrl = '{{ route('paroisse.messe.update-status') }}';
+            var modalEl = document.getElementById('confirmationModal');
+            var modal = bootstrap.Modal.getInstance(modalEl);
+
+            // 2. Appel Ajax pour mettre à jour les statuts
+            $.ajax({
+                url: updateStatusUrl,
+                method: 'POST',
+                data: {
+                    selected_ids: JSON.stringify(selectedIds),
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    modal.hide();
+
+                    if (response.success) {
+                        // 3. Soumission du formulaire PDF (ouverture nouvel onglet)
+                        $('#selectedIds').val(JSON.stringify(selectedIds));
+                        $('#pdfForm').submit();
+
+                        // 4. Recharger le tableau pour voir les nouveaux statuts (Célébrée)
+                        // Petit délai pour laisser le temps au PDF de se lancer
+                        setTimeout(function() {
+                            $('#messesTable').DataTable().ajax.reload(null,
+                                false); // false = garder la pagination
+                            deselectAll();
+                        }, 1000);
+                    } else {
+                        alert('Erreur: ' + response.error);
+                    }
+                },
+                error: function(xhr) {
+                    modal.hide();
+                    alert('Une erreur est survenue lors de la mise à jour des statuts.');
+                }
+            });
+        }
+    </script>
+@endpush
 
 <style>
-
-    .messe-container {
-        width: 90%;
-        margin: 0 auto;
-        padding: 0 20px;
-    }
-
     .messe-header {
         text-align: center;
-        margin-bottom: 40px;
-        padding: 30px 20px;
+        margin-bottom: 30px;
         background: white;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-    }
-    
-    .messe-header h1 {
-        color: #f35525;
-        font-size: 2.5rem;
-        margin-bottom: 10px;
-        font-weight: 700;
-        letter-spacing: -0.5px;
-    }
-    
-    .messe-header p {
-        color: #666;
-        font-size: 1.1rem;
-        max-width: 600px;
-        margin: 0 auto;
-    }
-    .messe-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 20px;
-        margin-top: 30px;
-    }
-    
-    .messe-card {
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border-left: 4px solid #f35525;
-        position: relative;
-        padding-top: 40px; /* Espace pour la checkbox */
-    }
-    
-    .messe-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
 
-    .download-counter {
-        margin-top: 10px;
-        padding: 8px;
-        background: #e9ecef;
-        border-radius: 6px;
-        font-size: 0.8rem;
-        color: #6c757d;
-        display: flex;
-        justify-content: space-between;
+    .messe-header h1 {
+        color: #d4bd8a;
+        font-weight: 700;
     }
-    
-    .messe-card[data-status="confirmee"] {
-        border-left-color: #28a745;
-    }
-    
-    .messe-card[data-status="celebre"] {
-        border-left-color: #17a2b8;
-    }
-    
-    .messe-card[data-status="annulee"] {
-        border-left-color: #6c757d;
-    }
-    
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px 20px;
-        background: #f8f9fa;
-        border-bottom: 1px solid #e9ecef;
-    }
-    
-    .card-badge {
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-    
-    .card-badge.en_attente {
-        background: #fff3cd;
-        color: #856404;
-    }
-    
-    .card-badge.confirmee {
-        background: #d4edda;
-        color: #155724;
-    }
-    
-    .card-badge.celebre {
-        background: #d1ecf1;
-        color: #0c5460;
-    }
-    
-    .card-badge.annulee {
-        background: #f8d7da;
-        color: #721c24;
-    }
-    
-    .card-date {
-        color: #6c757d;
-        font-size: 0.9rem;
-    }
-    
-    .card-content {
-        padding: 20px;
-    }
-    
-    .card-title {
-        color: #333;
-        font-size: 1.2rem;
-        margin-bottom: 15px;
-        font-weight: 600;
-    }
-    
-    .card-details {
-        margin-bottom: 15px;
-    }
-    
-    .detail-item {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 8px;
-        padding: 5px 0;
-    }
-    
-    .detail-label {
-        color: #666;
-        font-weight: 500;
-    }
-    
-    .detail-value {
-        color: #333;
-        font-weight: 600;
-    }
-    
-    .card-noms {
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 1px dashed #e9ecef;
-    }
-    
-    .noms-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 10px;
-    }
-    
-    .nom-tag {
-        background: #f0f2f5;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 0.85rem;
-        color: #495057;
-    }
-    
-    .card-actions {
-        padding: 15px 20px;
-        background: #f8f9fa;
-        border-top: 1px solid #e9ecef;
-        display: flex;
-        gap: 10px;
-    }
-    
-    .card-action-btn {
-        padding: 8px 15px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-size: 0.9rem;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-        display: inline-block;
-        text-align: center;
-    }
-    
-    .view-btn {
-        background: #f35525;
-        color: white;
-    }
-    
-    .view-btn:hover {
-        background: #ff7c52;
-        color: white;
-    }
-    
-    .cancel-btn {
-        background: #6c757d;
-        color: white;
-    }
-    
-    .cancel-btn:hover {
-        background: #495057;
-        color: white;
-    }
-    
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
+
+    .messe-container {
+        width: 95%;
+        margin: 0 auto;
+        padding: 30px;
         background: white;
         border-radius: 16px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
     }
-    
-    .empty-icon {
-        font-size: 4rem;
-        margin-bottom: 20px;
-        opacity: 0.5;
+
+
+    .messe-header {
+        margin-bottom: 30px;
+        text-align: center;
     }
-    
-    .empty-state h3 {
-        color: #333;
+
+    table.dataTable thead th {
+        background-color: #5ea7b5;
+        color: #ffffffff !important;
+        vertical-align: middle;
+    }
+
+    .messe-header h1 {
+        color: #d4bd8a;
+        /* Votre couleur principale */
+        font-weight: 700;
         margin-bottom: 10px;
+    }
+
+    /* Styles des badges (doivent correspondre aux classes du Controller) */
+    .badge-confirmee {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 5px 10px;
+        border-radius: 12px;
+        font-size: 0.85rem;
         font-weight: 600;
     }
-    
-    .empty-state p {
-        color: #666;
-        margin-bottom: 30px;
+
+    .badge-en_attente {
+        background-color: #fff3cd;
+        color: #856404;
+        padding: 5px 10px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
     }
-    
-    /* Styles pour les checkboxes */
-    .card-checkbox {
-        position: absolute;
-        top: 15px;
-        left: 15px;
-        z-index: 10;
+
+    .badge-celebre {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        padding: 5px 10px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
     }
-    
-    .checkbox-label {
-        display: block;
-        position: relative;
-        padding-left: 30px;
-        margin-bottom: 12px;
-        cursor: pointer;
-        font-size: 16px;
-        user-select: none;
+
+    .badge-annulee {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 5px 10px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
     }
-    
-    .checkbox-label input {
-        position: absolute;
-        opacity: 0;
-        cursor: pointer;
-        height: 0;
-        width: 0;
-    }
-    
-    .checkmark {
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 22px;
-        width: 22px;
-        background-color: #fff;
-        border: 2px solid #ddd;
-        border-radius: 4px;
-        transition: all 0.3s;
-    }
-    
-    .checkbox-label input:checked ~ .checkmark {
-        background-color: #2196F3;
-        border-color: #2196F3;
-    }
-    
-    .checkmark:after {
-        content: "";
-        position: absolute;
-        display: none;
-    }
-    
-    .checkbox-label input:checked ~ .checkmark:after {
-        display: block;
-    }
-    
-    .checkbox-label .checkmark:after {
-        left: 7px;
-        top: 3px;
-        width: 5px;
-        height: 10px;
-        border: solid white;
-        border-width: 0 3px 3px 0;
-        transform: rotate(45deg);
-    }
-    
-    /* Styles pour les actions groupées */
+
+    /* Actions groupées */
     .bulk-actions {
         background: #f8f9fa;
         padding: 15px;
         border-radius: 8px;
-        border: 1px solid #e9ecef;
-        display: flex;
-        gap: 10px;
+        margin-bottom: 20px;
+        display: none;
+        /* Masqué par défaut */
         align-items: center;
-    }
-    
-    .bulk-actions .btn {
-        padding: 8px 15px;
-        border-radius: 6px;
-        font-weight: 500;
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    
-    .bulk-actions .btn-primary {
-        background: #007bff;
-        color: white;
-    }
-    
-    .bulk-actions .btn-primary:hover {
-        background: #0056b3;
-    }
-    
-    .bulk-actions .btn-secondary {
-        background: #6c757d;
-        color: white;
-    }
-    
-    .bulk-actions .btn-secondary:hover {
-        background: #545b62;
-    }
-    
-    .select-all-container {
-        width: 30%;
-        background: white;
-        padding: 12px 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        gap: 10px;
+        border: 1px solid #dee2e6;
+        animation: fadeIn 0.3s ease-in-out;
     }
 
-    .celebration-counter {
-        margin-bottom: 15px;
-        padding: 10px;
-        background: #f8f9fa;
-        border-radius: 8px;
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
-    
-    .celebration-progress {
-        height: 8px;
-        background: #e9ecef;
-        border-radius: 4px;
+
+    table.dataTable td {
+        vertical-align: middle;
+    }
+
+    .progress {
+        background-color: #e9ecef;
+        border-radius: 5px;
         overflow: hidden;
-        margin-bottom: 5px;
     }
-    
-    .progress-bar {
-        height: 100%;
-        background: #28a745;
-        transition: width 0.3s ease;
+
+    /* Fond du tableau */
+    #messesTable {
+        background-color: #117aaeff;
     }
-    
-    .celebration-text {
-        font-size: 0.9rem;
-        color: #495057;
-        text-align: center;
-        font-weight: 500;
+
+    /* Fond des lignes */
+    #messesTable tbody tr {
+        background-color: #ffffff;
     }
-    
-    @media (max-width: 768px) {
-        .messe-cards {
-            grid-template-columns: 1fr;
-        }
-        
-        .card-actions {
-            flex-direction: column;
-        }
-        
-        .card-action-btn {
-            text-align: center;
-        }
-        
-        .bulk-actions {
-            flex-direction: column;
-            align-items: stretch;
-        }
+
+    /* Fond de l'en-tête */
+    #messesTable thead tr {
+        background-color: #d8eff5 !important;
     }
 </style>
-
-<script>
-// Fonction pour afficher le modal de confirmation
-function confirmAndGeneratePDF() {
-    const selectedCheckboxes = document.querySelectorAll('.messe-checkbox:checked');
-    if (selectedCheckboxes.length === 0) {
-        alert('Veuillez sélectionner au moins une demande.');
-        return;
-    }
-    
-    document.getElementById('confirmationModal').style.display = 'block';
-}
-
-// Fonction pour cacher le modal
-function hideConfirmationModal() {
-    document.getElementById('confirmationModal').style.display = 'none';
-}
-
-// Fonction pour procéder après confirmation
-function proceedWithPDF() {
-    hideConfirmationModal();
-    
-    const selectedCheckboxes = document.querySelectorAll('.messe-checkbox:checked');
-    const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
-    
-    console.log('IDs sélectionnés:', selectedIds);
-    
-    // Afficher un message de chargement
-    const downloadBtn = document.querySelector('.bulk-actions .btn-primary');
-    const originalText = downloadBtn.innerHTML;
-    downloadBtn.innerHTML = '⏳ Mise à jour du statut...';
-    downloadBtn.disabled = true;
-    
-    // Vérifier que la route existe
-    const updateStatusUrl = '{{ route("paroisse.messe.update-status") }}';
-    console.log('URL de mise à jour:', updateStatusUrl);
-    
-    if (!updateStatusUrl || updateStatusUrl === '') {
-        alert('Erreur de configuration: Route non trouvée.');
-        downloadBtn.innerHTML = originalText;
-        downloadBtn.disabled = false;
-        return;
-    }
-    
-    // Créer FormData pour envoyer les données
-    const formData = new FormData();
-    formData.append('selected_ids', JSON.stringify(selectedIds));
-    formData.append('_token', '{{ csrf_token() }}');
-    
-    // Envoyer une requête AJAX pour mettre à jour le statut
-    fetch(updateStatusUrl, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => {
-        console.log('Réponse reçue, status:', response.status);
-        if (!response.ok) {
-            throw new Error('Erreur réseau: ' + response.status);
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Données reçues:', data);
-        if (data.success) {
-            // Mettre à jour le champ caché avec les IDs sélectionnés
-            document.getElementById('selectedIds').value = JSON.stringify(selectedIds);
-            
-            // Soumettre le formulaire pour générer le PDF
-            document.getElementById('pdfForm').submit();
-            
-            // Recharger la page après un délai pour voir les statuts mis à jour
-            setTimeout(() => {
-                window.location.reload();
-            }, 3000);
-        } else {
-            alert('Une erreur s\'est produite lors de la mise à jour du statut: ' + (data.error || 'Erreur inconnue'));
-            downloadBtn.innerHTML = originalText;
-            downloadBtn.disabled = false;
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Une erreur s\'est produite: ' + error.message);
-        downloadBtn.innerHTML = originalText;
-        downloadBtn.disabled = false;
-    });
-}
-
-// Vos autres fonctions JavaScript restent inchangées
-function toggleSelectAll(checkbox) {
-    const checkboxes = document.querySelectorAll('.messe-checkbox');
-    checkboxes.forEach(cb => {
-        cb.checked = checkbox.checked;
-    });
-    updateBulkActions();
-}
-
-function updateBulkActions() {
-    const selectedCount = document.querySelectorAll('.messe-checkbox:checked').length;
-    const bulkActions = document.getElementById('bulkActions');
-    
-    if (selectedCount > 0) {
-        bulkActions.style.display = 'flex';
-    } else {
-        bulkActions.style.display = 'none';
-    }
-}
-
-function deselectAll() {
-    document.getElementById('selectAll').checked = false;
-    const checkboxes = document.querySelectorAll('.messe-checkbox');
-    checkboxes.forEach(cb => {
-        cb.checked = false;
-    });
-    updateBulkActions();
-}
-
-// Initialiser les actions groupées au chargement
-document.addEventListener('DOMContentLoaded', function() {
-    updateBulkActions();
-    
-    // Écouter les changements sur les checkboxes
-    const checkboxes = document.querySelectorAll('.messe-checkbox');
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateBulkActions);
-    });
-});
-</script>
-@endsection

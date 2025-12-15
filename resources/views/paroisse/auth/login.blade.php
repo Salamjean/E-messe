@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="shortcut icon" href="{{asset('assets/assets/images/logo E-messe.jpeg')}}" />
+    <link rel="shortcut icon" href="{{ asset('assets/assets/images/logo_principal.svg') }}" />
     <title>Parish login</title>
     <style>
         :root {
@@ -33,8 +34,8 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            background: 
-                linear-gradient(rgba(238, 206, 0, 0.1), rgba(248,100,53, 0.975)),
+            background:
+                linear-gradient(rgba(238, 206, 0, 0.1), rgba(248, 100, 53, 0.975)),
                 url('{{ asset('assets/assets/images/bggg.jpg') }}');
             background-size: cover;
             background-position: center;
@@ -135,8 +136,8 @@
             box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
         }
 
-        .input-field:focus ~ .input-icon {
-            color:#f86435;
+        .input-field:focus~.input-icon {
+            color: #f86435;
         }
 
         .input-label {
@@ -151,8 +152,8 @@
             z-index: 1;
         }
 
-        .input-field:focus ~ .input-label,
-        .input-field:not(:placeholder-shown) ~ .input-label {
+        .input-field:focus~.input-label,
+        .input-field:not(:placeholder-shown)~.input-label {
             top: -10px;
             left: 35px;
             font-size: 0.8rem;
@@ -173,7 +174,7 @@
         }
 
         .password-toggle:hover {
-            color:#f86435;
+            color: #f86435;
         }
 
         .submit-btn {
@@ -272,15 +273,22 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @media (max-width: 576px) {
             .form-container {
                 padding: 30px 20px;
             }
-            
+
             .title {
                 font-size: 1.5rem;
             }
@@ -292,14 +300,24 @@
         }
 
         @keyframes floating {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
         }
     </style>
 </head>
+
 <body>
-    <form class="form-container animate__animated animate__fadeIn" method="POST" action="{{ route('paroisse.handleLogin') }}">
+    <form class="form-container animate__animated animate__fadeIn" method="POST"
+        action="{{ route('paroisse.handleLogin') }}">
         <div class="form-header">
             <img src="{{ asset('assets/assets/images/sancta.jpg') }}" style="height: 50%; width:25%" alt="">
             <p class="subtitle">Entrez vos identifiants pour accéder à votre espace</p>
@@ -323,7 +341,8 @@
         <!-- Email Field -->
         <div class="input-group">
             <i class="fas fa-envelope input-icon"></i>
-            <input class="input-field" type="email" name="email" placeholder=" " value="{{ old('email') }}" required />
+            <input class="input-field" type="email" name="email" placeholder=" " value="{{ old('email') }}"
+                required />
             <label class="input-label" for="email">Adresse Email</label>
             @error('email')
                 <div class="error-message">
@@ -384,7 +403,7 @@
                     text: '{{ Session::get('error') }}',
                     confirmButtonText: 'OK',
                     background: 'var(--light-color)',
-                    
+
                 });
             @endif
 
@@ -393,11 +412,12 @@
             form.addEventListener('mouseenter', () => {
                 form.classList.add('animate__animated', 'animate__pulse');
             });
-            
+
             form.addEventListener('animationend', () => {
                 form.classList.remove('animate__animated', 'animate__pulse');
             });
         });
     </script>
 </body>
+
 </html>

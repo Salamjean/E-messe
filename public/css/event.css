@@ -1,0 +1,241 @@
+/* ============================
+   Variables et police globale
+============================ */
+@import url('https://fonts.googleapis.com/css2?family=Girassol&family=Poppins:wght@400;600;700&display=swap');
+
+:root {
+  /* --font-family: 'Girassol', 'Poppins', sans-serif; */
+  --primary-color: #2c3e50;
+  --secondary-color: #6c757d;
+  --accent-color: #3498db;
+  --shadow-light: 0 8px 20px rgba(0, 0, 0, 0.1);
+  --border-radius: 1.25rem;
+  /* Bordures plus arrondies */
+  --transition-speed: 0.3s;
+}
+
+/* ============================
+   Style global
+   ============================
+*/
+body {
+  font-family: var(--font-family);
+  /* color: var(--primary-color); */
+  background-color: #f0f0f0 !important;
+  margin: 0;
+  padding: 0;
+}
+
+.content-wrapper {
+  background-color: #f2f2f2 !important;
+}
+
+/* ================================
+   Grille principale des événements
+   ================================
+ */
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+/* ============================
+   Carte d'événement
+============================ */
+.event-card-side {
+  display: flex;
+  border: none;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform var(--transition-speed) ease,
+    box-shadow var(--transition-speed) ease;
+  height: 200px;
+  cursor: pointer;
+}
+
+.event-card-side:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-light);
+}
+
+/* ============================
+   Image
+============================ */
+.event-card-image {
+  flex: 0 0 120px;
+  position: relative;
+  overflow: hidden;
+}
+
+.event-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-speed) ease;
+}
+
+.event-card-side:hover .event-card-image img {
+  transform: scale(1.05);
+}
+
+.no-image-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+}
+
+/* ============================
+   Contenu
+============================ */
+.event-card-content {
+  flex: 1;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.event-card-title {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--accent-color);
+  font-size: 1.2rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.event-card-parish {
+  font-size: 0.9rem;
+  color: var(--primary-color);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.event-card-parish i {
+  margin-right: 0.5rem;
+  color: var(--secondary-color);
+}
+
+.event-card-description {
+  font-size: 0.85rem;
+  color: var(--secondary-color);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+/* ============================
+   Métadonnées
+============================ */
+.event-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.event-card-dates {
+  font-size: 0.8rem;
+  color: var(--secondary-color);
+  display: flex;
+  align-items: center;
+}
+
+.event-card-dates i {
+  margin-right: 0.3rem;
+}
+
+.event-type-badge {
+  background-color: var(--accent-color);
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+}
+
+/* ============================
+   Modal
+============================ */
+.modal-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.modal-detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.modal-detail-item i {
+  color: var(--accent-color);
+  font-size: 1.2rem;
+  margin-top: 0.2rem;
+}
+
+.modal-image {
+  width: 100%;
+  height: auto;
+  border-radius: var(--border-radius);
+}
+
+/* ============================
+   État vide
+============================ */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  background-color: #f8f9fa;
+  border-radius: var(--border-radius);
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  color: #dee2e6;
+  margin-bottom: 1rem;
+}
+
+/* ============================
+   Responsive
+============================ */
+@media (max-width: 768px) {
+  .event-card-side {
+    height: auto;
+    flex-direction: column;
+  }
+
+  .event-card-image {
+    flex: 0 0 180px;
+  }
+}
+
+@media (max-width: 576px) {
+  .event-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .event-card-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}

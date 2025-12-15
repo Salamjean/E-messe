@@ -29,6 +29,13 @@ return [
     |
     */
 
+    'notifications' => [
+        'database' => [
+            'connection' => env('DB_CONNECTION', 'mysql'),
+            'table' => 'notifications', // Le nom de votre table
+            'model' => App\Models\Notification::class, // Ajoutez ou modifiez cette ligne !
+        ],
+    ],
     'connections' => [
 
         'sqlite' => [

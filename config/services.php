@@ -40,5 +40,8 @@ return [
         'business_id' => env('WAVE_BUSINESS_ID'),
         'env' => env('WAVE_ENVIRONMENT', 'sandbox'),
     ],
+    'fcm' => [
+    'key' => env('FIREBASE_SERVER_KEY'),
+],
 
 ];

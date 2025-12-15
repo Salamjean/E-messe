@@ -1,359 +1,431 @@
 @extends('paroisse.layouts.template')
+
+
+@push('css')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="{{ asset('assets/paroiStyle.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/dashboard_paroisse.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+
+    {{-- CORRECTION 3: CSS pour harmoniser les inputs du modal et espacer les boutons --}}
+    <style>
+
+    </style>
+@endpush
+
 @section('content')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-<link rel="stylesheet" href="{{asset('assets/paroiStyle.css')}}">
-<!-- Ajout de SweetAlert2 CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<div class="modern-dashboard">
-    <!-- En-tête du tableau de bord -->
-    <div class="dashboard-header">
-        <div class="header-content">
-            <div class="welcome-section">
-                <h1>Tableau de Bord Paroissial</h1>
-                <p>Bienvenue, à la paroisse {{ Auth::guard('paroisse')->user()->name }}!</p>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <div class="modern-dashboard">
+        <!-- En-tête : Recherche et Bouton -->
+        <div class="search-add-container d-flex justify-content-end">
+            <a href="{{ route('event.index') }}" class="add-btn-gold text-decoration-none mx-3"
+                style="margin-left:10px; margin-right:10px;">
+                <i class="fas fa-plus"></i>
+                <span>Événements</span>
+            </a>
+        </div>
+
+        <!-- Cartes de statistiques -->
+        <div class="row stats-row">
+            <!-- Carte 1 : En attente (Jaune) -->
+            <div class="col-custom">
+                <div class="stat-card card-yellow shadow-sm">
+                    <h6 class="card-title">Demandes en attente</h6>
+                    <div class="card-bottom">
+                        <span class="stat-number">{{ $pendingDemandes }}</span>
+                        <div class="stat-trend">
+                            <!-- Calcul du pourcentage simple -->
+                            <span>{{ $totalDemandes > 0 ? round(($pendingDemandes / $totalDemandes) * 100) : 0 }}%</span>
+                            <i class="fas fa-arrow-trend-up"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="header-actions">
-                <div class="user-profile">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('paroisse')->user()->name) }}&background=f35525&color=fff" alt="Profile">
+
+            <!-- Carte 2 : Célébrés (Vert) -->
+            <div class="col-custom">
+                <div class="stat-card card-green shadow-sm">
+                    <h6 class="card-title">Messe Célébrés</h6>
+                    <div class="card-bottom">
+                        <span class="stat-number">{{ $celebratedDemandes }}</span>
+                        <div class="stat-trend">
+                            <span>{{ $totalDemandes > 0 ? round(($celebratedDemandes / $totalDemandes) * 100) : 0 }}%</span>
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carte 3 : Confirmé (Bleu) -->
+            <div class="col-custom">
+                <div class="stat-card card-blue shadow-sm">
+                    <h6 class="card-title">Messe Confirmé</h6>
+                    <div class="card-bottom">
+                        <span class="stat-number">{{ $confirmedDemandes }}</span>
+                        <div class="stat-trend">
+                            <span>+{{ $totalDemandes > 0 ? round(($confirmedDemandes / $totalDemandes) * 100) : 0 }}%</span>
+                            <i class="fas fa-arrow-trend-up"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carte 4 : Montant (Orange) -->
+            <div class="col-custom">
+                <div class="stat-card card-orange shadow-sm">
+                    <h6 class="card-title">Montant demande</h6>
+                    <div class="card-bottom">
+                        <span class="stat-number">{{ number_format($totalOffrandes, 0, ',', ' ') }}F</span>
+                        <div class="stat-trend">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carte 5 : Portefeuille (Violet) -->
+            <div class="col-custom">
+                <div class="stat-card card-purple shadow-sm">
+                    <h6 class="card-title">Portefeuille</h6>
+                    <div class="card-bottom">
+                        <span class="stat-number">{{ number_format($soldeDisponible, 0, ',', ' ') }}F</span>
+                        <div class="stat-trend">
+                            <span>Disponible</span>
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                    </div>
+                    <!-- Lien pour le retrait -->
+                    <a href="{{ route('paroisse.retrait.create') }}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div><br>
+
+        <div class="charts-section">
+            <!-- Carte 1 : Répartition (Doughnut) -->
+            <div class="chart-card slide-in-left">
+                <div class="chart-header">
+                    <h3>Répartition des demandes</h3>
+                </div>
+                <div class="chart-body-flex">
+                    <div class="chart-wrapper-doughnut">
+                        <canvas id="demands-chart"></canvas>
+                    </div>
+                    <!-- Légende personnalisée (Reflète les couleurs du JS) -->
+                    <div class="chart-legend-custom">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background-color: #f5c773"></span>
+                            <span class="legend-text">En attente ({{ $pendingDemandes }})</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background-color: #87e0ab"></span>
+                            <span class="legend-text">Célébrées ({{ $celebratedDemandes }})</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background-color: #6487d1"></span>
+                            <span class="legend-text">Confirmées ({{ $confirmedDemandes }})</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carte 2 : Évolution (Line) -->
+            <div class="chart-card slide-in-right">
+                <div class="chart-header line-header">
+                    <div class="header-text">
+                        <h3>Évolution mensuelle des demandes</h3>
+                        <span class="subtitle">Total demandes cette année : {{ array_sum($chartDataCurrentYear) }}</span>
+                    </div>
+                    <div class="chart-legend-top">
+                        <div class="legend-badge active">Cette année</div>
+                        <div class="legend-badge">Année dernière</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="demands-evolution-chart"></canvas>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Cartes de statistiques -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="card-icon">
-                <div class="icon-wrapper" style="background: rgba(243, 85, 37, 0.1);">
-                    <i class="fas fa-clock" style="color: #f35525;"></i>
-                </div>
-            </div>
-            <div class="card-content">
-                <h3>Demandes en attente</h3>
-                <span class="stat-number">{{ $pendingDemandes }}</span>
-                <div class="progress-bar">
-                    <div class="progress" style="width: {{ $totalDemandes > 0 ? ($pendingDemandes/$totalDemandes)*100 : 0 }}%; background: #f35525;"></div>
-                </div>
-            </div>
-        </div>
+        <!-- Section Actions Rapides -->
+        <div class="quick-actions-container">
+            <h2 class="section-title">Action rapide</h2>
 
-        <div class="stat-card">
-            <div class="card-icon">
-                <div class="icon-wrapper" style="background: rgba(76, 175, 80, 0.1);">
-                    <i class="fas fa-check-circle" style="color: #4CAF50;"></i>
-                </div>
-            </div>
-            <div class="card-content">
-                <h3>Demandes confirmées</h3>
-                <span class="stat-number">{{ $confirmedDemandes }}</span>
-                <div class="progress-bar">
-                    <div class="progress" style="width: {{ $totalDemandes > 0 ? ($confirmedDemandes/$totalDemandes)*100 : 0 }}%; background: #4CAF50;"></div>
-                </div>
-            </div>
-        </div>
+            <div class="actions-grid">
+                <!-- Bouton 1 : Valider -->
+                <a href="{{ route('demandes.messes.validate') }}" class="action-card card-green">
+                    <div class="card-top">
+                        <div class="icon-circle">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                    <div class="card-bottom">
+                        <span>Valider demandes</span>
+                    </div>
+                </a>
 
-        <div class="stat-card">
-            <div class="card-icon">
-                <div class="icon-wrapper" style="background: rgba(33, 150, 243, 0.1);">
-                    <i class="fas fa-history" style="color: #2196F3;"></i>
-                </div>
-            </div>
-            <div class="card-content">
-                <h3>Messes célébrées</h3>
-                <span class="stat-number">{{ $celebratedDemandes }}</span>
-                <div class="progress-bar">
-                    <div class="progress" style="width: {{ $totalDemandes > 0 ? ($celebratedDemandes/$totalDemandes)*100 : 0 }}%; background: #2196F3;"></div>
-                </div>
-            </div>
-        </div>
+                <!-- Bouton 2 : Confirmées -->
+                <a href="{{ route('demandes.messes.index') }}" class="action-card card-gold">
+                    <div class="card-top">
+                        <div class="icon-circle">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                    </div>
+                    <div class="card-bottom">
+                        <span>Demande confirmées</span>
+                    </div>
+                </a>
 
-        <div class="stat-card">
-            <div class="card-icon">
-                <div class="icon-wrapper" style="background: rgba(156, 39, 176, 0.1);">
-                    <i class="fas fa-coins" style="color: #9C27B0;"></i>
-                </div>
-            </div>
-            <div class="card-content">
-                <h3>Montant de demande de messe</h3>
-                <span class="stat-number">{{ number_format($totalOffrandes, 0, ',', ' ') }} FCFA</span>
-                <div class="progress-bar">
-                    <div class="progress" style="width: 100%; background: #9C27B0;"></div>
-                </div>
-            </div>
-        </div>
+                <!-- Bouton 3 : Ajouter Offrande -->
+                <a href="{{ route('paroisse.offrande') }}" class="action-card card-pink">
+                    <div class="card-top">
+                        <div class="icon-circle">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                    </div>
+                    <div class="card-bottom">
+                        <span>Ajouter le montant des messes</span>
+                    </div>
+                </a>
 
-        <div class="stat-card">
-        <div class="card-icon">
-            <div class="icon-wrapper" style="background: rgba(255, 193, 7, 0.1);">
-                <i class="fas fa-wallet" style="color: #FFC107;"></i>
-            </div>
-        </div>
-        <div class="card-content">
-            <h3>Portefeuille électronique</h3>
-            <span class="stat-number">{{ number_format($soldeDisponible, 0, ',', ' ') }} FCFA</span>
-            <div class="progress-bar">
-                <div class="progress" style="width: 100%; background: #FFC107;"></div>
-            </div>
-            <div class="mt-2">
-                <a href="{{route('paroisse.retrait.create')}}"  style="color: #FFC107; font-size: 12px;">
-                    <i class="fas fa-money-bill-wave"></i> Demander un retrait
+                <!-- Bouton 4 : Historique -->
+                <a href="{{ route('demandes.messes.history') }}" class="action-card card-blue">
+                    <div class="card-top">
+                        <div class="icon-circle">
+                            <i class="fas fa-history"></i>
+                        </div>
+                    </div>
+                    <div class="card-bottom">
+                        <span>Historique</span>
+                    </div>
                 </a>
             </div>
         </div>
-    </div>
-</div>
 
-    <!-- Graphiques -->
-    <div class="charts-section">
-        <div class="chart-card">
-            <div class="chart-header">
-                <h3>Répartition des demandes</h3>
-                <select id="chart-type-selector" class="chart-selector">
-                    <option value="doughnut">Anneau</option>
-                    <option value="pie">Circulaire</option>
-                    <option value="bar">Barres</option>
-                </select>
-            </div>
-            <div class="chart-container">
-                <canvas id="demands-chart"></canvas>
-            </div>
-        </div>
+        <div class="dashboard-content-wrapper">
+            <!-- SECTION GAUCHE : Prochaines Messes -->
+            <div class="dashboard-card section-left slide-in-up">
+                <div class="card-header">
+                    <h2>Prochaines messes à célébrer</h2>
+                    <a href="{{ route('demandes.messes.index') }}" class="link-view-all">Voir tout</a>
+                </div>
 
-        <div class="chart-card">
-            <div class="chart-header">
-                <h3>Évolution mensuelle des demandes de messe</h3>
-            </div>
-            <div class="chart-container">
-                <canvas id="offrandes-chart"></canvas>
-            </div>
-        </div>
-
-        
-    </div>
-
-    <!-- Actions rapides -->
-    <div class="quick-actions">
-        <h2>Actions Rapides</h2>
-        <div class="action-buttons">
-            <a href="{{ route('demandes.messes.validate') }}" class="action-btn">
-                <div class="btn-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <span>Valider demandes</span>
-                @if($pendingDemandes > 0)
-                <span class="badge">{{ $pendingDemandes }}</span>
-                @endif
-            </a>
-            <a href="{{ route('demandes.messes.index') }}" class="action-btn">
-                <div class="btn-icon">
-                    <i class="fas fa-list"></i>
-                </div>
-                <span>Demandes confirmées</span>
-            </a>
-            <a href="{{ route('paroisse.offrande') }}" class="action-btn">
-                <div class="btn-icon">
-                    <i class="fas fa-plus"></i>
-                </div>
-                <span>Ajouter offrande</span>
-            </a>
-            <a href="{{ route('demandes.messes.history') }}" class="action-btn">
-                <div class="btn-icon">
-                    <i class="fas fa-history"></i>
-                </div>
-                <span>Historique</span>
-            </a>
-        </div>
-    </div>
-
-    <!-- Section des prochaines messes -->
-    <div class="dashboard-content">
-        <div class="content-left">
-            <div class="upcoming-section">
-                <div class="section-header">
-                    <h2>Prochaines Messes à Célébrer</h2>
-                    <a href="{{ route('demandes.messes.index') }}" class="view-all">Voir tout</a>
-                </div>
-                
-                @if($upcomingMessess->count() > 0)
-                <div class="messe-list">
-                    @foreach($upcomingMessess as $messe)
-                    <div class="messe-item">
-                        <div class="messe-date">
-                            <span class="day">{{ \Carbon\Carbon::parse($messe->date_souhaitee)->format('d') }}</span>
-                            <span class="month">{{ \Carbon\Carbon::parse($messe->date_souhaitee)->format('M') }}</span>
+                <div class="card-body">
+                    @if (isset($upcomingMessess) && $upcomingMessess->count() > 0)
+                        <div class="messes-list-container">
+                            @foreach ($upcomingMessess as $messe)
+                                <div class="messe-row">
+                                    <div class="date-box">
+                                        <span
+                                            class="d-day">{{ \Carbon\Carbon::parse($messe->date_souhaitee)->format('d') }}</span>
+                                        <span
+                                            class="d-month">{{ \Carbon\Carbon::parse($messe->date_souhaitee)->format('M') }}</span>
+                                    </div>
+                                    <div class="info-box">
+                                        <h4>{{ \Illuminate\Support\Str::limit($messe->type_intention, 30) }}</h4>
+                                        <p class="author">Par : {{ $messe->nom_demandeur }}</p>
+                                        <div class="meta-tags">
+                                            <span class="tag-time"><i class="far fa-clock"></i>
+                                                {{ $messe->heure_souhaitee }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
-                        <div class="messe-details">
-                            <h4>{{ $messe->type_intention }}</h4>
-                            <p>Demandé par: {{ $messe->nom_demandeur }}</p>
-                            <div class="messe-meta">
-                                <span class="time"><i class="fas fa-clock"></i> {{ $messe->heure_souhaitee }}</span>
-                                <span class="status {{ $messe->statut }}">{{ $messe->statut }}</span>
+                    @else
+                        <div class="empty-state">
+                            <div class="calendar-icon">
+                                <i class="far fa-calendar-alt"></i>
+                            </div>
+                            <h3>Aucune Messe prévue</h3>
+                            <p>Ajoutez un évènement pour démarrer</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- SECTION DROITE : Dernière Demande -->
+            <div class="dashboard-card section-right slide-in-up delay-100">
+                <div class="card-header">
+                    <h2>Dernière demande de messe</h2>
+                </div>
+
+                <div class="card-body">
+                    @if (isset($latestOffrandes) && $latestOffrandes->count() > 0)
+                        @php
+                            $latest = $latestOffrandes->first();
+                        @endphp
+                        <div class="latest-request-card">
+                            <div class="request-info">
+                                <h3 class="requester-name">{{ $latest->nom_demandeur }}</h3>
+                                <p class="request-intention">
+                                    <span class="label">Intention :</span>
+                                    {{ \Illuminate\Support\Str::limit($latest->type_intention, 50) }}
+                                </p>
+                                <p class="request-date">
+                                    Reçu le {{ $latest->created_at->format('d F Y') }}
+                                </p>
+                            </div>
+                            <div class="request-price">
+                                {{ number_format($latest->montant_offrande, 0, ',', ' ') }} F
                             </div>
                         </div>
-                        <div class="messe-actions">
-                            <a href="#" class="icon-btn" title="Voir détails">
-                                <i class="fas fa-eye"></i>
-                            </a>
+                    @else
+                        <div class="empty-simple">
+                            <p>Aucune demande récente.</p>
                         </div>
-                    </div>
-                    @endforeach
+                    @endif
                 </div>
-                @else
-                <div class="empty-state">
-                    <div class="empty-icon">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                    <p>Aucune messe prévue</p>
-                </div>
-                @endif
             </div>
         </div>
 
-        <!-- Dernières offrandes -->
-        <div class="recent-offrandes">
-            <div class="card-header">
-                <h2>Dernière demande de messe</h2>
-                <a href="#" class="view-all">Voir tout</a>
-            </div>
-            <div class="offrande-list">
-                @if($latestOffrandes->count() > 0)
-                    @foreach($latestOffrandes as $offrande)
-                    <div class="offrande-item">
-                        <div class="offrande-icon">
-                            <i class="fas fa-donate" style="color: #4CAF50;"></i>
-                        </div>
-                        <div class="offrande-details">
-                            <p>Offrande pour {{ $offrande->type_intention }}</p>
-                            <span class="offrande-amount">{{ number_format($offrande->montant_offrande, 0, ',', ' ') }} FCFA</span>
-                            <span class="offrande-donor">Par: {{ $offrande->nom_demandeur }}</span>
-                            <span class="offrande-time">{{ $offrande->created_at->diffForHumans() }}</span>
-                        </div>
-                    </div>
-                    @endforeach
-                @else
-                    <div class="offrande-item">
-                        <div class="offrande-icon">
-                            <i class="fas fa-donate" style="color: #6c757d;"></i>
-                        </div>
-                        <div class="offrande-details">
-                            <p>Aucune offrande enregistrée</p>
-                            <span class="offrande-time">Les offrandes apparaîtront ici</span>
-                        </div>
-                    </div>
-                @endif
-            </div>
-        </div>
     </div>
-</div>
 
-<!-- Ajout de SweetAlert2 JS -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Animation des chiffres des statistiques
-        const statNumbers = document.querySelectorAll('.stat-number');
-        
-        statNumbers.forEach(element => {
-            const finalValue = parseInt(element.textContent.replace(/\s/g, '')) || 0;
-            let startValue = 0;
-            const duration = 1500;
-            const startTime = performance.now();
-            
-            function updateNumber(currentTime) {
-                const elapsedTime = currentTime - startTime;
-                if (elapsedTime < duration) {
-                    const progress = elapsedTime / duration;
-                    const currentValue = Math.floor(progress * finalValue);
-                    element.textContent = element.textContent.includes('FCFA') 
-                        ? currentValue.toLocaleString('fr-FR') + ' FCFA' 
-                        : currentValue;
-                    requestAnimationFrame(updateNumber);
-                } else {
-                    element.textContent = element.textContent.includes('FCFA') 
-                        ? finalValue.toLocaleString('fr-FR') + ' FCFA' 
-                        : finalValue;
-                }
-            }
-            
-            requestAnimationFrame(updateNumber);
+    <script>
+        // Empêche la sélection de dates passées
+        document.addEventListener('DOMContentLoaded', function() {
+            const now = new Date();
+            // Format YYYY-MM-DDTHH:MM pour datetime-local
+            const formattedNow = now.toISOString().slice(0, 16);
+
+            document.getElementById('date_debut').setAttribute('min', formattedNow);
+            document.getElementById('date_fin').setAttribute('min', formattedNow);
         });
+    </script>
 
-        // Animation des barres de progression
-        const progressBars = document.querySelectorAll('.progress');
-        progressBars.forEach(bar => {
-            const width = bar.style.width;
-            bar.style.width = '0';
-            setTimeout(() => {
-                bar.style.width = width;
-            }, 300);
-        });
+    <style>
+        .modal-dialog {
+            max-width: 65%;
+            /* largeur jusqu'à 90% de l'écran */
+            width: auto;
+            /* s'adapte au contenu si nécessaire */
+            height: 80vh;
+            /* hauteur jusqu'à 80% de la fenêtre */
+            display: flex;
+            align-items: right;
+            /* centre verticalement */
+        }
+    </style>
 
-        // Graphique de répartition des demandes
-        const demandsCtx = document.getElementById('demands-chart').getContext('2d');
-        let demandsChart = new Chart(demandsCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['En attente', 'Confirmées', 'Célébrées'],
-                datasets: [{
-                    data: [{{ $pendingDemandes }}, {{ $confirmedDemandes }}, {{ $celebratedDemandes }}],
-                    backgroundColor: [
-                        '#f35525',
-                        '#4CAF50',
-                        '#2196F3'
-                    ],
-                    borderWidth: 0,
-                    hoverOffset: 10
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            font: {
-                                size: 12
-                            },
-                            padding: 20
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.raw || 0;
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = Math.round((value / total) * 100);
-                                return `${label}: ${value} (${percentage}%)`;
+
+    {{-- Inclusion du modal séparé --}}
+    @include('paroisse.event.modal.event')
+
+
+    @push('js')
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        {{-- <script src="{{ asset('DataTables/dataTables.min.js') }}"></script> --}}
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <script src="{{ asset('js/event.js') }}"></script>
+
+        <script>
+            // --- Définition des routes pour JS (inchangé) ---
+            window.eventRoutes = {
+                data: "{{ route('event.data') }}",
+                show: "{{ route('event.show', ':id') }}",
+                store: "{{ route('event.store') }}",
+                update: "{{ route('event.update', ':id') }}",
+                destroy: "{{ route('event.destroy', ':id') }}",
+                csrf: "{{ csrf_token() }}"
+            };
+        </script>
+    @endpush
+
+    <!-- Scripts JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // --- 1. GRAPHIQUE ROND (Doughnut) : Répartition des statuts ---
+            const ctxDoughnut = document.getElementById('demands-chart').getContext('2d');
+
+            // Récupération des variables PHP
+            const pendingCount = {{ $pendingDemandes }};
+            const celebratedCount = {{ $celebratedDemandes }};
+            const confirmedCount = {{ $confirmedDemandes }};
+
+            new Chart(ctxDoughnut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['En attente', 'Célébrées', 'Confirmées'],
+                    datasets: [{
+                        // Données injectées depuis le contrôleur
+                        data: [pendingCount, celebratedCount, confirmedCount],
+                        backgroundColor: ['#f5c773', '#87e0ab', '#6487d1'], // Jaune, Vert, Bleu
+                        borderWidth: 0,
+                        borderRadius: 20,
+                        spacing: 10,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%', // Style anneau fin
+                    plugins: {
+                        legend: {
+                            display: false // On utilise la légende HTML custom
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) label += ': ';
+                                    let value = context.parsed;
+                                    // Ajout du calcul de pourcentage
+                                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    let percentage = total > 0 ? Math.round((value / total) * 100) +
+                                        '%' : '0%';
+                                    return label + value + ' (' + percentage + ')';
+                                }
                             }
                         }
                     }
-                },
-                cutout: '70%'
-            }
-        });
+                }
+            });
 
-        // Changer le type de graphique
-        document.getElementById('chart-type-selector').addEventListener('change', function() {
-            demandsChart.destroy();
-            demandsChart = new Chart(demandsCtx, {
-                type: this.value,
+            // --- 2. GRAPHIQUE LIGNE (Line) : Évolution par nombre de demandes ---
+            const ctxLine = document.getElementById('demands-evolution-chart').getContext('2d');
+            const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+
+            // Injection des tableaux PHP (Jan à Déc)
+            const currentYearData = @json($chartDataCurrentYear);
+            const lastYearData = @json($chartDataLastYear);
+
+            new Chart(ctxLine, {
+                type: 'line',
                 data: {
-                    labels: ['En attente', 'Confirmées', 'Célébrées'],
+                    labels: months,
                     datasets: [{
-                        data: [{{ $pendingDemandes }}, {{ $confirmedDemandes }}, {{ $celebratedDemandes }}],
-                        backgroundColor: [
-                            '#f35525',
-                            '#4CAF50',
-                            '#2196F3'
-                        ],
-                        borderWidth: 0,
-                        hoverOffset: 10
+                        label: 'Cette année',
+                        data: currentYearData,
+                        borderColor: '#6487d1', // Bleu
+                        backgroundColor: 'rgba(100, 135, 209, 0.1)', // Bleu transparent
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true,
+                        pointRadius: 3
+                    }, {
+                        label: 'Année dernière',
+                        data: lastYearData,
+                        borderColor: '#f5c773', // Jaune/Orange
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        borderDash: [5, 5], // Ligne pointillée
+                        tension: 0.3,
+                        fill: false,
+                        pointRadius: 2
                     }]
                 },
                 options: {
@@ -361,239 +433,85 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'bottom',
-                            labels: {
-                                font: {
-                                    size: 12
-                                },
-                                padding: 20
-                            }
+                            display: false // Légende HTML au dessus
                         },
                         tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((value / total) * 100);
-                                    return `${label}: ${value} (${percentage}%)`;
-                                }
-                            }
+                            mode: 'index',
+                            intersect: false
                         }
-                    }
-                }
-            });
-        });
-
-        // Graphique d'évolution des offrandes (données réelles)
-        const offrandesCtx = document.getElementById('offrandes-chart').getContext('2d');
-        const monthlyOffrandeData = @json($monthlyOffrandeData);
-        const monthlyOffrandeLabels = @json($monthlyOffrandeLabels);
-
-        new Chart(offrandesCtx, {
-            type: 'line',
-            data: {
-                labels: monthlyOffrandeLabels,
-                datasets: [{
-                    label: 'Montant des offrandes (FCFA)',
-                    data: monthlyOffrandeData,
-                    borderColor: '#9C27B0',
-                    backgroundColor: 'rgba(156, 39, 176, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.3,
-                    pointBackgroundColor: '#9C27B0',
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
                     },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `${context.dataset.label}: ${context.raw.toLocaleString('fr-FR')} FCFA`;
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
                             }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return value.toLocaleString('fr-FR') + ' FCFA';
+                        },
+                        y: {
+                            beginAtZero: true,
+                            // --- CORRECTION ICI : FORCE L'AFFICHAGE EN ENTIERS ---
+                            ticks: {
+                                stepSize: 1, // Force le pas à 1 (pas de 0.5)
+                                precision: 0, // Pas de décimales (0.00)
+                                callback: function(value) {
+                                    // Vérification ultime : affiche seulement si c'est un entier
+                                    if (Math.floor(value) === value) {
+                                        return value;
+                                    }
+                                }
+                            },
+                            grid: {
+                                color: '#f0f0f0'
                             }
                         }
                     }
                 }
-            }
-        });
-
-        // Gestion du popup SweetAlert2 pour le retrait - CODE CORRIGÉ
-        const retraitBtn = document.querySelector('.btn-retrait');
-        if (retraitBtn) {
-            retraitBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Créer le formulaire HTML pour SweetAlert2
-                const formHTML = `
-                    <form id="swalRetraitForm">
-                        <div class="mb-3">
-                            <label class="form-label">Solde disponible</label>
-                            <input type="text" class="form-control" value="{{ number_format($soldeDisponible, 0, ',', ' ') }} FCFA" disabled>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Montant à retirer (FCFA)</label>
-                            <input type="number" name="montant" id="swalMontant" class="form-control" required min="1000" max="{{ $soldeDisponible }}">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Méthode de retrait</label>
-                            <select name="methode" id="swalMethode" class="form-select" required>
-                                <option value="">Sélectionnez une méthode</option>
-                                <option value="wave">Wave</option>
-                                <option value="orange_money">Orange Money</option>
-                                <option value="mtn_money">MTN Money</option>
-                                <option value="virement_bancaire">Virement Bancaire</option>
-                            </select>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Numéro de compte / Téléphone</label>
-                            <input type="text" name="numero_compte" id="swalNumeroCompte" class="form-control" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Nom du titulaire du compte</label>
-                            <input type="text" name="nom_titulaire" id="swalNomTitulaire" class="form-control" required>
-                        </div>
-                    </form>
-                `;
-                
-                // Afficher le popup SweetAlert2 avec le formulaire
-                Swal.fire({
-                    title: 'Demander un retrait',
-                    html: formHTML,
-                    icon: 'info',
-                    showCancelButton: true,
-                    confirmButtonColor: '#FFC107',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Demander le retrait',
-                    cancelButtonText: 'Annuler',
-                    focusConfirm: false,
-                    preConfirm: () => {
-                        const montant = parseFloat(document.getElementById('swalMontant').value);
-                        const methode = document.getElementById('swalMethode').value;
-                        const numeroCompte = document.getElementById('swalNumeroCompte').value;
-                        const nomTitulaire = document.getElementById('swalNomTitulaire').value;
-                        
-                        // Validation
-                        if (!montant || montant < 1000 || montant > {{ $soldeDisponible }}) {
-                            Swal.showValidationMessage('Montant invalide. Le montant doit être entre 1000 et {{ $soldeDisponible }} FCFA');
-                            return false;
-                        }
-                        
-                        if (!methode) {
-                            Swal.showValidationMessage('Veuillez sélectionner une méthode de retrait');
-                            return false;
-                        }
-                        
-                        if (!numeroCompte) {
-                            Swal.showValidationMessage('Veuillez saisir un numéro de compte/téléphone');
-                            return false;
-                        }
-                        
-                        if (!nomTitulaire) {
-                            Swal.showValidationMessage('Veuillez saisir le nom du titulaire du compte');
-                            return false;
-                        }
-                        
-                        return {
-                            montant: montant,
-                            methode: methode,
-                            numero_compte: numeroCompte,
-                            nom_titulaire: nomTitulaire
-                        };
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Afficher un indicateur de chargement
-                        Swal.fire({
-                            title: 'Traitement en cours...',
-                            text: 'Veuillez patienter',
-                            allowOutsideClick: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-                        
-                        // Préparer les données pour l'envoi
-                        const formData = new FormData();
-                        formData.append('_token', '{{ csrf_token() }}');
-                        formData.append('montant', result.value.montant);
-                        formData.append('methode', result.value.methode);
-                        formData.append('numero_compte', result.value.numero_compte);
-                        formData.append('nom_titulaire', result.value.nom_titulaire);
-                        
-                        // Envoyer la requête AJAX
-                        fetch('{{ route("paroisse.retrait.request") }}', {
-                            method: 'POST',
-                            headers: {
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            },
-                            body: formData
-                        })
-                        .then(response => {
-                            // Fermer l'indicateur de chargement
-                            Swal.close();
-                            
-                            if (!response.ok) {
-                                throw new Error('Erreur réseau');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Succès!',
-                                    text: data.message || 'Votre demande de retrait a été envoyée avec succès.',
-                                    icon: 'success',
-                                    confirmButtonColor: '#FFC107'
-                                }).then(() => {
-                                    // Recharger la page pour mettre à jour les données
-                                    location.reload();
-                                });
-                            } else {
-                                Swal.fire({
-                                    title: 'Erreur!',
-                                    text: data.message || 'Une erreur s\'est produite lors de la demande de retrait.',
-                                    icon: 'error',
-                                    confirmButtonColor: '#FFC107'
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            Swal.fire({
-                                title: 'Erreur!',
-                                text: 'Une erreur s\'est produite lors de la communication avec le serveur.',
-                                icon: 'error',
-                                confirmButtonColor: '#FFC107'
-                            });
-                            console.error('Erreur:', error);
-                        });
-                    }
-                });
             });
-        }
-    });
-</script>
+
+            // --- 3. ANIMATION DES CHIFFRES (Compteur) ---
+            const statNumbers = document.querySelectorAll('.stat-number');
+            statNumbers.forEach(element => {
+                const text = element.textContent;
+                // Détermine si c'est un montant (contient 'F') ou un nombre simple
+                const isCurrency = text.includes('F');
+                // Extrait le nombre brut
+                const finalValue = parseInt(text.replace(/[^0-9]/g, '')) || 0;
+
+                let startValue = 0;
+                const duration = 1500;
+                const startTime = performance.now();
+
+                function updateNumber(currentTime) {
+                    const elapsedTime = currentTime - startTime;
+                    if (elapsedTime < duration) {
+                        const progress = elapsedTime / duration;
+                        const currentValue = Math.floor(progress * finalValue);
+
+                        // Formatage pendant l'animation
+                        element.textContent = isCurrency ?
+                            currentValue.toLocaleString('fr-FR').replace(/\s/g, ' ') + 'F' :
+                            currentValue;
+
+                        requestAnimationFrame(updateNumber);
+                    } else {
+                        // Valeur finale propre
+                        element.textContent = isCurrency ?
+                            finalValue.toLocaleString('fr-FR').replace(/\s/g, ' ') + 'F' :
+                            finalValue;
+                    }
+                }
+                requestAnimationFrame(updateNumber);
+            });
+
+            // --- 4. ANIMATION BARRES PROGRESSION ---
+            const progressBars = document.querySelectorAll('.progress');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 300);
+            });
+        });
+    </script>
 
 @endsection

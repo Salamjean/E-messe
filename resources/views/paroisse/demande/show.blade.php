@@ -11,6 +11,59 @@
         </a>
     </div>
 
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <h2>Récapitulatif de la demande</h2>
+        </div>
+        <div class="detail-card-body">
+            @php
+                // Préparation des données pour le résumé
+                $noms_concernes = is_array($messe->nom_demandeur) 
+                                ? $messe->nom_demandeur 
+                                : json_decode($messe->nom_demandeur, true) ?? [$messe->nom_demandeur];
+
+                $motif_display = '';
+                if ($messe->type_intention === 'Defunt' && $messe->nom_defunt) {
+                    $motif_display = "Pour le repos de l'âme de : " . $messe->nom_defunt;
+                } elseif ($messe->type_intention === 'Action graces' && $messe->motif_action_graces) {
+                    $motif_display = "En action de grâces pour : " . $messe->motif_action_graces;
+                } elseif ($messe->type_intention === 'Intention particuliere' && $messe->motif_intention) {
+                    $motif_display = "Pour une intention particulière : " . $messe->motif_intention;
+                }
+            @endphp
+
+            {{-- Affichage des personnes concernées (Intercesseurs) --}}
+            <div class="summary-section">
+                <span class="detail-label">Personnes concernées (Intercesseurs) :</span>
+                {{-- <div class="noms-list">
+                    @forelse($noms_concernes as $nom)
+                        <span class="nom-tag">{{ $nom }}</span>
+                    @empty
+                        <span class="nom-tag">Non spécifié</span>
+                    @endforelse
+                </div> --}}
+            </div>
+
+            {{-- Texte récapitulatif généré dynamiquement --}}
+            <div class="summary-text-container">
+                <h4>
+                    
+                   Messe demandé à l'intention de 
+                    <strong style="color: green;">{{ $messe->motif_intention }}</strong> 
+                    par l'intercession de 
+                    <strong style="color: red;">{{ $messe->interception_par }}</strong>
+                     par 
+                    <strong style="color: blue;">{{ $messe->nom_demandeur }}</strong> 
+                </h4>
+
+                @if($motif_display)
+                <p class="motif-summary">
+                    <strong>Motif :</strong> {{ $motif_display }}
+                </p>
+                @endif
+            </div>
+        </div>
+    </div>
     <div class="messe-details">
         <div class="detail-card">
             <div class="detail-card-header">
@@ -115,7 +168,7 @@
             </div>
         </div>
         
-        <div class="detail-card">
+        {{-- <div class="detail-card">
             <div class="detail-card-header">
                 <h2>Personnes concernées</h2>
             </div>
@@ -131,7 +184,7 @@
                         @endforeach
                 </div>
             </div>
-        </div>
+        </div> --}}
         
         <div class="detail-card">
             <div class="detail-card-header">

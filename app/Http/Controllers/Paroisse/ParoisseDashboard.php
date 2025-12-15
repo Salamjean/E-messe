@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Paroisse;
 
 use App\Http\Controllers\Controller;
-use App\Models\Messe;
-use Illuminate\Http\Request;
+use App\Models\Event;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -13,145 +13,105 @@ class ParoisseDashboard extends Controller
     public function dashboard()
     {
         $paroisse = Auth::guard('paroisse')->user();
-        
-        $pendingDemandes = $paroisse->messess()
-            ->where('statut', 'en attente')
-            ->count();
-            
-        $confirmedDemandes = $paroisse->messess()
-            ->where('statut', 'confirmee')
-            ->count();
-            
-        $celebratedDemandes = $paroisse->messess()
-            ->where('statut', 'celebre')
-            ->count();
-            
-        $totalDemandes = $paroisse->messess()->count();
-        
-        $totalOffrandes = $paroisse->montant_offrande ?? 0;
-        
-        $upcomingMessess = $paroisse->messess()
-            ->where('statut', 'confirmee')
-            ->where('date_souhaitee', '>=', now())
-            ->orderBy('date_souhaitee')
-            ->take(5)
-            ->get();
-        
-        // Récupérer les dernières offrandes depuis la table messes
-        $latestOffrandes = $paroisse->messess()
+
+        // --- 1. CARTES STATISTIQUES (CARDS) ---
+
+        // Compteurs par statut (Pour le graphe rond et les cartes)
+        $pendingDemandes = $paroisse->messes()->where('statut', 'en attente')->count();
+        $confirmedDemandes = $paroisse->messes()->where('statut', 'confirmee')->count();
+        $celebratedDemandes = $paroisse->messes()->where('statut', 'celebre')->count();
+
+        // Total global des demandes (pour calculer les pourcentages)
+        $totalDemandes = $paroisse->messes()->count();
+
+        // Montant total des demandes (Somme des offrandes)
+        $totalOffrandes = $paroisse->messes()
             ->whereNotNull('montant_offrande')
-            ->where('montant_offrande', '>', 0)
-            ->orderBy('created_at', 'desc')
-            ->take(2)
-            ->get(['montant_offrande', 'created_at', 'nom_demandeur']);
-        
-        // Récupérer les offrandes des 6 derniers mois
-        $monthlyOffrandes = $paroisse->messess()
-            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, SUM(montant_offrande) as total')
-            ->whereNotNull('montant_offrande')
-            ->where('montant_offrande', '>', 0)
-            ->where('created_at', '>=', now()->subMonths(5)->startOfMonth())
-            ->groupBy('year', 'month')
-            ->orderBy('year', 'asc')
-            ->orderBy('month', 'asc')
-            ->get();
-        
-        // Préparer les données pour le graphique
-        $monthlyOffrandeData = [];
-        $monthlyOffrandeLabels = [];
-        
-        // Générer les 6 derniers mois
-        for ($i = 5; $i >= 0; $i--) {
-            $date = now()->subMonths($i);
-            $year = $date->year;
-            $month = $date->month;
-            $monthName = $date->locale('fr')->shortMonthName;
-            
-            $monthlyOffrandeLabels[] = ucfirst($monthName) . ' ' . $year;
-            
-            // Chercher si des données existent pour ce mois
-            $monthData = $monthlyOffrandes->first(function ($item) use ($year, $month) {
-                return $item->year == $year && $item->month == $month;
-            });
-            
-            $monthlyOffrandeData[] = $monthData ? $monthData->total : 0;
-        }
-        // Calculer le montant total des paiements pour cette paroisse
+            ->sum('montant_offrande');
+
+        // --- 2. LOGIQUE PORTEFEUILLE ---
+
+        // Somme des paiements reçus (statut 'paye')
         $totalPaiements = DB::table('paiements')
             ->join('messes', 'paiements.messe_id', '=', 'messes.id')
             ->where('messes.paroisse_id', $paroisse->id)
             ->where('paiements.statut', 'paye')
             ->sum('paiements.montant');
-        
-        // Calculer le total des retraits déjà effectués
+
+        // Somme des retraits effectués (hors rejetés)
         $totalRetraits = DB::table('paroisse_retraits')
             ->where('paroisse_id', $paroisse->id)
-            ->where('statut','!=', 'rejete') // seulement les retraits complétés
+            ->where('statut', '!=', 'rejete')
             ->sum('montant');
-        
-        // Calculer le solde disponible (paiements - retraits)
-        $soldeDisponible = ($totalPaiements/ 1.01) - $totalRetraits ;
-        
-        // Récupérer les retraits récents
-        $derniersRetraits = DB::table('paroisse_retraits')
-            ->where('paroisse_id', $paroisse->id)
-            ->orderBy('created_at', 'desc')
+
+        // Calcul du solde disponible (Formule : Recettes / 1.01 - Retraits)
+        $soldeDisponible = ($totalPaiements / 1.01) - $totalRetraits;
+
+        // --- 3. GRAPHIQUE LINÉAIRE (EVOLUTION MENSUELLE) ---
+        // On veut le NOMBRE de demandes par mois (Jan-Déc) pour cette année vs année passée.
+
+        $currentYear = Carbon::now()->year;
+        $lastYear = Carbon::now()->subYear()->year;
+
+        // Fonction locale pour récupérer un tableau de 12 entiers (Jan-Déc)
+        $getMonthlyCounts = function ($year) use ($paroisse) {
+            // Récupère les données brutes : [Mois => Nombre]
+            $counts = $paroisse->messes()
+                ->selectRaw('MONTH(created_at) as month, COUNT(*) as total')
+                ->whereYear('created_at', $year)
+                ->groupBy('month')
+                ->pluck('total', 'month') // Renvoie un tableau associatif [Mois => Total]
+                ->toArray();
+
+            // Remplit les mois vides avec 0 pour avoir toujours 12 valeurs
+            $data = [];
+            for ($i = 1; $i <= 12; $i++) {
+                $data[] = $counts[$i] ?? 0;
+            }
+
+            return $data;
+        };
+
+        $chartDataCurrentYear = $getMonthlyCounts($currentYear);
+        $chartDataLastYear = $getMonthlyCounts($lastYear);
+
+        // --- 4. LISTES (BAS DE PAGE) ---
+
+        // Prochaines messes à célébrer (Liste gauche)
+        $upcomingMessess = $paroisse->messes()
+            ->whereIn('statut', ['confirmee', 'celebre']) // On affiche confirmées et célébrées futures
+            ->where('date_souhaitee', '>=', now())
+            ->orderBy('date_souhaitee', 'asc')
             ->take(5)
             ->get();
-        
-        // Calculer les paiements des 6 derniers mois pour le graphique
-        $monthlyPaiements = DB::table('paiements')
-            ->join('messes', 'paiements.messe_id', '=', 'messes.id')
-            ->selectRaw('YEAR(paiements.created_at) as year, MONTH(paiements.created_at) as month, SUM(paiements.montant) as total')
-            ->where('messes.paroisse_id', $paroisse->id)
-            ->where('paiements.statut', 'paye')
-            ->where('paiements.created_at', '>=', now()->subMonths(5)->startOfMonth())
-            ->groupBy('year', 'month')
-            ->orderBy('year', 'asc')
-            ->orderBy('month', 'asc')
+
+        // Dernières demandes reçues (Carte droite)
+        $latestOffrandes = $paroisse->messes()
+            ->orderBy('created_at', 'desc')
+            ->take(1)
             ->get();
-        
-        // Préparer les données pour le graphique des paiements
-        $monthlyPaiementData = [];
-        $monthlyPaiementLabels = [];
-        
-        // Générer les 6 derniers mois
-        for ($i = 5; $i >= 0; $i--) {
-            $date = now()->subMonths($i);
-            $year = $date->year;
-            $month = $date->month;
-            $monthName = $date->locale('fr')->shortMonthName;
-            
-            $monthlyPaiementLabels[] = ucfirst($monthName) . ' ' . $year;
-            
-            // Chercher si des données existent pour ce mois
-            $monthData = $monthlyPaiements->first(function ($item) use ($year, $month) {
-                return $item->year == $year && $item->month == $month;
-            });
-            
-            $monthlyPaiementData[] = $monthData ? $monthData->total : 0;
-        }
-        
+
+        $types = Event::distinct()->pluck('type_event');
+
         return view('paroisse.dashboard', compact(
             'pendingDemandes',
             'confirmedDemandes',
             'celebratedDemandes',
             'totalDemandes',
             'totalOffrandes',
+            'soldeDisponible',
             'upcomingMessess',
             'latestOffrandes',
-            'monthlyOffrandeData',
-            'monthlyOffrandeLabels',
-            'totalPaiements', // Nouvelle variable
-            'monthlyPaiementData', // Nouvelle variable
-            'monthlyPaiementLabels', // Nouvelle variable
-            'soldeDisponible', // Nouvelle variable
-            'derniersRetraits' // Nouvelle variable
+            'chartDataCurrentYear',
+            'chartDataLastYear',
+            'types'
         ));
     }
 
-    public function logout(){
+    public function logout()
+    {
         Auth::guard('paroisse')->logout();
+
         return redirect()->route('paroisse.login');
     }
 }

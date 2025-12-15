@@ -1,0 +1,336 @@
+<?php
+
+namespace App\Http\Controllers\Paroisse\Paiement;
+
+use App\Http\Controllers\Controller;
+use App\Models\ParoisseRetrait;
+use App\Models\Reversement;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Yajra\DataTables\Facades\DataTables;
+
+class ParoissePaiement extends Controller
+{
+    public function history()
+    {
+        $paroisse = Auth::guard('paroisse')->user();
+
+        $retraits = ParoisseRetrait::where('paroisse_id', $paroisse->id)
+            ->where('statut', '!=', 'en_attente')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        $soldeDisponible = $this->calculerSolde($paroisse->id);
+
+        return view('paroisse.retrait.history', compact('retraits', 'soldeDisponible'));
+    }
+
+    public function create()
+    {
+        $paroisse = Auth::guard('paroisse')->user();
+        $soldeDisponible = $this->calculerSolde($paroisse->id);
+
+        return view('paroisse.retrait.create', compact('soldeDisponible'));
+    }
+
+    /**
+     * Méthode utilitaire pour calculer le solde
+     */
+    private function calculerSolde($paroisseId)
+    {
+        // 1. Total Paiements reçus
+        $totalPaiements = DB::table('paiements')
+            ->join('messes', 'paiements.messe_id', '=', 'messes.id')
+            ->where('messes.paroisse_id', $paroisseId)
+            ->where('paiements.statut', 'paye')
+            ->sum('paiements.montant');
+
+        // 2. Total Retraits validés/traités (hors rejetés)
+        $totalRetraits = DB::table('paroisse_retraits')
+            ->where('paroisse_id', $paroisseId)
+            ->where('statut', '!=', 'rejete')
+            ->sum('montant');
+
+        // 3. Total Reversements API (CinetPay) en succès ou en cours
+        $totalReversementsApi = Reversement::where('paroisse_id', $paroisseId)
+            ->whereIn('statut', ['success', 'pending'])
+            ->sum('montant');
+
+        // Calcul final (avec commission 1% sur les paiements si applicable, ajustez le 1.01 si nécessaire)
+        return ($totalPaiements / 1.01) - $totalRetraits - $totalReversementsApi;
+    }
+
+    /**
+     * Traite la demande de Virement Bancaire (Route : paroisse.retrait.request)
+     */
+    public function requestRetrait(Request $request)
+    {
+        // 1. Validation Stricte pour Virement Bancaire
+        // On ne valide PAS les champs téléphone/prefix ici car le JS ne les envoie plus
+        $request->validate([
+            'montant' => 'required|numeric|min:1000',
+            'methode' => 'required|string',
+            'numero_compte' => 'required|string',
+            'nom_titulaire' => 'required|string',
+            'nom_banque' => 'required|string',
+        ]);
+
+        $paroisse = Auth::guard('paroisse')->user();
+        $soldeDisponible = $this->calculerSolde($paroisse->id);
+
+        if ($request->montant > $soldeDisponible) {
+            // Retour JSON pour AJAX
+            return response()->json([
+                'message' => 'Le montant demandé dépasse votre solde disponible (' . number_format($soldeDisponible, 0, ',', ' ') . ' FCFA).'
+            ], 422);
+        }
+
+        try {
+            // Création de la demande
+            $retrait = new ParoisseRetrait;
+            $retrait->paroisse_id = $paroisse->id;
+            $retrait->montant = $request->montant;
+            $retrait->methode = 'virement_bancaire'; // Forcé pour sécurité
+            $retrait->numero_compte = $request->numero_compte;
+            $retrait->nom_titulaire = $request->nom_titulaire;
+            $retrait->nom_banque = $request->nom_banque;
+            $retrait->reference = 'RET' . time() . $paroisse->id;
+            $retrait->statut = 'en_attente';
+            $retrait->save();
+
+            // Retour JSON impératif pour AJAX
+            return response()->json([
+                'success' => true,
+                'message' => 'Votre demande de virement a été envoyée avec succès. Elle sera traitée sous 24 à 48h.'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur demande retrait: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Une erreur interne est survenue. Veuillez réessayer.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Traite la demande Mobile Money via CinetPay (Route : reversement.store)
+     */
+    public function store(Request $request)
+    {
+        // 1. Validation Stricte pour Mobile Money
+        $request->validate([
+            'montant' => 'required|numeric|min:1000', // Harmonisé à 1000
+            'telephone' => 'required|numeric',
+            'prefix' => 'required',
+        ]);
+
+        $paroisse = Auth::guard('paroisse')->user();
+        $soldeDisponible = $this->calculerSolde($paroisse->id);
+
+        if ($request->montant > $soldeDisponible) {
+            return response()->json([
+                'message' => 'Solde insuffisant. Disponible : ' . number_format($soldeDisponible, 0, ',', ' ') . ' FCFA.',
+            ], 422);
+        }
+
+        // 2. Génération référence unique
+        $reference = 'REV_' . time() . '_' . rand(1000, 9999);
+
+        // 3. Création du reversement en BDD (Statut Pending)
+        $reversement = Reversement::create([
+            'reference' => $reference,
+            'numero_destinataire' => $request->telephone,
+            'prefix_pays' => $request->prefix,
+            'montant' => $request->montant,
+            'statut' => 'pending',
+            'paroisse_id' => $paroisse->id,
+        ]);
+
+        try {
+            // 4. Authentification CinetPay
+            $apiKey = env('CINETPAY_API_KEY');
+            $password = env('CINETPAY_PASSWORD');
+
+            if (empty($apiKey) || empty($password)) {
+                throw new \Exception("Clés API CinetPay non configurées.");
+            }
+
+            Log::info("Connexion CinetPay pour transfert $reference");
+
+            $loginResponse = Http::asForm()->post('https://client.cinetpay.com/v1/auth/login', [
+                'apikey' => $apiKey,
+                'password' => $password,
+            ]);
+
+            $loginResult = $loginResponse->json();
+
+            if (!$loginResponse->successful() || !isset($loginResult['data']['token'])) {
+                $reversement->update(['statut' => 'failed']);
+                Log::error('CinetPay Login Error', ['response' => $loginResult]);
+                
+                return response()->json([
+                    'message' => "Échec authentification bancaire. Veuillez réessayer plus tard.",
+                ], 500);
+            }
+
+            $token = $loginResult['data']['token'];
+            $transferUrl = 'https://client.cinetpay.com/v1/transfer/money/send/contact?token=' . $token;
+
+            // 5. Envoi demande transfert
+            $payload = [
+                'prefix' => $request->prefix,
+                'phone' => $request->telephone,
+                'amount' => $request->montant,
+                'client_transaction_id' => $reference,
+                'notify_url' => url('/api/reversement/notification'),
+            ];
+
+            Log::info('Payload CinetPay', $payload);
+
+            $response = Http::asForm()->timeout(60)->post($transferUrl, $payload);
+            $result = $response->json();
+
+            $reversement->update(['donnees_api' => json_encode($result)]);
+
+            // 6. Vérification succès immédiat
+            if ($response->successful() && isset($result['code']) && $result['code'] === '0') {
+
+                $transferId = $result['data']['transfer_id'] ?? null;
+
+                $reversement->update([
+                    'statut' => 'success',
+                    'cinetpay_transfer_id' => $transferId,
+                ]);
+
+                // Enregistrement final dans paroisse_retraits
+                $retrait = new ParoisseRetrait;
+                $retrait->paroisse_id = $paroisse->id;
+                $retrait->montant = $request->montant;
+                $retrait->methode = $request->methode ?? 'mobile_money';
+                $retrait->numero_compte = '(+' . $request->prefix . ') ' . $request->telephone;
+                $retrait->nom_titulaire = 'Mobile Money User'; // Peut être mis à jour si dispo
+                $retrait->reference = $reference;
+                $retrait->statut = 'traite'; // Directement traité
+                $retrait->traite_le = now();
+                $retrait->save();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Transfert Mobile Money initié avec succès.',
+                    'data' => $result['data'],
+                ]);
+
+            } else {
+                // Echec API
+                $reversement->update(['statut' => 'failed']);
+                $errorMessage = $result['message'] ?? 'Erreur inconnue';
+                $desc = $result['description'] ?? '';
+
+                Log::error("Echec Transfert CinetPay: $errorMessage - $desc");
+
+                // Enregistrement du rejet dans paroisse_retraits pour historique
+                $retrait = new ParoisseRetrait;
+                $retrait->paroisse_id = $paroisse->id;
+                $retrait->montant = $request->montant;
+                $retrait->methode = $request->methode ?? 'mobile_money';
+                $retrait->numero_compte = '(+' . $request->prefix . ') ' . $request->telephone;
+                $retrait->reference = $reference;
+                $retrait->statut = 'rejete';
+                $retrait->raison_rejet = "API Error: $errorMessage";
+                $retrait->traite_le = now();
+                $retrait->save();
+
+                return response()->json([
+                    'message' => "Le transfert a échoué : $errorMessage. $desc",
+                ], 400);
+            }
+
+        } catch (\Exception $e) {
+            Log::critical('Exception Reversement: ' . $e->getMessage());
+            $reversement->update(['statut' => 'failed']);
+
+            return response()->json([
+                'message' => 'Erreur serveur critique lors du paiement mobile.',
+            ], 500);
+        }
+    }
+
+    public function annuler($id)
+    {
+        $retrait = ParoisseRetrait::findOrFail($id);
+
+        if ($retrait->paroisse_id !== Auth::guard('paroisse')->id()) {
+            return back()->with('error', 'Action non autorisée.');
+        }
+
+        if ($retrait->statut !== 'en_attente') {
+            return back()->with('error', 'Seuls les retraits en attente peuvent être annulés.');
+        }
+
+        $retrait->statut = 'rejete';
+        $retrait->raison_rejet = 'Annulé par l\'utilisateur';
+        $retrait->traite_le = now();
+        $retrait->save();
+
+        return back()->with('success', 'La demande de retrait a été annulée avec succès.');
+    }
+
+    public function index()
+    {
+        $paroisse = Auth::guard('paroisse')->user();
+
+        $retraits = ParoisseRetrait::where('paroisse_id', $paroisse->id)
+            ->where('statut', 'en_attente')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        $soldeDisponible = $this->calculerSolde($paroisse->id);
+
+        return view('paroisse.retrait.index', compact('retraits', 'soldeDisponible'));
+    }
+
+    public function list_reversement()
+    {
+        $paroisse = Auth::guard('paroisse')->user();
+        $soldeDisponible = $this->calculerSolde($paroisse->id);
+
+        return view('paroisse.reversement.index', compact('soldeDisponible'));
+    }
+
+    public function getData(Request $request)
+    {
+        try {
+            $paroisseId = Auth::guard('paroisse')->id();
+            
+            $query = Reversement::query()
+                ->where('paroisse_id', $paroisseId) // Filtrage par paroisse ajouté pour sécurité
+                ->select(['reference', 'created_at', 'numero_destinataire', 'prefix_pays', 'montant', 'statut']);
+
+            return DataTables::of($query)
+                ->editColumn('created_at', function ($row) {
+                    return $row->created_at->format('d/m/Y H:i');
+                })
+                ->editColumn('montant', function ($row) {
+                    return number_format($row->montant, 0, ',', ' ') . ' FCFA';
+                })
+                ->editColumn('statut', function ($row) {
+                    if ($row->statut == 'success') {
+                        return '<span class="badge bg-success">Succès</span>';
+                    }
+                    if ($row->statut == 'failed') {
+                        return '<span class="badge bg-danger">Échec</span>';
+                    }
+                    return '<span class="badge bg-warning text-dark">En attente</span>';
+                })
+                ->rawColumns(['statut'])
+                ->make(true);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur DataTables: ' . $e->getMessage());
+            return response()->json(['error' => 'Erreur lors du chargement des données'], 500);
+        }
+    }
+}
