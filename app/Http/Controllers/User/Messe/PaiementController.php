@@ -8,8 +8,8 @@ use App\Models\Paiement;
 use App\Services\WaveService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PaiementController extends Controller
 {
@@ -17,7 +17,7 @@ class PaiementController extends Controller
 
     public function __construct()
     {
-        $this->waveService = new WaveService();
+        $this->waveService = new WaveService;
     }
 
     /**
@@ -28,15 +28,15 @@ class PaiementController extends Controller
         $paiement = Paiement::where('reference', $reference)
             ->where('user_id', Auth::id())
             ->firstOrFail();
-        
+
         $messe = $paiement->messe;
-        
+
         // Calculer les frais de 2% et le montant total
-        
-        $montantTotal = $paiement->montant ;
+
+        $montantTotal = $paiement->montant;
 
         // dd($montantTotal, $paiement);
-        
+
         return view('user.messe.paiement', compact('paiement', 'messe', 'montantTotal'));
     }
 
@@ -47,36 +47,37 @@ class PaiementController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             $paiement = Paiement::where('reference', $reference)
                 ->where('user_id', Auth::id())
                 ->firstOrFail();
-            
+
             // Vérifier si le paiement n'est pas déjà traité
             if ($paiement->statut === 'paye') {
                 DB::rollBack();
+
                 return redirect()->route('user.messe.index')
                     ->with('info', 'Ce paiement a déjà été traité.');
             }
-            
+
             // Calculer le montant avec frais de 2%
             $montantAvecFrais = $paiement->montant;
-            
+
             // Stocker les frais dans les données de transaction
             $donneesAvecFrais = [
                 'montant_initial' => $paiement->montant,
                 'montant_total' => $montantAvecFrais,
-                'taux_frais' => '2%'
+                'taux_frais' => '2%',
             ];
-            
+
             // Créer la session de paiement Wave avec le montant total
             $redirectUrl = route('user.messe.verification-paiement', $paiement->reference);
-            
+
             // FORCER HTTP EN ENVIRONNEMENT LOCAL
             if (app()->environment('local')) {
                 $redirectUrl = str_replace('https://', 'http://', $redirectUrl);
             }
-            
+
             $session = $this->waveService->createCheckoutSession(
                 $montantAvecFrais, // Utiliser le montant avec frais
                 $paiement->devise,
@@ -87,49 +88,51 @@ class PaiementController extends Controller
                     'name' => $paiement->messe->nom_demandeur,
                 ]
             );
-            
+
             if ($session && isset($session['id'])) {
                 // Combiner les données Wave avec nos données de frais
                 $donneesTransaction = array_merge($session, $donneesAvecFrais);
-                
+
                 // Mettre à jour le paiement avec l'ID de session Wave et les frais
                 $paiement->transaction_id = $session['id'];
                 $paiement->donnees_transaction = json_encode($donneesTransaction);
                 $paiement->statut = 'en_attente';
                 $paiement->save();
-                
+
                 // Mettre à jour le statut de la messe
                 $messe = $paiement->messe;
                 $messe->statut = 'en_attente_paiement';
                 $messe->save();
-                
+
                 DB::commit();
-                
+
                 // Rediriger vers la page de paiement Wave
                 $redirectUrl = $session['wave_launch_url'] ?? null;
-                
+
                 if ($redirectUrl) {
                     return redirect($redirectUrl);
                 } else {
                     Log::error('URL de redirection Wave manquante', ['session' => $session]);
+
                     return redirect()->back()
                         ->with('error', 'Erreur technique lors de la redirection. Veuillez réessayer.');
                 }
             }
-            
+
             DB::rollBack();
+
             return redirect()->back()
                 ->with('error', 'Erreur lors de l\'initialisation du paiement. Veuillez réessayer.');
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Erreur initierPaiement: ' . $e->getMessage(), [
+            Log::error('Erreur initierPaiement: '.$e->getMessage(), [
                 'reference' => $reference,
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return redirect()->back()
-                ->with('error', 'Une erreur technique s\'est produite: ' . $e->getMessage());
+                ->with('error', 'Une erreur technique s\'est produite: '.$e->getMessage());
         }
     }
 
@@ -140,134 +143,135 @@ class PaiementController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             $paiement = Paiement::where('reference', $reference)
                 ->where('user_id', Auth::id())
                 ->firstOrFail();
-            
+
             $messe = $paiement->messe;
-            
+
             Log::debug('Vérification paiement', [
                 'reference' => $reference,
                 'session_id' => $paiement->transaction_id,
-                'statut_url' => $request->query('status')
+                'statut_url' => $request->query('status'),
             ]);
-            
+
             // Vérifier si déjà payé
             if ($paiement->statut === 'paye') {
                 DB::commit();
+
                 return redirect()->route('user.messe.index')
                     ->with('success', 'Paiement déjà confirmé.');
             }
-            
+
             $status = $request->query('status');
-            
+
             if ($status === 'success') {
                 Log::debug('Paiement réussi détecté via URL');
-                
+
                 // Vérifier avec l'API Wave pour confirmation
                 $waveStatus = null;
                 if ($paiement->transaction_id) {
                     $session = $this->waveService->verifyBySessionId($paiement->transaction_id);
-                    
+
                     if ($session) {
                         $waveStatus = $session['status'] ?? $session['state'] ?? $session['payment_status'] ?? null;
-                        Log::debug('Statut Wave détecté: ' . $waveStatus);
-                        
+                        Log::debug('Statut Wave détecté: '.$waveStatus);
+
                         // Mettre à jour les données de transaction avec le statut Wave
                         $donneesExistantes = json_decode($paiement->donnees_transaction, true) ?? [];
                         $donneesTransaction = array_merge($donneesExistantes, [
                             'wave_status' => $waveStatus,
-                            'wave_verification' => $session
+                            'wave_verification' => $session,
                         ]);
                         $paiement->donnees_transaction = json_encode($donneesTransaction);
                     }
                 }
-                
+
                 // Paiement réussi
                 $paiement->statut = 'paye';
                 $paiement->date_paiement = now();
                 $paiement->save();
-                
+
                 $messe->statut = 'en attente';
                 $messe->save();
-                
+
                 DB::commit();
-                
+
                 // Envoi notification si activé
                 if ($messe->user && $messe->user->emailNotif) {
                     try {
-                        $messe->user->notify(new \App\Notifications\PaiementSuccessNotification($messe));
+                        $messe->user->notify(new \App\Notifications\PaiementSuccessNotification($paiement));
                     } catch (\Exception $e) {
-                        Log::error("Échec de la notification de paiement (Messe #{$messe->id}): " . $e->getMessage());
+                        Log::error("Échec de la notification de paiement (Messe #{$messe->id}): ".$e->getMessage());
                     }
                 }
 
                 return redirect()->route('user.messe.index')
                     ->with('success', 'Paiement effectué avec succès. Votre demande de messe est confirmée.');
-            }
-            elseif ($status === 'error' || $status === 'cancel') {
+            } elseif ($status === 'error' || $status === 'cancel') {
                 Log::debug('Paiement échoué détecté via URL');
-                
+
                 // Paiement échoué
                 $paiement->statut = 'echec';
                 $paiement->save();
-                
+
                 $messe->statut = 'en attente';
                 $messe->save();
-                
+
                 DB::commit();
-                
+
                 return redirect()->route('user.messe.paiement', $reference)
                     ->with('error', 'Le paiement a échoué. Veuillez réessayer.');
-            }
-            else {
+            } else {
                 Log::debug('Aucun statut dans URL, vérification via API Wave');
-                
+
                 // Essayer avec le session ID
                 if ($paiement->transaction_id) {
                     $session = $this->waveService->verifyBySessionId($paiement->transaction_id);
-                    
+
                     if ($session) {
                         $waveStatus = $session['status'] ?? $session['state'] ?? $session['payment_status'] ?? 'inconnu';
-                        Log::debug('Statut session Wave: ' . $waveStatus);
-                        
+                        Log::debug('Statut session Wave: '.$waveStatus);
+
                         if (in_array($waveStatus, ['completed', 'success', 'paid', 'succeeded'])) {
                             // Paiement réussi via API
                             $paiement->statut = 'paye';
                             $paiement->date_paiement = now();
-                            
+
                             // Mettre à jour les données de transaction
                             $donneesExistantes = json_decode($paiement->donnees_transaction, true) ?? [];
                             $donneesTransaction = array_merge($donneesExistantes, [
                                 'wave_status' => $waveStatus,
-                                'wave_verification' => $session
+                                'wave_verification' => $session,
                             ]);
                             $paiement->donnees_transaction = json_encode($donneesTransaction);
                             $paiement->save();
-                            
+
                             $messe->statut = 'en attente';
                             $messe->save();
-                            
+
                             DB::commit();
-                            
+
                             return redirect()->route('user.messe.index')
                                 ->with('success', 'Paiement effectué avec succès.');
                         }
                     }
                 }
-                
+
                 // Si on arrive ici, le paiement est en attente
                 DB::commit();
+
                 return view('user.messe.verification', compact('paiement'))
                     ->with('info', 'Paiement en cours de traitement. Veuillez actualiser dans quelques instants.');
             }
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Erreur verifierPaiement: ' . $e->getMessage());
+            Log::error('Erreur verifierPaiement: '.$e->getMessage());
+
             return redirect()->route('user.messe.paiement', $reference)
-                ->with('error', 'Erreur de vérification: ' . $e->getMessage());
+                ->with('error', 'Erreur de vérification: '.$e->getMessage());
         }
     }
 
@@ -278,47 +282,48 @@ class PaiementController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             $paiement = Paiement::where('reference', $reference)
                 ->where('user_id', Auth::id())
                 ->firstOrFail();
-            
+
             $messe = $paiement->messe;
-            
+
             // Vérifier si déjà payé
             if ($paiement->statut === 'paye') {
                 DB::commit();
+
                 return back()->with('info', 'Le paiement a déjà été confirmé.');
             }
-            
+
             $transaction = $this->waveService->verifyByMerchantReference($reference);
-            
+
             if ($transaction) {
                 if ($transaction['status'] === 'completed') {
                     // Paiement réussi
                     $paiement->statut = 'paye';
                     $paiement->date_paiement = now();
-                    
+
                     // Mettre à jour les données de transaction
                     $donneesExistantes = json_decode($paiement->donnees_transaction, true) ?? [];
                     $donneesTransaction = array_merge($donneesExistantes, [
                         'wave_status' => 'completed',
-                        'wave_verification' => $transaction
+                        'wave_verification' => $transaction,
                     ]);
                     $paiement->donnees_transaction = json_encode($donneesTransaction);
                     $paiement->save();
-                    
+
                     $messe->statut = 'en attente';
                     $messe->save();
-                    
+
                     DB::commit();
-                    
+
                     // Envoi notification si activé
                     if ($messe->user && $messe->user->emailNotif) {
                         try {
-                            $messe->user->notify(new \App\Notifications\PaiementSuccessNotification($messe));
+                            $messe->user->notify(new \App\Notifications\PaiementSuccessNotification($paiement));
                         } catch (\Exception $e) {
-                            Log::error("Échec de la notification de paiement (Messe #{$messe->id}): " . $e->getMessage());
+                            Log::error("Échec de la notification de paiement (Messe #{$messe->id}): ".$e->getMessage());
                         }
                     }
 
@@ -326,17 +331,20 @@ class PaiementController extends Controller
                         ->with('success', 'Paiement vérifié et confirmé avec succès.');
                 } else {
                     DB::commit();
-                    return back()->with('info', 'Le paiement est toujours en attente. Statut: ' . $transaction['status']);
+
+                    return back()->with('info', 'Le paiement est toujours en attente. Statut: '.$transaction['status']);
                 }
             }
-            
+
             DB::commit();
+
             return back()->with('error', 'Impossible de vérifier le statut du paiement.');
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Erreur verifierManuellement: ' . $e->getMessage());
-            return back()->with('error', 'Erreur lors de la vérification: ' . $e->getMessage());
+            Log::error('Erreur verifierManuellement: '.$e->getMessage());
+
+            return back()->with('error', 'Erreur lors de la vérification: '.$e->getMessage());
         }
     }
 
@@ -346,12 +354,12 @@ class PaiementController extends Controller
     private function getFraisDetails($paiement)
     {
         $donnees = json_decode($paiement->donnees_transaction, true) ?? [];
-        
+
         return [
             'montant_initial' => $donnees['montant_initial'] ?? $paiement->montant,
             'frais_service' => $donnees['frais_service'] ?? ($paiement->montant * 0.02),
             'montant_total' => $donnees['montant_total'] ?? ($paiement->montant + ($paiement->montant * 0.02)),
-            'taux_frais' => $donnees['taux_frais'] ?? '2%'
+            'taux_frais' => $donnees['taux_frais'] ?? '2%',
         ];
     }
 }

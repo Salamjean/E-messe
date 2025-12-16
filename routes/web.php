@@ -185,7 +185,7 @@ Route::middleware('paroisse')->prefix('parish')->group(function () {
 
     // Les routes pour modifier des informations de la paroisse
     Route::get('/profile', [AuthenticateParoisse::class, 'editProfile'])->name('paroisse.profile');
-    Route::put('/profile/update', [AuthenticateParoisse::class, 'updateProfile'])->name('paroisse.update');
+    Route::put('/profile/update', [AuthenticateParoisse::class, 'updateProfile'])->name('paroisse.profile.update');
 
     // Routes de gestion des demandes de messes
     Route::get('/index/messes', [DemandeController::class, 'index'])->name('demandes.messes.index');

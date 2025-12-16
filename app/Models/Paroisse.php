@@ -32,6 +32,7 @@ class Paroisse extends Authenticatable
 
     protected $fillable = [
         'name',
+        'localisation',
         'email',
         'contact',
         'tel',

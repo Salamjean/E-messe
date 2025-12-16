@@ -148,7 +148,7 @@
             transition: all var(--transition-speed) ease;
             pointer-events: none;
             background-color: transparent;
-            padding: 0 5px;
+            padding: 0 5px ;
             z-index: 1;
         }
 
