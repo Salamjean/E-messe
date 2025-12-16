@@ -245,7 +245,7 @@
                                         <i class="fas fa-phone"></i> Contact 1
                                     </label>
                                     <input type="text" class="form-control" name="contact" id="contact"
-                                        placeholder="Numéro principal" value="{{ old('contact') }}" required>
+                                        placeholder="Numéro principal" value="{{ old('contact') }}" maxlength="14" required>
                                     @error('contact')
                                         <div class="invalid-feedback d-block">
                                             {{ $message }}
@@ -259,7 +259,7 @@
                                         <i class="fas fa-mobile-alt"></i> Contact 2
                                     </label>
                                     <input type="text" class="form-control" name="tel" id="tel"
-                                        placeholder="Numéro secondaire" value="{{ old('tel') }}" required>
+                                        placeholder="Numéro secondaire" value="{{ old('tel') }}" maxlength="14" required>
                                     @error('tel')
                                         <div class="invalid-feedback d-block">
                                             {{ $message }}
