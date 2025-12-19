@@ -6,11 +6,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Brozot\LaravelFcm\HasFcmToken;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * Les attributs pouvant être remplis en masse.
@@ -25,6 +24,7 @@ class User extends Authenticatable
         'indicatif',
         'contact',
         'google_id',
+        'apple_id',
         // 'commune',
         // 'CMU',
         'profile_picture',
@@ -33,7 +33,7 @@ class User extends Authenticatable
         'civilite',
         'smsNotif',
         'pushNotif',
-         'fcm_token',
+        'fcm_token',
     ];
 
     /**
@@ -45,7 +45,6 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
-
 
     /**
      * Les attributs qui doivent être typés (cast).
@@ -68,12 +67,11 @@ class User extends Authenticatable
         return $this->hasMany(Messe::class);
     }
 
-
-
     public function favoris()
     {
         return $this->hasMany(\App\Models\Favori::class);
     }
+
     /**
      * Scope : récupérer uniquement les utilisateurs archivés.
      */
@@ -90,7 +88,6 @@ class User extends Authenticatable
         return $query->whereNull('archived_at');
     }
 
-    
     /**
      * Archiver un utilisateur.
      */
@@ -112,7 +109,7 @@ class User extends Authenticatable
      */
     public function isArchived(): bool
     {
-        return !is_null($this->archived_at);
+        return ! is_null($this->archived_at);
     }
 
     public function versets()

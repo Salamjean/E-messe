@@ -3,22 +3,23 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
+use App\Models\User;
 use App\Notifications\ForgotPasswordUserNotification;
 use Carbon\Carbon;
-use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 
 /**
  * @OA\Info(
  *     title="E_Messe API",
  *     version="1.0.0",
  *     description="API pour l'application E_Messe - Gestion des messes",
+ *
  *     @OA\Contact(
  *         email="leprodev03@gmail.com"
  *     )
@@ -28,7 +29,6 @@ use App\Models\User;
  *     url="http://localhost:8081/api",
  *     description="Serveur Local"
  * )
- *
  * @OA\Server(
  *     url="https://votre-domaine.com/api",
  *     description="Serveur de Production"
@@ -44,6 +44,7 @@ use App\Models\User;
  * @OA\Schema(
  *     schema="User",
  *     type="object",
+ *
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="name", type="string", example="John Doe"),
  *     @OA\Property(property="user_name", type="string", example="johndoe"),
@@ -61,6 +62,7 @@ use App\Models\User;
  *     schema="LoginRequest",
  *     type="object",
  *     required={"login","password"},
+ *
  *     @OA\Property(property="login", type="string", example="john@example.com", description="Email ou nom d'utilisateur"),
  *     @OA\Property(property="password", type="string", format="password", example="password123")
  * )
@@ -69,6 +71,7 @@ use App\Models\User;
  *     schema="RegisterRequest",
  *     type="object",
  *     required={"name","user_name","email","contact","civilite","password","password_confirmation"},
+ *
  *     @OA\Property(property="name", type="string", maxLength=191, example="John Doe"),
  *     @OA\Property(property="user_name", type="string", maxLength=191, example="johndoe"),
  *     @OA\Property(property="email", type="string", format="email", maxLength=191, example="john@example.com"),
@@ -83,6 +86,7 @@ use App\Models\User;
  * @OA\Schema(
  *     schema="LoginResponse",
  *     type="object",
+ *
  *     @OA\Property(property="status", type="string", example="success"),
  *     @OA\Property(property="message", type="string", example="Connexion réussie."),
  *     @OA\Property(property="access_token", type="string", example="1|abc123..."),
@@ -93,37 +97,41 @@ use App\Models\User;
  * @OA\Schema(
  *     schema="ErrorResponse",
  *     type="object",
+ *
  *     @OA\Property(property="status", type="string", example="error"),
  *     @OA\Property(property="message", type="string", example="Message d'erreur")
  * )
  */
-
 class AuthController extends Controller
 {
     /**
      * Connexion avec email ou user_name
      */
 
-
-
-        /**
+    /**
      * @OA\Post(
      *     path="/api/login",
      *     summary="Connexion utilisateur",
      *     description="Authentifie un utilisateur avec email/nom d'utilisateur et mot de passe",
      *     tags={"Authentication"},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
      *             required={"login","password"},
+     *
      *             @OA\Property(property="login", type="string", example="john@example.com ou johndoe"),
      *             @OA\Property(property="password", type="string", format="password", example="password123")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Connexion réussie",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="string", example="success"),
      *             @OA\Property(property="message", type="string", example="Connexion réussie."),
      *             @OA\Property(property="access_token", type="string", example="1|abc123..."),
@@ -139,18 +147,24 @@ class AuthController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=401,
      *         description="Identifiants incorrects",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Identifiants incorrects.")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=403,
      *         description="Compte inactif",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="message", type="string", example="Compte inactif. Contactez l'administration.")
      *         )
@@ -165,8 +179,8 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('email', $request->login)
-                    ->orWhere('user_name', $request->login)
-                    ->first();
+            ->orWhere('user_name', $request->login)
+            ->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             return response()->json([
@@ -175,7 +189,7 @@ class AuthController extends Controller
             ], 401);
         }
 
-        if (!$user->actif) {
+        if (! $user->actif) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Compte inactif. Contactez l’administration.',
@@ -198,109 +212,171 @@ class AuthController extends Controller
                 'contact' => $user->contact,
                 'civilite' => $user->civilite,
                 'profile_picture' => $user->profile_picture,
-            ]
+            ],
         ], 200);
     }
 
-
-
-/**
- * @OA\Post(
- *     path="/api/auth/google",
- *     summary="Connexion ou inscription via Google",
- *     description="Connecte ou crée un utilisateur à partir des informations Google déjà vérifiées côté client.",
- *     tags={"Authentication"},
- *     @OA\RequestBody(
- *         required=true,
- *         @OA\JsonContent(
- *             required={"email","googleId"},
- *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
- *             @OA\Property(property="googleId", type="string", example="1029384756abcd"),
- *             @OA\Property(property="fullName", type="string", example="John Doe"),
- *             @OA\Property(property="photoUrl", type="string", nullable=true, example="https://lh3.googleusercontent.com/..."),
- *         )
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Connexion réussie ou compte créé",
- *         @OA\JsonContent(
- *             @OA\Property(property="status", type="string", example="success"),
- *             @OA\Property(property="message", type="string", example="Connexion réussie avec Google ✅"),
- *             @OA\Property(property="access_token", type="string", example="1|xyz123..."),
- *             @OA\Property(property="token_type", type="string", example="Bearer"),
- *             @OA\Property(property="user", ref="#/components/schemas/User")
- *         )
- *     )
- * )
- */
-
-public function loginWithGoogle(Request $request)
-{
-    $validated = $request->validate([
-        'email' => 'required|email',
-        'googleId' => 'required|string',
-        'name' => 'nullable|string|max:191',
-        'profile_picture' => 'nullable|string|max:500',
-    ]);
-
-    // Vérifie si un utilisateur existe déjà avec ce Google ID ou cet email
-    $user = User::where('google_id', $validated['googleId'])
-                ->orWhere('email', $validated['email'])
-                ->first();
-
-    if (!$user) {
-        // Crée un nouvel utilisateur minimal
-        $user = User::create([
-            'name' => $validated['name'] ?? 'Utilisateur Google',
-            'user_name' => Str::slug(explode('@', $validated['email'])[0]) . rand(100, 999),
-            'email' => $validated['email'],
-            'google_id' => $validated['googleId'],
-            'password' => bcrypt(Str::random(16)),
-            'actif' => 1,
-            'profile_picture' => $validated['profile_picture'] ?? null,
-            'contact' => '00000000',
+    /**
+     * @OA\Post(
+     *     path="/api/auth/google",
+     *     summary="Connexion ou inscription via Google",
+     *     description="Connecte ou crée un utilisateur à partir des informations Google déjà vérifiées côté client.",
+     *     tags={"Authentication"},
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *
+     *         @OA\JsonContent(
+     *             required={"email","googleId"},
+     *
+     *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+     *             @OA\Property(property="googleId", type="string", example="1029384756abcd"),
+     *             @OA\Property(property="fullName", type="string", example="John Doe"),
+     *             @OA\Property(property="photoUrl", type="string", nullable=true, example="https://lh3.googleusercontent.com/..."),
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Connexion réussie ou compte créé",
+     *
+     *         @OA\JsonContent(
+     *
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Connexion réussie avec Google ✅"),
+     *             @OA\Property(property="access_token", type="string", example="1|xyz123..."),
+     *             @OA\Property(property="token_type", type="string", example="Bearer"),
+     *             @OA\Property(property="user", ref="#/components/schemas/User")
+     *         )
+     *     )
+     * )
+     */
+    public function loginWithGoogle(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'googleId' => 'required|string',
+            'name' => 'nullable|string|max:191',
+            'profile_picture' => 'nullable|string|max:500',
         ]);
-    } else {
-        // Met à jour le compte existant
-        $user->update([
-            'google_id' => $validated['googleId'],
-            'profile_picture' => $validated['photoUrl'] ?? $user->profile_picture,
+
+        // Vérifie si un utilisateur existe déjà avec ce Google ID ou cet email
+        $user = User::where('google_id', $validated['googleId'])
+            ->orWhere('email', $validated['email'])
+            ->first();
+
+        if (! $user) {
+            // Crée un nouvel utilisateur minimal
+            $user = User::create([
+                'name' => $validated['name'] ?? 'Utilisateur Google',
+                'user_name' => Str::slug(explode('@', $validated['email'])[0]).rand(100, 999),
+                'email' => $validated['email'],
+                'google_id' => $validated['googleId'],
+                'password' => bcrypt(Str::random(16)),
+                'actif' => 1,
+                'profile_picture' => $validated['profile_picture'] ?? null,
+                'contact' => '00000000',
+            ]);
+        } else {
+            // Met à jour le compte existant
+            $user->update([
+                'google_id' => $validated['googleId'],
+                'profile_picture' => $validated['photoUrl'] ?? $user->profile_picture,
+            ]);
+        }
+
+        // Supprime les anciens tokens
+        $user->tokens()->delete();
+
+        // Génère un nouveau token
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Connexion réussie avec Google ✅',
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $user,
         ]);
     }
 
-    // Supprime les anciens tokens
-    $user->tokens()->delete();
+    public function loginWithApple(Request $request)
+    {
+        // 1. Validation des données reçues de Flutter
+        $validated = $request->validate([
+            'identity_token' => 'required|string',
+            'apple_id' => 'required|string',
+            'email' => 'nullable|email',
+            'name' => 'nullable|string',
+        ]);
 
-    // Génère un nouveau token
-    $token = $user->createToken('auth_token')->plainTextToken;
+        $user = User::where('apple_id', $validated['apple_id'])->first();
 
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Connexion réussie avec Google ✅',
-        'access_token' => $token,
-        'token_type' => 'Bearer',
-        'user' => $user,
-    ]);
-}
- 
+        if (! $user && ! empty($validated['email'])) {
+            $user = User::where('email', $validated['email'])->first();
+        }
 
+        if (! $user) {
+            if (empty($validated['email'])) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Impossible de créer le compte : L'email est manquant (Apple ne le renvoie que lors de la première connexion). Veuillez révoquer l'accès Apple dans vos réglages et réessayer.",
+                ], 400);
+            }
 
+            $name = $validated['name'] ?? 'Utilisateur Apple';
+
+            $user = User::create([
+                'name' => $name,
+                'user_name' => Str::slug(explode('@', $validated['email'])[0]).rand(100, 999),
+                'email' => $validated['email'],
+                'apple_id' => $validated['apple_id'],
+                'password' => Hash::make(Str::random(16)),
+                'actif' => 1,
+                'contact' => '00000000',
+                'profile_picture' => null,
+            ]);
+
+        } else {
+
+            // On lie le compte Apple s'il ne l'était pas encore
+            if ($user->apple_id !== $validated['apple_id']) {
+                $user->update([
+                    'apple_id' => $validated['apple_id'],
+                ]);
+            }
+        }
+
+        // 3. Gestion des tokens (Comme pour Google)
+        $user->tokens()->delete();
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Connexion réussie avec Apple',
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $user,
+        ]);
+    }
 
     /**
      * Enregistrement d'un utilisateur
      */
 
-
-        /**
+    /**
      * @OA\Post(
      *     path="/api/register",
      *     summary="Inscription utilisateur",
      *     description="Crée un nouveau compte utilisateur",
      *     tags={"Authentication"},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
      *             required={"name","user_name","email","contact","civilite","password","password_confirmation"},
+     *
      *             @OA\Property(property="name", type="string", maxLength=191, example="John Doe"),
      *             @OA\Property(property="user_name", type="string", maxLength=191, example="johndoe"),
      *             @OA\Property(property="email", type="string", format="email", maxLength=191, example="john@example.com"),
@@ -312,10 +388,13 @@ public function loginWithGoogle(Request $request)
      *             @OA\Property(property="profile_picture", type="string", maxLength=191, nullable=true, example=null)
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=201,
      *         description="Inscription réussie",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Inscription réussie ✅"),
      *             @OA\Property(property="user", type="object",
      *                 @OA\Property(property="id", type="integer", example=1),
@@ -331,76 +410,76 @@ public function loginWithGoogle(Request $request)
      *             @OA\Property(property="token", type="string", example="1|abc123...")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=422,
      *         description="Erreur de validation",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="The given data was invalid."),
      *             @OA\Property(property="errors", type="object")
      *         )
      *     )
      * )
      */
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:191',
+            'user_name' => 'required|string|max:191|unique:users,user_name',
+            'email' => 'required|email|max:191|unique:users,email',
+            'contact' => 'required|string|max:191|unique:users,contact',
+            'civilite' => 'required|string|max:10',
+            'password' => 'required|min:8|confirmed',
+            'profile_picture' => 'nullable', // plus strict validation supprimée
+        ]);
 
-public function register(Request $request)
-{
-    $validated = $request->validate([
-        'name'            => 'required|string|max:191',
-        'user_name'       => 'required|string|max:191|unique:users,user_name',
-        'email'           => 'required|email|max:191|unique:users,email',
-        'contact'         => 'required|string|max:191|unique:users,contact',
-        'civilite'        => 'required|string|max:10',
-        'password'        => 'required|min:8|confirmed',
-        'profile_picture' => 'nullable', // plus strict validation supprimée
-    ]);
+        $profilePath = null;
 
-    $profilePath = null;
-
-    // Cas 1 : fichier uploadé via multipart/form-data
-    if ($request->hasFile('profile_picture')) {
-        $file = $request->file('profile_picture');
-        $profilePath = $file->store('profiles', 'public');
-    }
-    // Cas 2 : image envoyée en base64
-    elseif (!empty($validated['profile_picture']) && is_string($validated['profile_picture'])) {
-        if (preg_match('/^data:image\/(\w+);base64,/', $validated['profile_picture'], $type)) {
-            $imageData = substr($validated['profile_picture'], strpos($validated['profile_picture'], ',') + 1);
-            $imageData = base64_decode($imageData);
-            $extension = strtolower($type[1]);
-            if (!in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
-                return response()->json(['message' => 'Type d\'image non supporté.'], 422);
-            }
-            $fileName = uniqid() . '.' . $extension;
-            $profilePath = 'profiles/' . $fileName;
-            \Storage::disk('public')->put($profilePath, $imageData);
+        // Cas 1 : fichier uploadé via multipart/form-data
+        if ($request->hasFile('profile_picture')) {
+            $file = $request->file('profile_picture');
+            $profilePath = $file->store('profiles', 'public');
         }
+        // Cas 2 : image envoyée en base64
+        elseif (! empty($validated['profile_picture']) && is_string($validated['profile_picture'])) {
+            if (preg_match('/^data:image\/(\w+);base64,/', $validated['profile_picture'], $type)) {
+                $imageData = substr($validated['profile_picture'], strpos($validated['profile_picture'], ',') + 1);
+                $imageData = base64_decode($imageData);
+                $extension = strtolower($type[1]);
+                if (! in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
+                    return response()->json(['message' => 'Type d\'image non supporté.'], 422);
+                }
+                $fileName = uniqid().'.'.$extension;
+                $profilePath = 'profiles/'.$fileName;
+                \Storage::disk('public')->put($profilePath, $imageData);
+            }
+        }
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'user_name' => $validated['user_name'],
+            'email' => $validated['email'],
+            'contact' => $validated['contact'],
+            'profile_picture' => $profilePath,
+            'civilite' => $validated['civilite'],
+            'password' => bcrypt($validated['password']),
+            'actif' => 1,
+        ]);
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Inscription réussie ✅',
+            'user' => $user,
+            'token' => $token,
+        ], 201);
     }
 
-    $user = User::create([
-        'name'            => $validated['name'],
-        'user_name'       => $validated['user_name'],
-        'email'           => $validated['email'],
-        'contact'         => $validated['contact'],
-        'profile_picture' => $profilePath,
-        'civilite'        => $validated['civilite'],
-        'password'        => bcrypt($validated['password']),
-        'actif'           => 1,
-    ]);
-
-    $token = $user->createToken('auth_token')->plainTextToken;
-
-    return response()->json([
-        'message' => 'Inscription réussie ✅',
-        'user'    => $user,
-        'token'   => $token
-    ], 201);
-}
-
-
-/**
+    /**
      * Profil utilisateur connecté
      */
-
 
     /**
      * Déconnexion
@@ -413,47 +492,48 @@ public function register(Request $request)
      *     description="Déconnecte l'utilisateur et supprime ses tokens",
      *     tags={"Authentication"},
      *     security={{"bearerAuth":{}}},
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Déconnexion réussie",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Déconnexion réussie")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=401,
      *         description="Non authentifié",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="error", type="string", example="Utilisateur non authentifié")
      *         )
      *     )
      * )
      */
+    public function logout(Request $request)
+    {
+        $user = $request->user();
 
-public function logout(Request $request)
-{
-    $user = $request->user();
+        // Debug headers et token
+        Log::info('Headers reçus pour logout', $request->headers->all());
+        Log::info('User récupéré pour logout', ['user' => $user]);
 
-    // Debug headers et token
-    Log::info('Headers reçus pour logout', $request->headers->all());
-    Log::info('User récupéré pour logout', ['user' => $user]);
+        if (! $user) {
+            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+        // Effacer le token FCM
+        $user->fcm_token = null;
+        $user->save();
 
-    if (!$user) {
-        return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        // Supprimer les tokens d'authentification Sanctum
+        $user->tokens()->delete();
+
+        return response()->json(['message' => 'Déconnexion réussie']);
     }
-    // Effacer le token FCM
-    $user->fcm_token = null;
-    $user->save();
-
-    // Supprimer les tokens d'authentification Sanctum
-    $user->tokens()->delete();
-
-
-    return response()->json(['message' => 'Déconnexion réussie']);
-}
-
-
-
 
     // /**
     //  * Mot de passe oublié - Envoi du lien
@@ -603,15 +683,15 @@ public function logout(Request $request)
     //     return response()->json(['message' => 'Mot de passe réinitialisé avec succès ✅']);
     // }
 
-
     public function forgotPassword(Request $request)
     {
         $request->validate(['email' => 'required|email']);
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user) {
+        if (! $user) {
             Log::warning("ForgotPassword: aucun utilisateur trouvé pour l'email {$request->email}");
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'Aucun utilisateur trouvé avec cet e-mail.',
@@ -624,7 +704,7 @@ public function logout(Request $request)
         DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $user->email],
             [
-                'token'      => Hash::make($otp),
+                'token' => Hash::make($otp),
                 'created_at' => Carbon::now(),
             ]
         );
@@ -633,17 +713,18 @@ public function logout(Request $request)
             $user->notify(new ForgotPasswordUserNotification($otp, $user->email));
             Log::info("ForgotPassword: Notification envoyée pour {$user->email}");
         } catch (\Exception $e) {
-            Log::error("ForgotPassword: Erreur lors de l'envoi du mail à {$user->email} : " . $e->getMessage());
+            Log::error("ForgotPassword: Erreur lors de l'envoi du mail à {$user->email} : ".$e->getMessage());
+
             return response()->json([
                 'status' => 'error',
-                'message' => "Impossible d'envoyer l'e-mail : " . $e->getMessage()
+                'message' => "Impossible d'envoyer l'e-mail : ".$e->getMessage(),
             ], 500);
         }
 
         return response()->json([
-            'status'   => 'success',
-            'message'  => 'Un code de réinitialisation a été envoyé à votre e-mail.',
-            'otp_demo' => $otp // à supprimer en production
+            'status' => 'success',
+            'message' => 'Un code de réinitialisation a été envoyé à votre e-mail.',
+            'otp_demo' => $otp, // à supprimer en production
         ]);
     }
 
@@ -651,14 +732,14 @@ public function logout(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
-            'otp'   => 'required|string',
+            'otp' => 'required|string',
         ]);
 
         $record = DB::table('password_reset_tokens')
-                    ->where('email', $request->email)
-                    ->first();
+            ->where('email', $request->email)
+            ->first();
 
-        if (!$record) {
+        if (! $record) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Aucun code trouvé pour cet e-mail.',
@@ -674,7 +755,7 @@ public function logout(Request $request)
             ], 400);
         }
 
-        if (!Hash::check($request->otp, $record->token)) {
+        if (! Hash::check($request->otp, $record->token)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Code OTP invalide.',
@@ -696,10 +777,10 @@ public function logout(Request $request)
         ]);
 
         $record = DB::table('password_reset_tokens')
-                    ->where('email', $request->email)
-                    ->first();
+            ->where('email', $request->email)
+            ->first();
 
-        if (!$record) {
+        if (! $record) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Aucun code trouvé pour cet e-mail.',
@@ -715,7 +796,7 @@ public function logout(Request $request)
             ], 400);
         }
 
-        if (!Hash::check($request->otp, $record->token)) {
+        if (! Hash::check($request->otp, $record->token)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Code OTP invalide.',
@@ -735,83 +816,80 @@ public function logout(Request $request)
         ]);
     }
 
+    // public function forgotPassword(Request $request)
+    // {
+    //     $request->validate(['email' => 'required|email']);
 
+    //     $user = User::where('email', $request->email)->first();
 
-// public function forgotPassword(Request $request)
-// {
-//     $request->validate(['email' => 'required|email']);
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Aucun utilisateur trouvé avec cet e-mail.',
+    //         ], 404);
+    //     }
 
-//     $user = User::where('email', $request->email)->first();
+    //     // Générer un OTP de 6 chiffres
+    //     $otp = rand(100000, 999999);
 
-//     if (!$user) {
-//         return response()->json([
-//             'status' => 'error',
-//             'message' => 'Aucun utilisateur trouvé avec cet e-mail.',
-//         ], 404);
-//     }
+    //     // Enregistrer ou mettre à jour le OTP
+    //     DB::table('password_reset_tokens')->updateOrInsert(
+    //         ['email' => $user->email],
+    //         [
+    //             'token' => Hash::make($otp),    // On hash pour sécurité
+    //             'created_at' => Carbon::now()
+    //         ]
+    //     );
 
-//     // Générer un OTP de 6 chiffres
-//     $otp = rand(100000, 999999);
+    //     // Envoyer email
+    //     Mail::send('emails.otp_reset', ['user' => $user, 'otp' => $otp], function ($message) use ($user) {
+    //         $message->to($user->email)
+    //                 ->subject('Code OTP - Réinitialisation du mot de passe');
+    //     });
 
-//     // Enregistrer ou mettre à jour le OTP
-//     DB::table('password_reset_tokens')->updateOrInsert(
-//         ['email' => $user->email],
-//         [
-//             'token' => Hash::make($otp),    // On hash pour sécurité
-//             'created_at' => Carbon::now()
-//         ]
-//     );
+    //     return response()->json([
+    //         'status' => 'success',
+    //         'message' => 'Un code OTP a été envoyé à votre e-mail.',
+    //         'otp_demo' => $otp // ❗ À supprimer en production
+    //     ]);
+    // }
 
-//     // Envoyer email
-//     Mail::send('emails.otp_reset', ['user' => $user, 'otp' => $otp], function ($message) use ($user) {
-//         $message->to($user->email)
-//                 ->subject('Code OTP - Réinitialisation du mot de passe');
-//     });
+    // public function resetPassword(Request $request)
+    // {
+    //     $request->validate([
+    //         'email' => 'required|email',
+    //         'otp' => 'required|numeric',
+    //         'password' => 'required|min:6|confirmed',
+    //     ]);
 
+    //     $reset = DB::table('password_reset_tokens')->where('email', $request->email)->first();
 
-//     return response()->json([
-//         'status' => 'success',
-//         'message' => 'Un code OTP a été envoyé à votre e-mail.',
-//         'otp_demo' => $otp // ❗ À supprimer en production
-//     ]);
-// }
+    //     if (!$reset) {
+    //         return response()->json(['message' => 'Aucune demande trouvée.'], 404);
+    //     }
 
-// public function resetPassword(Request $request)
-// {
-//     $request->validate([
-//         'email' => 'required|email',
-//         'otp' => 'required|numeric',
-//         'password' => 'required|min:6|confirmed',
-//     ]);
+    //     // Vérifier expiration : 10 minutes
+    //     if (Carbon::parse($reset->created_at)->addMinutes(10)->isPast()) {
+    //         return response()->json(['message' => 'Code OTP expiré.'], 400);
+    //     }
 
-//     $reset = DB::table('password_reset_tokens')->where('email', $request->email)->first();
+    //     // Vérification OTP
+    //     if (!Hash::check($request->otp, $reset->token)) {
+    //         return response()->json(['message' => 'OTP incorrect.'], 400);
+    //     }
 
-//     if (!$reset) {
-//         return response()->json(['message' => 'Aucune demande trouvée.'], 404);
-//     }
+    //     // Mettre à jour le mot de passe
+    //     $user = User::where('email', $request->email)->first();
+    //     if (!$user) {
+    //         return response()->json(['message' => 'Utilisateur introuvable.'], 404);
+    //     }
 
-//     // Vérifier expiration : 10 minutes
-//     if (Carbon::parse($reset->created_at)->addMinutes(10)->isPast()) {
-//         return response()->json(['message' => 'Code OTP expiré.'], 400);
-//     }
+    //     $user->update(['password' => Hash::make($request->password)]);
 
-//     // Vérification OTP
-//     if (!Hash::check($request->otp, $reset->token)) {
-//         return response()->json(['message' => 'OTP incorrect.'], 400);
-//     }
+    //     // Supprimer le OTP utilisé
+    //     DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
-//     // Mettre à jour le mot de passe
-//     $user = User::where('email', $request->email)->first();
-//     if (!$user) {
-//         return response()->json(['message' => 'Utilisateur introuvable.'], 404);
-//     }
-
-//     $user->update(['password' => Hash::make($request->password)]);
-
-//     // Supprimer le OTP utilisé
-//     DB::table('password_reset_tokens')->where('email', $request->email)->delete();
-
-//     return response()->json(['message' => 'Mot de passe réinitialisé avec succès ✅']);
-// }
+    //     return response()->json(['message' => 'Mot de passe réinitialisé avec succès ✅']);
+    // }
 
 }
