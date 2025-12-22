@@ -317,29 +317,27 @@ class AuthController extends Controller
         }
 
         if (! $user) {
-            // if (empty($validated['email'])) {
-            //     return response()->json([
-            //         'status' => 'error',
-            //         'message' => "Impossible de créer le compte : L'email est manquant (Apple ne le renvoie que lors de la première connexion). Veuillez révoquer l'accès Apple dans vos réglages et réessayer.",
-            //     ], 400);
-            // }
-
             $name = $validated['name'] ?? 'Utilisateur Apple';
+
+            $email = $validated['email'] ?? 'apple_user_'.uniqid().'@example.com';
+
+            // Générer un user_name unique
+            $baseUsername = $validated['email']
+                            ? explode('@', $validated['email'])[0]
+                            : 'appleuser';
+            $userName = Str::slug($baseUsername).rand(100, 999);
 
             $user = User::create([
                 'name' => $name,
-                'user_name' => Str::slug(explode('@', $validated['email'])[0]).rand(100, 999),
-                'email' => $validated['email'],
+                'user_name' => $userName,
+                'email' => $email,
                 'apple_id' => $validated['apple_id'],
                 'password' => Hash::make(Str::random(16)),
                 'actif' => 1,
                 'contact' => '00000000',
                 'profile_picture' => null,
             ]);
-
         } else {
-
-            // On lie le compte Apple s'il ne l'était pas encore
             if ($user->apple_id !== $validated['apple_id']) {
                 $user->update([
                     'apple_id' => $validated['apple_id'],
@@ -347,7 +345,6 @@ class AuthController extends Controller
             }
         }
 
-        // 3. Gestion des tokens (Comme pour Google)
         $user->tokens()->delete();
         $token = $user->createToken('auth_token')->plainTextToken;
 
