@@ -317,12 +317,12 @@ class AuthController extends Controller
         }
 
         if (! $user) {
-            if (empty($validated['email'])) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => "Impossible de créer le compte : L'email est manquant (Apple ne le renvoie que lors de la première connexion). Veuillez révoquer l'accès Apple dans vos réglages et réessayer.",
-                ], 400);
-            }
+            // if (empty($validated['email'])) {
+            //     return response()->json([
+            //         'status' => 'error',
+            //         'message' => "Impossible de créer le compte : L'email est manquant (Apple ne le renvoie que lors de la première connexion). Veuillez révoquer l'accès Apple dans vos réglages et réessayer.",
+            //     ], 400);
+            // }
 
             $name = $validated['name'] ?? 'Utilisateur Apple';
 
