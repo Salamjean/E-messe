@@ -78,6 +78,35 @@
 
     @stack('js')
 
+    @auth('paroisse')
+        @php
+            $user = Auth::guard('paroisse')->user();
+            $montantUndefined = !$user->montant_offrande || $user->montant_offrande == 0;
+            $isOffrandePage = Route::is('paroisse.offrande');
+        @endphp
+
+        @if ($montantUndefined && !$isOffrandePage)
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        title: 'Configuration requise',
+                        text: "Veuillez définir le montant de messe pour votre paroisse avant d'accéder au menu.",
+                        icon: 'warning',
+                        confirmButtonColor: '#c49d54',
+                        confirmButtonText: 'Définir maintenant',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        backdrop: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "{{ route('paroisse.offrande') }}";
+                        }
+                    });
+                });
+            </script>
+        @endif
+    @endauth
+
 </body>
 
 </html>

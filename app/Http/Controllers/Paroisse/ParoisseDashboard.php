@@ -22,12 +22,14 @@ class ParoisseDashboard extends Controller
         $celebratedDemandes = $paroisse->messes()->where('statut', 'celebre')->count();
 
         // Total global des demandes (pour calculer les pourcentages)
-        $totalDemandes = $paroisse->messes()->count();
+        $totalDemandes = $paroisse->messes()->where('statut', 'confirmee')->count();
 
         // Montant total des demandes (Somme des offrandes)
-        $totalOffrandes = $paroisse->messes()
-            ->whereNotNull('montant_offrande')
-            ->sum('montant_offrande');
+        // $totalOffrandes = $paroisse->messes()
+        //     ->whereNotNull('montant_offrande')
+        //     ->sum('montant_offrande');
+
+        $totalOffrandes = $paroisse->montant_offrande;
 
         // --- 2. LOGIQUE PORTEFEUILLE ---
 

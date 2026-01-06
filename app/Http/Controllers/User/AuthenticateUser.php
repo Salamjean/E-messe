@@ -105,7 +105,7 @@ class AuthenticateUser extends Controller
             // Check if user exists to give specific error
             $userExists = User::where($login_type, $request->login_id)->exists();
 
-            if (!$userExists) {
+            if (! $userExists) {
                 return redirect()->back()->withErrors([
                     'login_id' => 'Ce compte n\'existe pas.',
                 ])->withInput();

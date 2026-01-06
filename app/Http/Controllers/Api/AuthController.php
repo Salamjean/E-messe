@@ -171,86 +171,101 @@ class AuthController extends Controller
      *     )
      * )
      */
+    // public function login(Request $request)
+    // {
+    //     $request->validate([
+    //         'login' => 'required|string',
+    //         'password' => 'required|string',
+    //     ]);
+
+    //     $user = User::where('email', $request->login)
+    //         ->orWhere('user_name', $request->login)
+    //         ->first();
+
+    //     if (! $user || ! Hash::check($request->password, $user->password)) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Identifiants incorrects.',
+    //         ], 401);
+    //     }
+
+    //     if (! $user->actif) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Compte inactif. Contactez l’administration.',
+    //         ], 403);
+    //     }
+
+    //     $user->tokens()->delete();
+    //     $token = $user->createToken('auth_token')->plainTextToken;
+
+    //     return response()->json([
+    //         'status' => 'success',
+    //         'message' => 'Connexion réussie.',
+    //         'access_token' => $token,
+    //         'token_type' => 'Bearer',
+    //         'user' => [
+    //             'id' => $user->id,
+    //             'name' => $user->name,
+    //             'user_name' => $user->user_name,
+    //             'email' => $user->email,
+    //             'contact' => $user->contact,
+    //             'civilite' => $user->civilite,
+    //             'profile_picture' => $user->profile_picture,
+    //         ],
+    //     ], 200);
+    // }
+
     public function login(Request $request)
-    {
-        $request->validate([
-            'login' => 'required|string',
-            'password' => 'required|string',
-        ]);
+{
+    $request->validate([
+        'login' => 'required|string',
+        'password' => 'required|string',
+    ]);
 
-        $user = User::where('email', $request->login)
-            ->orWhere('user_name', $request->login)
-            ->first();
+    $user = User::where('email', $request->login)
+        ->orWhere('user_name', $request->login)
+        ->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Identifiants incorrects.',
-            ], 401);
-        }
-
-        if (! $user->actif) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Compte inactif. Contactez l’administration.',
-            ], 403);
-        }
-
-        $user->tokens()->delete();
-        $token = $user->createToken('auth_token')->plainTextToken;
-
+    if (! $user || ! Hash::check($request->password, $user->password)) {
         return response()->json([
-            'status' => 'success',
-            'message' => 'Connexion réussie.',
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'user_name' => $user->user_name,
-                'email' => $user->email,
-                'contact' => $user->contact,
-                'civilite' => $user->civilite,
-                'profile_picture' => $user->profile_picture,
-            ],
-        ], 200);
+            'status' => 'error',
+            'message' => 'Identifiants incorrects.',
+        ], 401);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/auth/google",
-     *     summary="Connexion ou inscription via Google",
-     *     description="Connecte ou crée un utilisateur à partir des informations Google déjà vérifiées côté client.",
-     *     tags={"Authentication"},
-     *
-     *     @OA\RequestBody(
-     *         required=true,
-     *
-     *         @OA\JsonContent(
-     *             required={"email","googleId"},
-     *
-     *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
-     *             @OA\Property(property="googleId", type="string", example="1029384756abcd"),
-     *             @OA\Property(property="fullName", type="string", example="John Doe"),
-     *             @OA\Property(property="photoUrl", type="string", nullable=true, example="https://lh3.googleusercontent.com/..."),
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Connexion réussie ou compte créé",
-     *
-     *         @OA\JsonContent(
-     *
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="message", type="string", example="Connexion réussie avec Google ✅"),
-     *             @OA\Property(property="access_token", type="string", example="1|xyz123..."),
-     *             @OA\Property(property="token_type", type="string", example="Bearer"),
-     *             @OA\Property(property="user", ref="#/components/schemas/User")
-     *         )
-     *     )
-     * )
-     */
+    // 🔴 NE PAS bloquer ici avec actif
+    // actif = état de connexion, pas de blocage
+
+    // Supprimer anciens tokens
+    $user->tokens()->delete();
+
+    // 🔥 MARQUER CONNECTÉ
+    $user->actif = 1;
+    $user->save();
+
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Connexion réussie.',
+        'access_token' => $token,
+        'token_type' => 'Bearer',
+        'user' => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'user_name' => $user->user_name,
+            'email' => $user->email,
+            'contact' => $user->contact,
+            'profile_picture' => $user->profile_picture,
+            'actif' => $user->actif,
+        ],
+    ], 200);
+}
+
+
+
+
     public function loginWithGoogle(Request $request)
     {
         $validated = $request->validate([
@@ -260,35 +275,30 @@ class AuthController extends Controller
             'profile_picture' => 'nullable|string|max:500',
         ]);
 
-        // Vérifie si un utilisateur existe déjà avec ce Google ID ou cet email
         $user = User::where('google_id', $validated['googleId'])
             ->orWhere('email', $validated['email'])
             ->first();
 
         if (! $user) {
-            // Crée un nouvel utilisateur minimal
             $user = User::create([
                 'name' => $validated['name'] ?? 'Utilisateur Google',
                 'user_name' => Str::slug(explode('@', $validated['email'])[0]).rand(100, 999),
                 'email' => $validated['email'],
                 'google_id' => $validated['googleId'],
                 'password' => bcrypt(Str::random(16)),
-                'actif' => 1,
+                'actif' => 1, // 🔥 connecté
                 'profile_picture' => $validated['profile_picture'] ?? null,
                 'contact' => '00000000',
             ]);
         } else {
-            // Met à jour le compte existant
             $user->update([
                 'google_id' => $validated['googleId'],
-                'profile_picture' => $validated['photoUrl'] ?? $user->profile_picture,
+                'profile_picture' => $validated['profile_picture'] ?? $user->profile_picture,
+                'actif' => 1, // 🔥 connecté
             ]);
         }
 
-        // Supprime les anciens tokens
         $user->tokens()->delete();
-
-        // Génère un nouveau token
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -302,7 +312,6 @@ class AuthController extends Controller
 
     public function loginWithApple(Request $request)
     {
-        // 1. Validation des données reçues de Flutter
         $validated = $request->validate([
             'identity_token' => 'required|string',
             'apple_id' => 'required|string',
@@ -317,32 +326,26 @@ class AuthController extends Controller
         }
 
         if (! $user) {
-            $name = $validated['name'] ?? 'Utilisateur Apple';
-
             $email = $validated['email'] ?? 'apple_user_'.uniqid().'@example.com';
 
-            // Générer un user_name unique
             $baseUsername = $validated['email']
-                            ? explode('@', $validated['email'])[0]
-                            : 'appleuser';
-            $userName = Str::slug($baseUsername).rand(100, 999);
+                ? explode('@', $validated['email'])[0]
+                : 'appleuser';
 
             $user = User::create([
-                'name' => $name,
-                'user_name' => $userName,
+                'name' => $validated['name'] ?? 'Utilisateur Apple',
+                'user_name' => Str::slug($baseUsername).rand(100, 999),
                 'email' => $email,
                 'apple_id' => $validated['apple_id'],
                 'password' => Hash::make(Str::random(16)),
-                'actif' => 1,
+                'actif' => 1, // 🔥 connecté
                 'contact' => '00000000',
-                'profile_picture' => null,
             ]);
         } else {
-            if ($user->apple_id !== $validated['apple_id']) {
-                $user->update([
-                    'apple_id' => $validated['apple_id'],
-                ]);
-            }
+            $user->update([
+                'apple_id' => $validated['apple_id'],
+                'actif' => 1, // 🔥 connecté
+            ]);
         }
 
         $user->tokens()->delete();
@@ -356,6 +359,7 @@ class AuthController extends Controller
             'user' => $user,
         ]);
     }
+
 
     /**
      * Enregistrement d'un utilisateur
@@ -420,6 +424,7 @@ class AuthController extends Controller
      *     )
      * )
      */
+    
     public function register(Request $request)
     {
         $validated = $request->validate([
@@ -429,7 +434,7 @@ class AuthController extends Controller
             'contact' => 'required|string|max:191|unique:users,contact',
             'civilite' => 'required|string|max:10',
             'password' => 'required|min:8|confirmed',
-            'profile_picture' => 'nullable', // plus strict validation supprimée
+            'profile_picture' => 'nullable',
         ]);
 
         $profilePath = null;
@@ -511,26 +516,50 @@ class AuthController extends Controller
      *     )
      * )
      */
+    // public function logout(Request $request)
+    // {
+    //     $user = $request->user();
+
+    //     // Debug headers et token
+    //     Log::info('Headers reçus pour logout', $request->headers->all());
+    //     Log::info('User récupéré pour logout', ['user' => $user]);
+
+    //     if (! $user) {
+    //         return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+    //     }
+    //     // Effacer le token FCM
+    //     $user->fcm_token = null;
+    //     $user->save();
+
+    //     // Supprimer les tokens d'authentification Sanctum
+    //     $user->tokens()->delete();
+
+    //     return response()->json(['message' => 'Déconnexion réussie']);
+    // }
+
     public function logout(Request $request)
     {
         $user = $request->user();
 
-        // Debug headers et token
-        Log::info('Headers reçus pour logout', $request->headers->all());
-        Log::info('User récupéré pour logout', ['user' => $user]);
-
         if (! $user) {
-            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+            return response()->json([
+                'message' => 'Utilisateur non authentifié',
+            ], 401);
         }
-        // Effacer le token FCM
+
+        // 🔥 MARQUER DÉCONNECTÉ
+        $user->actif = 0;
         $user->fcm_token = null;
         $user->save();
 
-        // Supprimer les tokens d'authentification Sanctum
+        // Supprimer tous les tokens
         $user->tokens()->delete();
 
-        return response()->json(['message' => 'Déconnexion réussie']);
+        return response()->json([
+            'message' => 'Déconnexion réussie',
+        ]);
     }
+
 
     // /**
     //  * Mot de passe oublié - Envoi du lien

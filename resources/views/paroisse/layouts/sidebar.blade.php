@@ -59,7 +59,7 @@
                         data-toggle="expansionPanel" data-target="messes-menu">
                         <span class="d-flex align-items-center">
                             <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon me-2">
-                                account_balance_wallet
+                                assignment
                             </i>
                             <span>Messes demandées</span>
                         </span>
@@ -93,14 +93,15 @@
                     </div>
                 </div>
 
+                <!-- Menu Déroulant: Paroissien -->
                 <div class="mdc-list-item mdc-drawer-item">
                     <a class="mdc-expansion-panel-link d-flex align-items-center justify-content-between" href="#"
                         data-toggle="expansionPanel" data-target="paroissien-menu">
                         <span class="d-flex align-items-center">
                             <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon me-2">
-                                account_balance_wallet
+                                people
                             </i>
-                            <span>Paroissien</span>
+                            <span>Paroissiens</span>
                         </span>
                         <i class="mdc-drawer-arrow material-icons">chevron_right</i>
                     </a>
@@ -109,12 +110,12 @@
                         <nav class="mdc-list mdc-drawer-submenu">
                             <div class="mdc-list-item mdc-drawer-item">
                                 <a class="mdc-drawer-link" href="{{ route('paroissien.create') }}">
-                                    Ajoute un paroissien
+                                    Ajouter un paroissien
                                 </a>
                             </div>
                             <div class="mdc-list-item mdc-drawer-item">
                                 <a class="mdc-drawer-link" href="{{ route('paroissien.index') }}">
-                                    Liste des paroissien
+                                    Liste des paroissiens
                                 </a>
                             </div>
                         </nav>
@@ -161,12 +162,14 @@
 
                 <!-- Menu Déroulant: Retraits -->
                 <div class="mdc-list-item mdc-drawer-item">
-                    <a class="mdc-expansion-panel-link" href="#" data-toggle="expansionPanel"
-                        data-target="menu-retrait">
-                        <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon">
-                            account_balance_wallet
-                        </i>
-                        Retrait
+                    <a class="mdc-expansion-panel-link d-flex align-items-center justify-content-between" href="#"
+                        data-toggle="expansionPanel" data-target="menu-retrait">
+                        <span class="d-flex align-items-center">
+                            <i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon me-2">
+                                payments
+                            </i>
+                            <span>Retraits</span>
+                        </span>
                         <i class="mdc-drawer-arrow material-icons">chevron_right</i>
                     </a>
 
