@@ -344,11 +344,15 @@ class MesseController extends Controller
 
             // 🔹 Simulation Paiement
             $paiementEffectue = rand(0, 1); // à remplacer par ton intégration réelle
+            // Calculer les frais: 4% avec un minimum de 200 FCFA
+            $frais = max($request->montant_offrande * 0.04, 200);
+            $montantTotal = $request->montant_offrande + $frais;
+
             $paiement = Paiement::create([
                 'messe_id' => $messe->id,
                 'user_id' => $user->id,
                 'reference' => $reference,
-                'montant' => $request->montant_offrande * 1.02,
+                'montant' => $montantTotal,
                 'devise' => 'XOF',
                 'methode' => 'wave',
                 'statut' => $paiementEffectue ? 'paye' : 'en_attente',

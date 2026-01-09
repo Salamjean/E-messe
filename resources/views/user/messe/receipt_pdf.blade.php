@@ -204,7 +204,7 @@
                 <td style="vertical-align: top;">
                     <div class="total-amount">
                         +
-                        {{ number_format(($messe->montant_offrande ?? 0) + ($messe->montant_offrande ?? 0) * 0.02, 0, ',', ' ') }}
+                        {{ number_format($messe->paiements->first()->montant ?? ($messe->montant_offrande ?? 0) + max(($messe->montant_offrande ?? 0) * 0.04, 200), 0, ',', ' ') }}
                         F
                     </div>
                     <div class="payment-description">
@@ -286,7 +286,8 @@
             </div>
             <div class="info-row">
                 <span class="info-label">Frais</span>
-                <span class="info-value">{{ number_format(($messe->montant_offrande ?? 0) * 0.02, 0, ',', ' ') }}
+                <span
+                    class="info-value">{{ number_format(($messe->paiements->first()->montant ?? 0) - ($messe->montant_offrande ?? 0), 0, ',', ' ') }}
                     F</span>
             </div>
         </div>
@@ -300,7 +301,8 @@
             </div>
             <div class="reference-row">
                 <span class="reference-label">Opérateur</span>
-                <span class="reference-value">WAVE</span>
+                <span
+                    class="reference-value">{{ strtoupper($messe->paiements->first()->operateur ?? 'CinetPay') }}</span>
             </div>
         </div>
 

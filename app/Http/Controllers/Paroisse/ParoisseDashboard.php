@@ -22,23 +22,21 @@ class ParoisseDashboard extends Controller
         $celebratedDemandes = $paroisse->messes()->where('statut', 'celebre')->count();
 
         // Total global des demandes (pour calculer les pourcentages)
-        $totalDemandes = $paroisse->messes()->where('statut', 'confirmee')->count();
+        $totalDemandes = $paroisse->messes()->whereIn('statut', ['en attente', 'confirmee', 'celebre'])->count();
 
-        // Montant total des demandes (Somme des offrandes)
-        // $totalOffrandes = $paroisse->messes()
-        //     ->whereNotNull('montant_offrande')
-        //     ->sum('montant_offrande');
-
-        $totalOffrandes = $paroisse->montant_offrande;
+        // Montant total des demandes confirmées et célébrées (Somme des offrandes uniquement)
+        $totalOffrandes = $paroisse->messes()
+            ->whereIn('statut', ['confirmee', 'celebre'])
+            ->sum('montant_offrande');
 
         // --- 2. LOGIQUE PORTEFEUILLE ---
 
-        // Somme des paiements reçus (statut 'paye')
-        $totalPaiements = DB::table('paiements')
-            ->join('messes', 'paiements.messe_id', '=', 'messes.id')
+        // Somme des offrandes pour les paiements reçus (statut 'paye')
+        $totalPaiementsOffrande = DB::table('messes')
+            ->join('paiements', 'messes.id', '=', 'paiements.messe_id')
             ->where('messes.paroisse_id', $paroisse->id)
             ->where('paiements.statut', 'paye')
-            ->sum('paiements.montant');
+            ->sum('messes.montant_offrande');
 
         // Somme des retraits effectués (hors rejetés)
         $totalRetraits = DB::table('paroisse_retraits')
@@ -46,10 +44,8 @@ class ParoisseDashboard extends Controller
             ->where('statut', '!=', 'rejete')
             ->sum('montant');
 
-        // dd($totalRetraits);
-
-        // Calcul du solde disponible (Formule : Recettes / 1.01 - Retraits)
-        $soldeDisponible = ($totalPaiements) - $totalRetraits;
+        // Calcul du solde disponible (Formule : Recettes Offrandes - Retraits)
+        $soldeDisponible = $totalPaiementsOffrande - $totalRetraits;
 
         // --- 3. GRAPHIQUE LINÉAIRE (EVOLUTION MENSUELLE) ---
         // On veut le NOMBRE de demandes par mois (Jan-Déc) pour cette année vs année passée.

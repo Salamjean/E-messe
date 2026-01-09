@@ -4,35 +4,36 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Paiement;
-use App\Services\WaveService;
+use App\Services\CinetPayService;
 
 class VerifyPendingPayments extends Command
 {
     protected $signature = 'payments:verify';
-    protected $description = 'Vérifier les paiements en attente avec Wave';
+    protected $description = 'Vérifier les paiements en attente avec CinetPay';
 
-    public function handle()
+    public function handle(CinetPayService $cinetPayService)
     {
-        $waveService = new WaveService();
         $pendingPayments = Paiement::where('statut', 'en_attente')
-            ->where('methode', 'wave')
             ->get();
 
         foreach ($pendingPayments as $payment) {
-            $transaction = $waveService->verifyByMerchantReference($payment->reference);
+            $response = $cinetPayService->checkStatus($payment->reference);
             
-            if ($transaction && $transaction['status'] === 'completed') {
+            if (isset($response['code']) && $response['code'] === '00') {
                 $payment->update([
                     'statut' => 'paye',
                     'date_paiement' => now(),
-                    'donnees_transaction' => json_encode($transaction),
+                    'donnees_transaction' => json_encode($response['data']),
+                    'operateur' => $response['data']['payment_method'] ?? $payment->operateur
                 ]);
                 
-                $payment->messe->update([
-                    'statut' => 'confirme'
-                ]);
+                if ($payment->messe) {
+                    $payment->messe->update([
+                        'statut' => 'en attente'
+                    ]);
+                }
                 
-                $this->info("Paiement {$payment->reference} confirmé.");
+                $this->info("Paiement {$payment->reference} confirmé via CinetPay.");
             }
         }
         

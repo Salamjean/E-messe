@@ -291,7 +291,7 @@
                 <div class="amount-section">
                     <div class="total-amount">
                         +
-                        {{ number_format(($messe->montant_offrande ?? 0) + ($messe->montant_offrande ?? 0) * 0.02, 0, ',', ' ') }}
+                        {{ number_format($messe->paiements->first()->montant ?? ($messe->montant_offrande ?? 0) + max(($messe->montant_offrande ?? 0) * 0.04, 200), 0, ',', ' ') }}
                         F
                     </div>
                     <div class="payment-description">
@@ -313,18 +313,22 @@
                     } elseif (str_contains($operateur, 'mtn')) {
                         $iconClass = 'mtn';
                         $logoPath = asset('assets/assets/image_recu/mtn.png');
+                    } elseif (str_contains($operateur, 'wave')) {
+                        $iconClass = 'wave';
+                        $logoPath = asset('assets/assets/image_recu/wave.png');
                     } elseif (
                         str_contains($operateur, 'stripe') ||
                         str_contains($operateur, 'bank') ||
                         str_contains($operateur, 'bancaire') ||
-                        str_contains($operateur, 'carte')
+                        str_contains($operateur, 'carte') ||
+                        str_contains($operateur, 'card')
                     ) {
                         $iconClass = 'bank';
                         $logoPath = asset('assets/assets/image_recu/stripe.png');
                     } else {
-                        // Wave par défaut
-                        $iconClass = 'wave';
-                        $logoPath = asset('assets/assets/image_recu/wave.png');
+                        // CinetPay / Autre
+                        $iconClass = 'bank';
+                        $logoPath = 'https://admin.cinetpay.com/img/logo.png';
                     }
                 @endphp
                 <div class="payment-icon {{ $iconClass }}">
@@ -365,8 +369,9 @@
                     <span class="info-value">{{ number_format($messe->montant_offrande ?? 0, 0, ',', ' ') }} F</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Frais</span>
-                    <span class="info-value">{{ number_format(($messe->montant_offrande ?? 0) * 0.02, 0, ',', ' ') }}
+                    <span class="info-label">Frais (4% - min 200F)</span>
+                    <span
+                        class="info-value">{{ number_format(($messe->paiements->first()->montant ?? 0) - ($messe->montant_offrande ?? 0), 0, ',', ' ') }}
                         F</span>
                 </div>
             </div>
@@ -380,7 +385,8 @@
                 </div>
                 <div class="reference-row">
                     <span class="reference-label">Opérateur</span>
-                    <span class="reference-value">WAVE</span>
+                    <span
+                        class="reference-value">{{ strtoupper($messe->paiements->first()->operateur ?? 'CinetPay') }}</span>
                 </div>
             </div>
 

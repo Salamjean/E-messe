@@ -128,11 +128,12 @@ class ParoissePaiement extends Controller
     // AJOUTEZ OU REMPLACEZ CETTE MÉTHODE UTILITAIRE SI ELLE N'EXISTE PAS
     private function calculerSolde($paroisseId)
     {
-        $totalPaiements = DB::table('paiements')
-            ->join('messes', 'paiements.messe_id', '=', 'messes.id')
+        // Somme des offrandes pour les paiements reçus (statut 'paye')
+        $totalRecettesOffrande = DB::table('messes')
+            ->join('paiements', 'messes.id', '=', 'paiements.messe_id')
             ->where('messes.paroisse_id', $paroisseId)
             ->where('paiements.statut', 'paye')
-            ->sum('paiements.montant');
+            ->sum('messes.montant_offrande');
 
         $totalRetraits = DB::table('paroisse_retraits')
             ->where('paroisse_id', $paroisseId)
@@ -143,7 +144,7 @@ class ParoissePaiement extends Controller
             ->whereIn('statut', ['success', 'pending'])
             ->sum('montant');
 
-        return ($totalPaiements / 1.01) - $totalRetraits - $totalReversementsApi;
+        return (int) $totalRecettesOffrande - (int) ($totalRetraits + $totalReversementsApi);
     }
 
     /**

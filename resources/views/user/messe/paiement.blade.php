@@ -6,7 +6,7 @@
             <div class="col-md-8">
                 <div class="card shadow-lg border-0 rounded-3">
                     <div class="card-header py-3 rounded-top-3" style="background-color: #f35525; color:white">
-                        <h5 class="card-title mb-0 text-center text-white"><i class="fas fa-money-bill-wave me-2"></i>Paiement
+                        <h5 class="card-title mb-0 text-center text-white"><i class="fas fa-credit-card me-2"></i>Paiement
                             de la demande de messe</h5>
                     </div>
 
@@ -29,15 +29,15 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <p><strong><i class="fas fa-coins me-2 text-muted"></i>Montant de la messe:</strong></p>
-                                    <p><strong><i class="fas fa-percent me-2 text-muted"></i>Frais de service (2%):</strong>
+                                    <p><strong><i class="fas fa-percent me-2 text-muted"></i>Frais de service :</strong>
                                     </p>
-                                    <p><strong><i class="fas fa-money-bill-wave me-2 text-muted"></i>Montant total à
+                                    <p><strong><i class="fas fa-wallet me-2 text-muted"></i>Montant total à
                                             payer:</strong></p>
                                 </div>
                                 <div class="col-md-6 text-end">
                                     <p class="fw-bold text-primary">
-                                        {{ number_format($paiement->montant / 1.02, 0, ',', ' ') }} FCFA</p>
-                                    <p>{{ number_format($montantTotal * 0.02, 0, ',', ' ') }} FCFA</p>
+                                        {{ number_format($messe->montant_offrande, 0, ',', ' ') }} FCFA</p>
+                                    <p>{{ number_format($montantTotal - $messe->montant_offrande, 0, ',', ' ') }} FCFA</p>
                                     <p class="fw-bold text-success fs-5">{{ number_format($montantTotal, 0, ',', ' ') }}
                                         FCFA</p>
                                 </div>
@@ -49,45 +49,33 @@
                         </div>
 
                         <div class="text-center my-4">
-                            <h5 class="mb-4">Choisissez votre méthode de paiement</h5>
+                            <h5 class="mb-4">Mode de paiement sécurisé</h5>
 
-                            <div class="row g-4">
-                                <!-- Option Wave -->
-                                <div class="col-md-6">
-                                    <div class="payment-option-card rounded-3 p-4 h-100 border">
+                            <div class="row justify-content-center">
+                                <div class="col-md-8">
+                                    <div class="payment-option-card rounded-3 p-4 border shadow-sm">
                                         <div class="mb-3">
-                                            <i class="fas fa-mobile-alt fa-3x text-primary"></i>
+                                            <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                                            <div class="d-flex justify-content-center gap-3 mb-3">
+                                                <i class="fab fa-cc-visa fa-2x text-secondary"></i>
+                                                <i class="fab fa-cc-mastercard fa-2x text-secondary"></i>
+                                                <i class="fas fa-mobile-alt fa-2x text-secondary"></i>
+                                            </div>
                                         </div>
-                                        <h6>Paiement Mobile</h6>
-                                        <p class="small text-muted">Payer avec Wave, Orange Money, etc.</p>
+                                        <h6>Paiement Multi-canal CinetPay</h6>
+                                        <p class="small text-muted">Payez en toute sécurité via Mobile Money (Wave, Orange,
+                                            Moov, MTN) ou par Carte Bancaire.</p>
                                         <form action="{{ route('user.messe.initier-paiement', $paiement->reference) }}"
                                             method="POST" class="mt-3">
                                             @csrf
-                                            <button type="submit" class="btn btn-primary w-100 rounded-2 py-2">
-                                                <i class="fas fa-mobile-alt me-2"></i>Payer
-                                                {{ number_format($montantTotal, 0, ',', ' ') }} FCFA
+                                            <button type="submit" class="btn btn-primary w-100 rounded-2 py-3 fs-5">
+                                                <i class="fas fa-lock me-2"></i>Payer maintenant
                                             </button>
                                         </form>
-                                    </div>
-                                </div>
-
-                                <!-- Option Stripe -->
-                                <div class="col-md-6">
-                                    <div class="payment-option-card rounded-3 p-4 h-100 border">
-                                        <div class="mb-3">
-                                            <i class="fas fa-credit-card fa-3x text-success"></i>
+                                        <div class="mt-3">
+                                            <img src="https://admin.cinetpay.com/img/logo.png" alt="CinetPay"
+                                                style="height: 30px; opacity: 0.7;">
                                         </div>
-                                        <h6>Carte Bancaire</h6>
-                                        <p class="small text-muted">Payer par carte Visa, Mastercard</p>
-                                        <form
-                                            action="{{ route('user.messe.initier-paiement-stripe', $paiement->reference) }}"
-                                            method="POST" class="mt-3">
-                                            @csrf
-                                            <button type="submit" class="btn btn-success w-100 rounded-2 py-2">
-                                                <i class="fas fa-credit-card me-2"></i>Payer
-                                                {{ number_format($montantTotal, 0, ',', ' ') }} FCFA
-                                            </button>
-                                        </form>
                                     </div>
                                 </div>
                             </div>

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\User\Messe;
 use App\Http\Controllers\Controller;
 use App\Models\Messe;
 use App\Models\Paiement;
-use App\Services\WaveService;
+use App\Services\CinetPayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -13,11 +13,11 @@ use Illuminate\Support\Facades\Log;
 
 class PaiementController extends Controller
 {
-    protected $waveService;
+    protected $cinetPayService;
 
-    public function __construct()
+    public function __construct(CinetPayService $cinetPayService)
     {
-        $this->waveService = new WaveService;
+        $this->cinetPayService = $cinetPayService;
     }
 
     /**
@@ -60,69 +60,52 @@ class PaiementController extends Controller
                     ->with('info', 'Ce paiement a déjà été traité.');
             }
 
-            // Calculer le montant avec frais de 2%
-            $montantAvecFrais = $paiement->montant;
+            // Calculer le montant total
+            $montantTotal = $paiement->montant;
 
-            // Stocker les frais dans les données de transaction
-            $donneesAvecFrais = [
-                'montant_initial' => $paiement->montant,
-                'montant_total' => $montantAvecFrais,
-                'taux_frais' => '2%',
+            // URLs pour CinetPay
+            $urls = [
+                'notify_url' => route('cinetpay.success'), 
+                'return_url' => route('user.messe.verification-paiement', $paiement->reference),
+                'cancel_url' => route('user.messe.paiement', $paiement->reference),
             ];
 
-            // Créer la session de paiement Wave avec le montant total
-            $redirectUrl = route('user.messe.verification-paiement', $paiement->reference);
+            // Infos client
+            $customerInfo = [
+                'nom' => $paiement->messe->nom_demandeur ?? 'Fidele',
+                'prenom' => '',
+                'email' => $paiement->messe->email_demandeur,
+                'telephone' => $paiement->messe->telephone_demandeur,
+            ];
 
-            // FORCER HTTP EN ENVIRONNEMENT LOCAL
-            if (app()->environment('local')) {
-                $redirectUrl = str_replace('https://', 'http://', $redirectUrl);
-            }
-
-            $session = $this->waveService->createCheckoutSession(
-                $montantAvecFrais, // Utiliser le montant avec frais
-                $paiement->devise,
+            // Initialiser le paiement avec CinetPay
+            $result = $this->cinetPayService->initPayment(
                 $paiement->reference,
-                $redirectUrl,
-                [
-                    'email' => $paiement->messe->email_demandeur,
-                    'name' => $paiement->messe->nom_demandeur,
-                ]
+                $montantTotal,
+                $urls,
+                $customerInfo
             );
 
-            if ($session && isset($session['id'])) {
-                // Combiner les données Wave avec nos données de frais
-                $donneesTransaction = array_merge($session, $donneesAvecFrais);
-
-                // Mettre à jour le paiement avec l'ID de session Wave et les frais
-                $paiement->transaction_id = $session['id'];
-                $paiement->donnees_transaction = json_encode($donneesTransaction);
+            if ($result['success']) {
+                $paiement->transaction_id = $paiement->reference;
+                $paiement->donnees_transaction = json_encode($result['api_response']);
                 $paiement->statut = 'en_attente';
                 $paiement->save();
 
-                // Mettre à jour le statut de la messe
                 $messe = $paiement->messe;
                 $messe->statut = 'en_attente_paiement';
                 $messe->save();
 
                 DB::commit();
 
-                // Rediriger vers la page de paiement Wave
-                $redirectUrl = $session['wave_launch_url'] ?? null;
-
-                if ($redirectUrl) {
-                    return redirect($redirectUrl);
-                } else {
-                    Log::error('URL de redirection Wave manquante', ['session' => $session]);
-
-                    return redirect()->back()
-                        ->with('error', 'Erreur technique lors de la redirection. Veuillez réessayer.');
-                }
+                return redirect($result['payment_url']);
             }
 
             DB::rollBack();
+            Log::error('Erreur initialisation CinetPay', ['result' => $result]);
 
             return redirect()->back()
-                ->with('error', 'Erreur lors de l\'initialisation du paiement. Veuillez réessayer.');
+                ->with('error', 'Erreur lors de l\'initialisation du paiement CinetPay : ' . ($result['message'] ?? 'Erreur inconnue'));
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -150,10 +133,8 @@ class PaiementController extends Controller
 
             $messe = $paiement->messe;
 
-            Log::debug('Vérification paiement', [
+            Log::debug('Vérification paiement CinetPay', [
                 'reference' => $reference,
-                'session_id' => $paiement->transaction_id,
-                'statut_url' => $request->query('status'),
             ]);
 
             // Vérifier si déjà payé
@@ -164,33 +145,20 @@ class PaiementController extends Controller
                     ->with('success', 'Paiement déjà confirmé.');
             }
 
-            $status = $request->query('status');
+            // Vérifier avec CinetPay
+            $statusResponse = $this->cinetPayService->checkStatus($reference);
 
-            if ($status === 'success') {
-                Log::debug('Paiement réussi détecté via URL');
+            if (isset($statusResponse['code']) && $statusResponse['code'] === '00') {
+                Log::info('Paiement CinetPay SUCCESS pour ' . $reference);
 
-                // Vérifier avec l'API Wave pour confirmation
-                $waveStatus = null;
-                if ($paiement->transaction_id) {
-                    $session = $this->waveService->verifyBySessionId($paiement->transaction_id);
-
-                    if ($session) {
-                        $waveStatus = $session['status'] ?? $session['state'] ?? $session['payment_status'] ?? null;
-                        Log::debug('Statut Wave détecté: '.$waveStatus);
-
-                        // Mettre à jour les données de transaction avec le statut Wave
-                        $donneesExistantes = json_decode($paiement->donnees_transaction, true) ?? [];
-                        $donneesTransaction = array_merge($donneesExistantes, [
-                            'wave_status' => $waveStatus,
-                            'wave_verification' => $session,
-                        ]);
-                        $paiement->donnees_transaction = json_encode($donneesTransaction);
-                    }
-                }
-
-                // Paiement réussi
                 $paiement->statut = 'paye';
                 $paiement->date_paiement = now();
+                $paiement->donnees_transaction = json_encode($statusResponse['data']);
+                
+                if (isset($statusResponse['data']['payment_method'])) {
+                    $paiement->operateur = $statusResponse['data']['payment_method'];
+                }
+                
                 $paiement->save();
 
                 $messe->statut = 'en attente';
@@ -198,7 +166,6 @@ class PaiementController extends Controller
 
                 DB::commit();
 
-                // Envoi notification si activé
                 if ($messe->user && $messe->user->emailNotif) {
                     try {
                         $messe->user->notify(new \App\Notifications\PaiementSuccessNotification($paiement));
@@ -209,61 +176,12 @@ class PaiementController extends Controller
 
                 return redirect()->route('user.messe.index')
                     ->with('success', 'Paiement effectué avec succès. Votre demande de messe est confirmée.');
-            } elseif ($status === 'error' || $status === 'cancel') {
-                Log::debug('Paiement échoué détecté via URL');
-
-                // Paiement échoué
-                $paiement->statut = 'echec';
-                $paiement->save();
-
-                $messe->statut = 'en attente';
-                $messe->save();
-
-                DB::commit();
+            } else {
+                Log::warning('Paiement CinetPay non abouti', ['res' => $statusResponse]);
+                DB::commit(); 
 
                 return redirect()->route('user.messe.paiement', $reference)
-                    ->with('error', 'Le paiement a échoué. Veuillez réessayer.');
-            } else {
-                Log::debug('Aucun statut dans URL, vérification via API Wave');
-
-                // Essayer avec le session ID
-                if ($paiement->transaction_id) {
-                    $session = $this->waveService->verifyBySessionId($paiement->transaction_id);
-
-                    if ($session) {
-                        $waveStatus = $session['status'] ?? $session['state'] ?? $session['payment_status'] ?? 'inconnu';
-                        Log::debug('Statut session Wave: '.$waveStatus);
-
-                        if (in_array($waveStatus, ['completed', 'success', 'paid', 'succeeded'])) {
-                            // Paiement réussi via API
-                            $paiement->statut = 'paye';
-                            $paiement->date_paiement = now();
-
-                            // Mettre à jour les données de transaction
-                            $donneesExistantes = json_decode($paiement->donnees_transaction, true) ?? [];
-                            $donneesTransaction = array_merge($donneesExistantes, [
-                                'wave_status' => $waveStatus,
-                                'wave_verification' => $session,
-                            ]);
-                            $paiement->donnees_transaction = json_encode($donneesTransaction);
-                            $paiement->save();
-
-                            $messe->statut = 'en attente';
-                            $messe->save();
-
-                            DB::commit();
-
-                            return redirect()->route('user.messe.index')
-                                ->with('success', 'Paiement effectué avec succès.');
-                        }
-                    }
-                }
-
-                // Si on arrive ici, le paiement est en attente
-                DB::commit();
-
-                return view('user.messe.verification', compact('paiement'))
-                    ->with('info', 'Paiement en cours de traitement. Veuillez actualiser dans quelques instants.');
+                    ->with('error', 'Le paiement n\'a pas pu être confirmé ou a été annulé. Statut : ' . ($statusResponse['message'] ?? 'Inconnu'));
             }
 
         } catch (\Exception $e) {
@@ -280,72 +198,7 @@ class PaiementController extends Controller
      */
     public function verifierManuellement($reference)
     {
-        try {
-            DB::beginTransaction();
-
-            $paiement = Paiement::where('reference', $reference)
-                ->where('user_id', Auth::id())
-                ->firstOrFail();
-
-            $messe = $paiement->messe;
-
-            // Vérifier si déjà payé
-            if ($paiement->statut === 'paye') {
-                DB::commit();
-
-                return back()->with('info', 'Le paiement a déjà été confirmé.');
-            }
-
-            $transaction = $this->waveService->verifyByMerchantReference($reference);
-
-            if ($transaction) {
-                if ($transaction['status'] === 'completed') {
-                    // Paiement réussi
-                    $paiement->statut = 'paye';
-                    $paiement->date_paiement = now();
-
-                    // Mettre à jour les données de transaction
-                    $donneesExistantes = json_decode($paiement->donnees_transaction, true) ?? [];
-                    $donneesTransaction = array_merge($donneesExistantes, [
-                        'wave_status' => 'completed',
-                        'wave_verification' => $transaction,
-                    ]);
-                    $paiement->donnees_transaction = json_encode($donneesTransaction);
-                    $paiement->save();
-
-                    $messe->statut = 'en attente';
-                    $messe->save();
-
-                    DB::commit();
-
-                    // Envoi notification si activé
-                    if ($messe->user && $messe->user->emailNotif) {
-                        try {
-                            $messe->user->notify(new \App\Notifications\PaiementSuccessNotification($paiement));
-                        } catch (\Exception $e) {
-                            Log::error("Échec de la notification de paiement (Messe #{$messe->id}): ".$e->getMessage());
-                        }
-                    }
-
-                    return redirect()->route('user.messe.index')
-                        ->with('success', 'Paiement vérifié et confirmé avec succès.');
-                } else {
-                    DB::commit();
-
-                    return back()->with('info', 'Le paiement est toujours en attente. Statut: '.$transaction['status']);
-                }
-            }
-
-            DB::commit();
-
-            return back()->with('error', 'Impossible de vérifier le statut du paiement.');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Erreur verifierManuellement: '.$e->getMessage());
-
-            return back()->with('error', 'Erreur lors de la vérification: '.$e->getMessage());
-        }
+        return $this->verifierPaiement(request(), $reference);
     }
 
     /**
@@ -354,12 +207,13 @@ class PaiementController extends Controller
     private function getFraisDetails($paiement)
     {
         $donnees = json_decode($paiement->donnees_transaction, true) ?? [];
+        $montantOffrande = $paiement->messe->montant_offrande ?? ($paiement->montant / 1.04);
 
         return [
-            'montant_initial' => $donnees['montant_initial'] ?? $paiement->montant,
-            'frais_service' => $donnees['frais_service'] ?? ($paiement->montant * 0.02),
-            'montant_total' => $donnees['montant_total'] ?? ($paiement->montant + ($paiement->montant * 0.02)),
-            'taux_frais' => $donnees['taux_frais'] ?? '2%',
+            'montant_initial' => $montantOffrande,
+            'frais_service' => $paiement->montant - $montantOffrande,
+            'montant_total' => $paiement->montant,
+            'taux_frais' => '4% (min 200 FCFA)',
         ];
     }
 }

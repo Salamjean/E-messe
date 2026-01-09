@@ -180,12 +180,16 @@ class MesseController extends Controller
             // Générer une référence unique pour le paiement
             $reference = 'MESSE_'.time().'_'.$messe->id;
 
+            // Calculer les frais: 4% avec un minimum de 200 FCFA
+            $frais = max($request->montant_offrande * 0.04, 200);
+            $montantTotal = $request->montant_offrande + $frais;
+
             // Créer un enregistrement de paiement
             $paiement = Paiement::create([
                 'messe_id' => $messe->id,
                 'user_id' => Auth::user()->id,
                 'reference' => $reference,
-                'montant' => $request->montant_offrande * 1.02,
+                'montant' => $montantTotal,
                 'devise' => 'XOF',
                 'methode' => 'wave',
                 'statut' => 'en_attente',
