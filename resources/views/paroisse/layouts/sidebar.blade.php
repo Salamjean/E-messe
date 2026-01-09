@@ -68,20 +68,50 @@
 
                     <div class="mdc-expansion-panel" id="messes-menu">
                         <nav class="mdc-list mdc-drawer-submenu">
+                            @php
+                                $user = Auth::guard('paroisse')->user();
+                                $now = now()->startOfDay();
+
+                                $countEnAttente = $user->messes()->where('statut', 'en attente')->count();
+                                $countMesseDuJour = $user
+                                    ->messes()
+                                    ->where('statut', 'confirmee')
+                                    ->whereDate('date_souhaitee', '<=', $now)
+                                    ->count();
+                                $countFuture = $user
+                                    ->messes()
+                                    ->where('statut', 'confirmee')
+                                    ->whereDate('date_souhaitee', '>', $now)
+                                    ->count();
+                            @endphp
+
                             <div class="mdc-list-item mdc-drawer-item">
-                                <a class="mdc-drawer-link" href="{{ route('demandes.messes.validate') }}">
-                                    En attente confirmation
+                                <a class="mdc-drawer-link d-flex justify-content-between align-items-center"
+                                    href="{{ route('demandes.messes.validate') }}">
+                                    A confirmer
+                                    @if ($countEnAttente > 0)
+                                        <span class="badge rounded-pill bg-danger ms-2">{{ $countEnAttente }}</span>
+                                    @endif
                                 </a>
                             </div>
 
                             <div class="mdc-list-item mdc-drawer-item">
-                                <a class="mdc-drawer-link" href="{{ route('demandes.messes.index') }}">
-                                    A célébrées
+                                <a class="mdc-drawer-link d-flex justify-content-between align-items-center"
+                                    href="{{ route('demandes.messes.index') }}">
+                                    Messe du jour
+                                    @if ($countMesseDuJour > 0)
+                                        <span
+                                            class="badge rounded-pill bg-warning text-dark ms-2">{{ $countMesseDuJour }}</span>
+                                    @endif
                                 </a>
                             </div>
                             <div class="mdc-list-item mdc-drawer-item">
-                                <a class="mdc-drawer-link" href="{{ route('demandes.messes.celebrated') }}">
-                                    En attente célébrations
+                                <a class="mdc-drawer-link d-flex justify-content-between align-items-center"
+                                    href="{{ route('demandes.messes.celebrated') }}">
+                                    A celebrer
+                                    @if ($countFuture > 0)
+                                        <span class="badge rounded-pill bg-info ms-2">{{ $countFuture }}</span>
+                                    @endif
                                 </a>
                             </div>
                             <div class="mdc-list-item mdc-drawer-item">

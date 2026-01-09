@@ -237,6 +237,17 @@ class MesseController extends Controller
             ->with('success', 'Demande supprimée avec succès');
     }
 
+    public function showReceipt(Messe $messe)
+    {
+        if ($messe->user_id !== Auth::user()->id) {
+            abort(403, 'Accès non autorisé');
+        }
+
+        $messe->load('paroisse', 'paiements');
+
+        return view('user.messe.receipt', compact('messe'));
+    }
+
     public function downloadReceipt(Messe $messe)
     {
         if ($messe->user_id !== Auth::user()->id) {
@@ -245,7 +256,7 @@ class MesseController extends Controller
 
         $messe->load('paroisse', 'paiements');
 
-        $pdf = PDF::loadView('user.messe.receipt', compact('messe'));
+        $pdf = PDF::loadView('user.messe.receipt_pdf', compact('messe'));
 
         // Format A4 pour le reçu
         $pdf->setPaper('A4', 'portrait');

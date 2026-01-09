@@ -422,7 +422,7 @@ class DemandeController extends Controller
                 ->user()
                 ->messes()
                 ->where('statut', 'confirmee')
-                ->where('date_souhaitee', '>=', now())
+                ->whereDate('date_souhaitee', '>', now()->startOfDay())
                 ->orderBy('date_souhaitee', 'desc')
                 ->get();
 

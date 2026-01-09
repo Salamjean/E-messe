@@ -4,30 +4,55 @@ namespace App\Http\Controllers\Paroisse\Event;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
-use Illuminate\Http\Request;
-use Carbon\Carbon;
-use Yajra\DataTables\Facades\DataTables;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Notification; // Import Notification Facade
 use App\Models\User;
 use App\Notifications\NouveauEvenementParoisseNotification;
-use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB; // Import Notification Facade
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
+use Yajra\DataTables\Facades\DataTables;
+
 // Plus besoin de App\Services\FcmService ici, c'est géré dans la Notification
 
 class EventController extends Controller
 {
     public function index()
     {
-        $types = Event::distinct()->pluck('type_event');
+        $types = Event::where('paroisse_id', Auth::guard('paroisse')->id())
+            ->distinct()
+            ->pluck('type_event');
+
         return view('paroisse.event.index', compact('types'));
     }
 
-    public function data()
+    public function data(Request $request)
     {
-        $events = Event::select(['id', 'titre', 'type_event', 'date_debut', 'date_fin', 'lieu', 'celebrant', 'statut'])
-            ->orderByRaw("
+        $query = Event::where('paroisse_id', Auth::guard('paroisse')->id())
+            ->select(['id', 'titre', 'type_event', 'date_debut', 'date_fin', 'lieu', 'celebrant', 'statut']);
+
+        if ($request->get('filter') === 'historique') {
+            $query->where(function($q) {
+                $q->where('statut', 'Terminé')
+                  ->orWhere(function($sub) {
+                      $sub->whereNotNull('date_fin')
+                          ->where('date_fin', '<', now());
+                  });
+            });
+        } else {
+            // Par défaut : En cours / à venir
+            $query->where(function($q) {
+                $q->where('statut', '!=', 'Terminé')
+                  ->where(function($sub) {
+                      $sub->whereNull('date_fin')
+                          ->orWhere('date_fin', '>=', now());
+                  });
+            });
+        }
+
+        $events = $query->orderByRaw("
                 CASE
                     WHEN statut = 'En cours' THEN 1
                     WHEN statut = 'Prévu' THEN 2
@@ -38,9 +63,12 @@ class EventController extends Controller
             ->orderBy('date_debut', 'asc');
 
         return DataTables::of($events)
-            ->editColumn('date_debut', fn($event) => $event->date_debut ? Carbon::parse($event->date_debut)->format('d/m/Y H:i') : 'N/A')
-            ->editColumn('date_fin', fn($event) => $event->date_fin ? Carbon::parse($event->date_fin)->format('d/m/Y H:i') : 'N/A')
-            ->addColumn('actions', fn($event) => '
+            ->addColumn('checkbox', function ($event) {
+                return '<input type="checkbox" class="event-checkbox" value="'.$event->id.'">';
+            })
+            ->editColumn('date_debut', fn ($event) => $event->date_debut ? Carbon::parse($event->date_debut)->format('d/m/Y H:i') : 'N/A')
+            ->editColumn('date_fin', fn ($event) => $event->date_fin ? Carbon::parse($event->date_fin)->format('d/m/Y H:i') : 'N/A')
+            ->addColumn('actions', fn ($event) => '
                 <div class="btn-group" role="group">
                     <button class="btn btn-sm btn-outline-warning editBtn" data-id="'.$event->id.'" title="Modifier">
                         <i class="material-icons">edit</i>
@@ -50,7 +78,7 @@ class EventController extends Controller
                     </button>
                 </div>'
             )
-            ->rawColumns(['actions', 'statut'])
+            ->rawColumns(['checkbox', 'actions', 'statut'])
             ->make(true);
     }
 
@@ -97,13 +125,14 @@ class EventController extends Controller
             }
 
             $validatedData['statut'] = 'Prévu';
-            $validatedData['created_by'] = $paroisse->id;
+            $validatedData['paroisse_id'] = $paroisse->id;
+            // $validatedData['created_by'] = $paroisse->id; // Potentially incorrect if constrained to users table
 
             // Création de l'événement
             $event = Event::create($validatedData);
 
             // Récupération des utilisateurs à notifier
-            $usersToNotify = User::whereHas('favoris', function($query) use ($paroisse) {
+            $usersToNotify = User::whereHas('favoris', function ($query) use ($paroisse) {
                 $query->where('paroisse_id', $paroisse->id);
             })->whereNotNull('fcm_token')->get();
 
@@ -111,19 +140,23 @@ class EventController extends Controller
                 // ✅ CORRECTION : Utilisation de la Facade Notification
                 // Cela enverra automatiquement via Database ET FCM grâce à ta classe Notification
                 Notification::send($usersToNotify, new NouveauEvenementParoisseNotification($event));
-                
-                Log::info('Notification envoyée à ' . $usersToNotify->count() . ' utilisateurs.');
+
+                Log::info('Notification envoyée à '.$usersToNotify->count().' utilisateurs.');
             } else {
                 Log::info('Aucun utilisateur avec token FCM trouvé pour cette paroisse.');
             }
 
             DB::commit();
-            return redirect()->back()->with('success', 'Événement ajouté avec succès !');
+
+            return response()->json(['message' => 'Événement ajouté avec succès !']);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Erreur création événement: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
+            Log::error('Erreur création événement: '.$e->getMessage());
+
+            return response()->json([
+                'message' => 'Erreur lors de la création de l\'événement: '.$e->getMessage(),
+            ], 500);
         }
     }
 
@@ -146,12 +179,13 @@ class EventController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'message' => 'Erreur de validation',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
-            Log::error('Erreur mise à jour événement: ' . $e->getMessage());
+            Log::error('Erreur mise à jour événement: '.$e->getMessage());
+
             return response()->json([
-                'message' => 'Erreur lors de la mise à jour de l\'événement: ' . $e->getMessage()
+                'message' => 'Erreur lors de la mise à jour de l\'événement: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -168,9 +202,39 @@ class EventController extends Controller
             return response()->json(['message' => 'Événement supprimé avec succès !']);
 
         } catch (\Exception $e) {
-            Log::error('Erreur suppression événement: ' . $e->getMessage());
+            Log::error('Erreur suppression événement: '.$e->getMessage());
+
             return response()->json([
-                'message' => 'Erreur lors de la suppression de l\'événement: ' . $e->getMessage()
+                'message' => 'Erreur lors de la suppression de l\'événement: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->ids;
+        if (! $ids || ! is_array($ids)) {
+            return response()->json(['message' => 'Aucun événement sélectionné'], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+            $events = Event::whereIn('id', $ids)->get();
+            foreach ($events as $event) {
+                if ($event->image && Storage::disk('public')->exists($event->image)) {
+                    Storage::disk('public')->delete($event->image);
+                }
+                $event->delete();
+            }
+            DB::commit();
+
+            return response()->json(['message' => 'Événements supprimés avec succès !']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur suppression groupée: '.$e->getMessage());
+
+            return response()->json([
+                'message' => 'Erreur lors de la suppression des événements: '.$e->getMessage(),
             ], 500);
         }
     }

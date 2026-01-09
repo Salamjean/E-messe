@@ -1,330 +1,418 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Reçu Messe - {{ $messe->reference }}</title>
+@extends('user.layouts.template')
+
+@section('content')
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        :root {
-            --primary: #2c3e50;
-            --accent: #e74c3c;
-            --light-bg: #f8f9fa;
-            --border: #e0e0e0;
-            --text: #2c3e50;
-            --text-light: #7f8c8d;
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
-            color: var(--text);
-            background: white;
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        * {
             margin: 0;
-            padding: 10px;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
-        .invoice-container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            border: 1px solid var(--border);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
+        .receipt-page {
+            min-height: 100vh;
+            background: #f5f5f5;
+            padding: 40px 20px;
+            font-family: 'Poppins', sans-serif;
         }
-        
-        .invoice-header {
-            background: var(--primary);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .logo-section {
-            margin-bottom: 20px;
-        }
-        
-        .church-name {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-        
-        .church-tagline {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        
-        .invoice-title {
-            font-size: 28px;
-            font-weight: 300;
-            margin: 10px 0;
-        }
-        
-        .invoice-info {
-            background: var(--light-bg);
-            padding: 25px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .bill-to h3, .receipt-info h3 {
-            color: var(--primary);
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-        }
-        
-        .bill-to p, .receipt-info p {
-            margin: 5px 0;
-            color: var(--text-light);
-        }
-        
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .items-table th {
-            background: var(--light-bg);
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-            color: var(--primary);
-            border-bottom: 2px solid var(--border);
-        }
-        
-        .items-table td {
-            padding: 15px;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .items-table tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .calculation-section {
-            padding: 25px;
-            background: var(--light-bg);
-        }
-        
-        .calculation-row {
+
+        .receipt-actions {
+            max-width: 450px;
+            margin: 0 auto 30px;
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
-            padding: 8px 0;
-        }
-        
-        .calculation-row.total {
-            border-top: 2px solid var(--border);
-            margin-top: 10px;
-            padding-top: 15px;
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--primary);
-        }
-        
-        .payment-section {
-            padding: 25px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            border-top: 1px solid var(--border);
-        }
-        
-        .payment-method h3, .terms h3, .notes h3 {
-            color: var(--primary);
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-        }
-        
-        .payment-options {
-            display: flex;
+            align-items: center;
             gap: 15px;
-            margin-top: 10px;
         }
-        
-        .payment-option {
-            padding: 8px 15px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 11px;
+
+        .btn-download {
+            background: #22c55e;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-size: 14px;
         }
-        
-        .terms p, .notes p {
-            color: var(--text-light);
-            font-size: 11px;
+
+        .btn-download:hover {
+            background: #16a34a;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-back {
+            background: #6b7280;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-back:hover {
+            background: #4b5563;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .receipt-container {
+            max-width: 450px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .receipt-header {
+            text-align: left;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .amount-section {
+            flex: 1;
+        }
+
+        .total-amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: #22c55e;
+            margin-bottom: 8px;
+        }
+
+        .payment-description {
+            font-size: 13px;
+            color: #6b7280;
             line-height: 1.5;
         }
-        
-        .footer {
-            background: var(--primary);
-            color: white;
+
+        .payment-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .payment-icon.wave {
+            background: transparent;
+        }
+
+        .payment-icon.orange {
+            background: transparent;
+        }
+
+        .payment-icon.moov {
+            background: transparent;
+        }
+
+        .payment-icon.mtn {
+            background: transparent;
+        }
+
+        .payment-icon.bank {
+            background: transparent;
+        }
+
+        .payment-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 5px;
+        }
+
+        .info-section {
+            background: #f9fafb;
             padding: 20px;
-            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
-        
-        .website {
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .info-row:not(:last-child) {
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .info-label {
+            font-size: 13px;
+            color: #6b7280;
+            font-weight: 400;
+        }
+
+        .info-value {
             font-size: 14px;
-            font-weight: 600;
-        }
-        
-        .highlight {
-            color: var(--accent);
-            font-weight: 600;
-        }
-        
-        .text-right {
+            color: #111827;
+            font-weight: 500;
             text-align: right;
         }
-        
+
+        .info-value.success {
+            color: #22c55e;
+            font-weight: 600;
+        }
+
+        .reference-section {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .reference-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .reference-label {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .reference-value {
+            font-size: 13px;
+            color: #111827;
+            font-weight: 600;
+            text-align: right;
+            word-break: break-all;
+            max-width: 60%;
+        }
+
+        .details-section {
+            background: white;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        .details-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .details-label {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .details-value {
+            font-size: 14px;
+            color: #111827;
+            font-weight: 500;
+            text-align: right;
+        }
+
         @media print {
-            body {
-                padding: 0;
+            .receipt-actions {
+                display: none;
             }
-            
-            .invoice-container {
+
+            .receipt-page {
+                padding: 0;
+                background: white;
+            }
+
+            .receipt-container {
                 box-shadow: none;
-                border: none;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .receipt-page {
+                padding: 20px 10px;
+            }
+
+            .receipt-container {
+                padding: 20px;
+            }
+
+            .total-amount {
+                font-size: 28px;
+            }
+
+            .receipt-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .btn-download,
+            .btn-back {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
-</head>
-<body>
-    <div class="invoice-container">
-        <!-- En-tête -->
-        <div class="invoice-header">
-            <div class="logo-section">
-                <div class="church-name">{{ $messe->paroisse->name ?? 'PAROISSE STE TRINITÉ' }}</div>
-                <div class="church-tagline">Service des Messes & Intentions</div>
-            </div>
-            <div class="invoice-title">REÇU DE PAIEMENT</div>
+
+    <div class="receipt-page">
+        <div class="receipt-actions">
+            <a href="{{ url()->previous() }}" class="btn-back">
+                <i class="mdi mdi-arrow-left"></i>
+                Retour
+            </a>
+            <a href="{{ route('user.messe.receipt.download', ['messe' => $messe->id]) }}" class="btn-download">
+                <i class="mdi mdi-download"></i>
+                Télécharger PDF
+            </a>
         </div>
-        
-        <!-- Informations client et reçu -->
-        <div class="invoice-info">
-            <div class="bill-to">
-                <h3>Demandeur</h3>
-                <p><strong>{{ $messe->nom_demandeur }}</strong></p>
-                <p>{{ $messe->email_demandeur }}</p>
-                <p>{{ $messe->telephone_demandeur }}</p>
-                <p>Réf: <span class="highlight">{{ $messe->paiements->first()->reference ?? 'M' . $messe->id }}</span></p>
+
+        <div class="receipt-container">
+            <!-- En-tête avec montant et avatar -->
+            <div class="receipt-header">
+                <div class="amount-section">
+                    <div class="total-amount">
+                        +
+                        {{ number_format(($messe->montant_offrande ?? 0) + ($messe->montant_offrande ?? 0) * 0.02, 0, ',', ' ') }}
+                        F
+                    </div>
+                    <div class="payment-description">
+                        Paiement de votre offrande pour la messe<br>via
+                        {{ strtoupper($messe->paiements->first()->operateur ?? 'WAVE') }}
+                    </div>
+                </div>
+                @php
+                    $operateur = strtolower($messe->paiements->first()->operateur ?? 'wave');
+                    $iconClass = 'wave';
+                    $logoPath = '';
+
+                    if (str_contains($operateur, 'orange')) {
+                        $iconClass = 'orange';
+                        $logoPath = asset('assets/assets/image_recu/orange.png');
+                    } elseif (str_contains($operateur, 'moov')) {
+                        $iconClass = 'moov';
+                        $logoPath = asset('assets/assets/image_recu/moov.png');
+                    } elseif (str_contains($operateur, 'mtn')) {
+                        $iconClass = 'mtn';
+                        $logoPath = asset('assets/assets/image_recu/mtn.png');
+                    } elseif (
+                        str_contains($operateur, 'stripe') ||
+                        str_contains($operateur, 'bank') ||
+                        str_contains($operateur, 'bancaire') ||
+                        str_contains($operateur, 'carte')
+                    ) {
+                        $iconClass = 'bank';
+                        $logoPath = asset('assets/assets/image_recu/stripe.png');
+                    } else {
+                        // Wave par défaut
+                        $iconClass = 'wave';
+                        $logoPath = asset('assets/assets/image_recu/wave.png');
+                    }
+                @endphp
+                <div class="payment-icon {{ $iconClass }}">
+                    @if ($logoPath)
+                        <img src="{{ $logoPath }}" alt="{{ ucfirst($iconClass) }}">
+                    @else
+                        <!-- Wave Icon SVG (par défaut) -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                            style="width: 30px; height: 30px; fill: white;">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+                        </svg>
+                    @endif
+                </div>
             </div>
-            
-            <div class="receipt-info">
-                <h3>Reçu</h3>
-                <p><strong>N° {{ $messe->paiements->first()->reference ?? 'M' . $messe->id }}</strong></p>
-                <p>Date: {{ now()->format('d/m/Y') }}</p>
-                <p>Paroisse: {{ $messe->paroisse->name ?? 'Ste Trinité' }}</p>
-            </div>
-        </div>
-        
-        <!-- Détails des services -->
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Service</th>
-                    <th>Type</th>
-                    <th class="text-right">Montant</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>
-                        <strong>Célébration de Messe</strong><br>
-                        <small>
-                            @if($messe->type_intention === 'Defunt')
-                                Pour le repos de l'âme de {{ $messe->nom_defunt }}
-                            @elseif($messe->type_intention === 'Action graces')
-                                Action de Grâces - {{ $messe->motif_action_graces }}
-                            @else
-                                Intention particulière - {{ $messe->motif_intention }}
-                            @endif
-                        </small>
-                    </td>
-                    <td>
-                        @if($messe->celebration_choisie === 'Messe quotidienne')
-                            Quotidienne
-                        @elseif($messe->celebration_choisie === 'Messe dominicale')
-                            Dominicale
+
+            <!-- Informations principales -->
+            <div class="info-section">
+                <div class="info-row">
+                    <span class="info-label">Date & Heure</span>
+                    <span
+                        class="info-value">{{ $messe->paiements->first()->created_at ? $messe->paiements->first()->created_at->format('d/m/Y à H:i') : now()->format('d/m/Y à H:i') }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Statut</span>
+                    <span class="info-value success">
+                        @if ($messe->statut === 'en attente' || $messe->statut === 'en_attente')
+                            en attente
+                        @elseif($messe->statut === 'confirmee')
+                            confirmé
                         @else
-                            Solennelle
+                            {{ $messe->statut }}
                         @endif
-                    </td>
-                    <td class="text-right">{{ number_format($messe->montant_offrande ?? ($messe->paroisse->montant_offrande ?? 3000), 0, ',', ' ') }} FCFA</td>
-                </tr>
-                
-                <!-- Dates sélectionnées -->
-                @if($messe->dates_selectionnees)
-                <tr>
-                    <td>2</td>
-                    <td colspan="2">
-                        <strong>Dates de célébration</strong><br>
-                        <small>
-                            @php
-                                $dates = json_decode($messe->dates_selectionnees, true);
-                            @endphp
-                            @if(is_array($dates))
-                                {{ implode(', ', array_slice($dates, 0, 3)) }}
-                                @if(count($dates) > 3)
-                                    ... et {{ count($dates) - 3 }} autres dates
-                                @endif
-                            @else
-                                {{ $messe->dates_selectionnees }}
-                            @endif
-                        </small>
-                    </td>
-                    <td class="text-right">Inclus</td>
-                </tr>
-                @endif
-                
-                <!-- Personnes concernées -->
-                @if($messe->nom_prenom_concernes)
-                <tr>
-                    <td>3</td>
-                    <td colspan="2">
-                        <strong>Personnes concernées</strong><br>
-                        <small>
-                            @php
-                                $noms = is_array($messe->nom_prenom_concernes) 
-                                        ? $messe->nom_prenom_concernes 
-                                        : json_decode($messe->nom_prenom_concernes, true) ?? [$messe->nom_prenom_concernes];
-                            @endphp
-                            {{ implode(', ', array_slice($noms, 0, 2)) }}
-                            @if(count($noms) > 2)
-                                ... et {{ count($noms) - 2 }} autres
-                            @endif
-                        </small>
-                    </td>
-                    <td class="text-right">Inclus</td>
-                </tr>
-                @endif
-            </tbody>
-        </table>
-        
-        <!-- Calcul du total -->
-        <div class="calculation-section">
-            <div class="calculation-row">
-                <span>Sous-total</span>
-                <span>{{ number_format($messe->montant_offrande ?? ($messe->paroisse->montant_offrande ?? 3000), 0, ',', ' ') }} FCFA</span>
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Offrande</span>
+                    <span class="info-value">{{ number_format($messe->montant_offrande ?? 0, 0, ',', ' ') }} F</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Frais</span>
+                    <span class="info-value">{{ number_format(($messe->montant_offrande ?? 0) * 0.02, 0, ',', ' ') }}
+                        F</span>
+                </div>
             </div>
-            <div class="calculation-row">
-                <span>Frais</span>
-                <span>{{ number_format($messe->montant_offrande * 0.02 ?? ($messe->paroisse->montant_offrande ?? 3000), 0, ',', ' ') }} FCFA</span>
+
+            <!-- Référence et opérateur -->
+            <div class="reference-section">
+                <div class="reference-row">
+                    <span class="reference-label">Référence</span>
+                    <span
+                        class="reference-value">{{ $messe->paiements->first()->reference ?? 'MESSE_API_' . time() . '_' . $messe->id }}</span>
+                </div>
+                <div class="reference-row">
+                    <span class="reference-label">Opérateur</span>
+                    <span class="reference-value">WAVE</span>
+                </div>
             </div>
-            <div class="calculation-row total">
-                <span>TOTAL</span>
-                <span>{{ number_format($messe->montant_offrande + $messe->montant_offrande * 0.02 ?? ($messe->paroisse->montant_offrande ?? 3000), 0, ',', ' ') }} FCFA</span>
+
+            <!-- Détails de la messe -->
+            <div class="details-section">
+                <div class="details-row">
+                    <span class="details-label">Intention</span>
+                    <span class="details-value">
+                        @if ($messe->type_intention === 'Defunt')
+                            Défunt
+                        @elseif($messe->type_intention === 'Action graces')
+                            Action de grâces
+                        @else
+                            {{ $messe->type_intention }}
+                        @endif
+                    </span>
+                </div>
+                <div class="details-row">
+                    <span class="details-label">Paroisse</span>
+                    <span class="details-value">{{ $messe->paroisse->name ?? 'St Paul' }}</span>
+                </div>
+                <div class="details-row">
+                    <span class="details-label">Date de la messe</span>
+                    <span class="details-value">
+                        @if ($messe->date_souhaitee)
+                            {{ \Carbon\Carbon::parse($messe->date_souhaitee)->format('d/m/Y') }}
+                        @else
+                            À définir
+                        @endif
+                    </span>
+                </div>
             </div>
         </div>
-</body>
-</html>
+    </div>
+@endsection

@@ -82,12 +82,38 @@
                     </div>
                 </div>
 
-                <!-- Préférences Générales Section (Placeholder) -->
-                <div class="card shadow-sm mb-4"
+                <!-- Préférences Générales Section -->
+                <div class="card shadow-sm mb-4" id="tutorials"
                     style="border-radius: 15px !important; border: 1px solid #e2dcdcff !important;">
                     <div class="card-body">
                         <h5 class="card-title mb-4 font-weight-bold">Préférences Générales</h5>
-                        <!-- Add content here if needed in future -->
+                        <h5 class="card-title mb-4 font-weight-bold">Tutoriels</h5>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <div class="tutorial-card p-3 border rounded shadow-sm bg-light">
+                                    <h6 class="font-weight-bold mb-2">Comment faire une demande de messe ?</h6>
+                                    <div class="ratio ratio-16x9">
+                                        <video controls class="rounded">
+                                            <source src="{{ asset('assets/assets/video_tutoriel/demande_messe.mp4') }}"
+                                                type="video/mp4">
+                                            Votre navigateur ne supporte pas la lecture de vidéos.
+                                        </video>
+                                    </div>
+                                </div>
+                            </div>
+                            {{-- <div class="col-md-6 mb-3">
+                                <div class="tutorial-card p-3 border rounded shadow-sm bg-light">
+                                    <h6 class="font-weight-bold mb-2">Gérer mon profil et mes notifications</h6>
+                                    <div class="ratio ratio-16x9">
+                                        <video controls class="rounded">
+                                            <source src="{{ asset('assets/assets/video_tutoriel/demande_messe.mp4') }}"
+                                                type="video/mp4">
+                                            Votre navigateur ne supporte pas la lecture de vidéos.
+                                        </video>
+                                    </div>
+                                </div>
+                            </div> --}}
+                        </div>
                     </div>
                 </div>
 
@@ -118,9 +144,37 @@
             border-color: #6c757d;
         }
 
-        /* CSS pour espacer les icônes et le texte */
+        /* CSS pour espacer les icîones et le texte */
         .card-body .d-flex .mr-3 {
             margin-right: 15px !important;
+        }
+
+        .tutorial-card {
+            transition: all 0.3s ease;
+            border: 1px solid #e0e0e0 !important;
+            border-radius: 12px !important;
+            overflow: hidden;
+            background: white !important;
+        }
+
+        .tutorial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
+            border-color: #007bff !important;
+        }
+
+        .tutorial-card h6 {
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .ratio-16x9 iframe,
+        .ratio-16x9 video {
+            border-radius: 8px;
+            border: none;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
     </style>
 @endsection

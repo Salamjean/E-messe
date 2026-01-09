@@ -38,12 +38,22 @@
                 <i class="material-icons align-middle me-2">event</i>
                 Gestion des Événements
             </h3>
-            <button type="button" id="addEventBtn" class="btn btn-dark shadow-sm"
-                style="background-color: #d4bd8a; border: none;" data-bs-toggle="modal" data-bs-target="#eventModal">
-                <i class="material-icons align-middle me-1">add_circle</i> Ajouter un événement
-            </button>
+
+            <div>
+                <button type="button" id="bulkDeleteBtn" class="btn btn-danger shadow-sm me-2" style="display: none;">
+                    <i class="material-icons align-middle me-1">delete</i> Supprimer
+                </button>
+                <button type="button" id="addEventBtn" class="btn btn-add-event shadow-sm" data-bs-toggle="modal"
+                    data-bs-target="#eventModal">
+                    <i class="material-icons align-middle me-1">add_circle</i> Ajouter un événement
+                </button>
+            </div>
         </div>
 
+        <div class="d-flex gap-2">
+            <button class="btn btn-filter active" data-filter="en_cours">En cours</button>
+            <button class="btn btn-filter" data-filter="historique">Historique</button>
+        </div>
         <div class="card border-0 shadow-sm rounded-4">
             <div class="card-body">
                 <div class="table-responsive">
@@ -51,6 +61,7 @@
                         style="width:100%; color: #d4bd8a !important;">
                         <thead class="table-light">
                             <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
                                 <th>#</th>
                                 <th>Titre</th>
                                 <th>Type</th>
@@ -94,6 +105,7 @@
             store: "{{ route('event.store') }}",
             update: "{{ route('event.update', ':id') }}",
             destroy: "{{ route('event.destroy', ':id') }}",
+            bulkDestroy: "{{ route('event.bulk-destroy') }}",
             csrf: "{{ csrf_token() }}"
         };
     </script>

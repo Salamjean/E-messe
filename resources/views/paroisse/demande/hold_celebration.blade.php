@@ -10,6 +10,16 @@
         <div class="messe-header">
             <h1>Validation des intentions de messes</h1>
             <p>Retrouvez toutes vos demandes confirmées à venir sous forme de liste.</p>
+            <div class="mt-3">
+                <a href="{{ route('paroisse.messes.export.excel', ['type' => 'en_attente_celebration']) }}"
+                    class="btn btn-sm btn-success text-white me-2">
+                    <i class="fas fa-file-excel"></i> Exporter Excel
+                </a>
+                <a href="{{ route('paroisse.messes.export.pdf', ['type' => 'en_attente_celebration']) }}"
+                    class="btn btn-sm btn-danger text-white">
+                    <i class="fas fa-file-pdf"></i> Exporter PDF
+                </a>
+            </div>
         </div>
 
         <!-- Actions groupées (Commenté comme dans votre exemple, décommentez si besoin) -->

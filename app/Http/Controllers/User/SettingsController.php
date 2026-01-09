@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 
 class SettingsController extends Controller
 {
@@ -25,6 +24,7 @@ class SettingsController extends Controller
     public function editProfile()
     {
         $user = Auth::user();
+
         return view('user.settings.profile', compact('user'));
     }
 
@@ -37,11 +37,10 @@ class SettingsController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'user_name' => 'required|string|max:255|unique:users,user_name,' . $user->id,
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'user_name' => 'required|string|max:255|unique:users,user_name,'.$user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
             'contact' => 'required|string|max:255',
-            // 'civilite' field might be needed if it exists in DB, otherwise ignoring for now or using 'civilite' if that's the column name
-            // Looking at AuthenticateUser, it doesn't seem to validate/save 'civilite'. I will check the view.
+            'civilite' => 'nullable|string|max:10',
             'profile_picture' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
         ], [
             'name.required' => 'Le nom est obligatoire.',
@@ -68,8 +67,8 @@ class SettingsController extends Controller
             $user->user_name = $validated['user_name'];
             $user->email = $validated['email'];
             $user->contact = $validated['contact'];
-            // If there are other fields like 'civilite' in the DB, they should be added here.
-            
+            $user->civilite = $validated['civilite'] ?? $user->civilite;
+
             $user->save();
 
             return redirect()->route('user.settings.profile')->with('success', 'Profil mis à jour avec succès.');

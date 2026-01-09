@@ -54,6 +54,36 @@
         box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     }
 
+    .btn-add-event {
+        background-color: #ba975b;
+        border: 2px solid transparent;
+        color: #fff;
+        transition: all 0.3s ease;
+    }
+
+    .btn-add-event:hover,
+    .btn-add-event:focus {
+        background-color: #ffffff !important;
+        border-color: #ba975b !important;
+        color: #ba975b !important;
+    }
+
+
+    .btn-save {
+        background-color: #ba975b;
+        border: 2px solid transparent;
+        color: #fff;
+        transition: all 0.3s ease;
+    }
+
+    .btn-save:hover,
+    .btn-save:focus {
+        background-color: #ffffff !important;
+        border: 2px solid transparent !important;
+        border-color: #ba975b !important;
+        color: #ba975b !important;
+    }
+
     #eventsTable .btn.deleteBtn {
         background-color: rgba(220, 53, 69, 0.15);
         color: #58151c;
@@ -68,4 +98,27 @@
 
     #eventsTable .btn .material-icons {
         font-size: 20px;
+    }
+
+    /* --- Filtres événements --- */
+    .btn-filter {
+        border-radius: 10px;
+        padding: 8px 24px;
+        transition: all 0.3s ease;
+        border: 1px solid #ddd;
+        background-color: white;
+        color: #555;
+        font-weight: 500;
+    }
+
+    .btn-filter:hover {
+        background-color: #f1f1f1;
+        transform: translateY(-1px);
+    }
+
+    .btn-filter.active {
+        background-color: #d4bd8a;
+        color: white;
+        border-color: #d4bd8a;
+        box-shadow: 0 2px 4px rgba(212, 189, 138, 0.4);
     }

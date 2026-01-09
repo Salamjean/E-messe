@@ -38,7 +38,15 @@
             {{-- <li class="nav-item nav-profile dropdown">
                 <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" id="profileDropdown">
                     <div class="nav-profile-img">
-                        <img src="{{ optional(Auth::user())->profile_picture ? asset('storage/' . Auth::user()->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name ?? 'User') . '&background=random&color=fff&size=40' }}"
+                        @php
+                            $navbarProfilePic = Auth::user()->profile_picture;
+                             if ($navbarProfilePic && !str_starts_with($navbarProfilePic, 'http')) {
+                                $navbarProfilePic = asset('storage/' . $navbarProfilePic);
+                            } elseif (!$navbarProfilePic) {
+                                $navbarProfilePic = 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name ?? 'User') . '&background=random&color=fff&size=40';
+                            }
+                        @endphp
+                        <img src="{{ $navbarProfilePic }}"
                             alt="image">
                     </div>
                 </a>

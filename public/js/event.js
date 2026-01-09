@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    // --- Vérification des dépendances (inchangé) ---
+    // --- Vérification des dépendances ---
     function checkDependencies() {
         if (typeof $ === 'undefined') {
             console.error("❌ jQuery n'est pas chargé !");
@@ -27,12 +27,25 @@ $(document).ready(function () {
         ajax: {
             url: window.eventRoutes.data,
             type: 'GET',
+            data: function (d) {
+                d.filter = $('.btn-filter.active').data('filter');
+            },
             error: function (xhr, error, thrown) {
                 console.error('Erreur DataTables AJAX:', error, thrown);
                 showAlert('danger', 'Erreur lors du chargement des données: ' + error);
             }
         },
         columns: [
+            { 
+                data: 'checkbox', 
+                name: 'checkbox', 
+                orderable: false, 
+                searchable: false, 
+                className: 'text-center',
+                render: function(data, type, row) {
+                    return `<input type="checkbox" class="event-checkbox form-check-input" value="${row.id}">`;
+                }
+            },
             { data: 'id', name: 'id', className: 'text-start' },
             { data: 'titre', name: 'titre', className: 'text-start' },
             { data: 'type_event', name: 'type_event', className: 'text-start' },
@@ -60,13 +73,9 @@ $(document).ready(function () {
                 orderable: false,
                 searchable: false,
                 className: 'text-center',
-                // MODIFICATION : Logique pour désactiver le bouton "Modifier"
-                render: function (data, type, row) { // 'row' contient toutes les données de la ligne
-                    // Vérifier si l'événement est terminé
+                render: function (data, type, row) {
                     const isTermine = row.statut === 'Terminé';
-                    // Ajouter l'attribut 'disabled' si c'est le cas
                     const editButtonDisabled = isTermine ? 'disabled' : '';
-                    // Changer le message au survol si le bouton est désactivé
                     const editButtonTitle = isTermine ? 'Modification impossible, l\'événement est terminé' : 'Modifier';
 
                     return `
@@ -85,18 +94,45 @@ $(document).ready(function () {
                 }
             }
         ],
-        language: { /* ... (votre configuration de langue, inchangée) ... */ },
-
+        language: {
+            processing: "Traitement en cours...",
+            search: "Rechercher&nbsp;:",
+            lengthMenu: "Afficher _MENU_ éléments",
+            info: "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+            infoEmpty: "Affichage de l'élément 0 à 0 sur 0 élément",
+            infoFiltered: "(filtré de _MAX_ éléments au total)",
+            infoPostFix: "",
+            loadingRecords: "Chargement en cours...",
+            zeroRecords: "Aucun élément à afficher",
+            emptyTable: "Aucune donnée disponible dans le tableau",
+            paginate: {
+                first: "Premier",
+                previous: "Précédent",
+                next: "Suivant",
+                last: "Dernier"
+            },
+            aria: {
+                sortAscending: ": activer pour trier la colonne par ordre croissant",
+                sortDescending: ": activer pour trier la colonne par ordre décroissant"
+            }
+        },
         pageLength: 10,
         initComplete: function () {
             console.log("✅ DataTables initialisé avec succès");
         }
     });
 
-    // --- Fermeture auto des alertes (inchangé) ---
+    // --- Gestion des filtres ---
+    $('.btn-filter').on('click', function() {
+        $('.btn-filter').removeClass('active');
+        $(this).addClass('active');
+        table.ajax.reload();
+    });
+
+    // --- Fermeture auto des alertes ---
     setTimeout(() => $('.alert').alert('close'), 5000);
 
-    // --- Ouverture du modal d’ajout (inchangé) ---
+    // --- Ouverture du modal d’ajout ---
     $('#addEventBtn').on('click', function () {
         $('#eventForm')[0].reset();
         $('#event_id').val('');
@@ -104,12 +140,19 @@ $(document).ready(function () {
         $('#eventModalLabel').html('<i class="material-icons align-middle me-2">event_available</i> Ajouter un événement');
         // Vider le select2
         $('#type_event').val(null).trigger('change');
+        
+        // Set form action for store
+        $('#eventForm').attr('action', window.eventRoutes.store);
+
         $('#eventModal').modal('show');
     });
 
-    // --- Édition d’un événement (inchangé, mais gère les nouvelles dates) ---
+    // --- Édition d’un événement ---
     $('#eventsTable').on('click', '.editBtn', function () {
-        let id = $(this).data('id');
+        var btn = $(this);
+        if(btn.attr('disabled')) return; // Prevent if disabled
+
+        let id = btn.data('id');
         let url = window.eventRoutes.show.replace(':id', id);
 
         $.ajax({
@@ -123,8 +166,6 @@ $(document).ready(function () {
                 $('#description').val(data.description);
                 $('#participation_frais').val(data.participation_frais ? parseFloat(data.participation_frais) : '');
 
-                // Gère la sélection dans Select2
-                // Si le type existe dans la liste, on le sélectionne, sinon on crée une nouvelle option
                 if ($('#type_event option[value="' + data.type_event + '"]').length) {
                     $('#type_event').val(data.type_event).trigger('change');
                 } else {
@@ -139,7 +180,12 @@ $(document).ready(function () {
                     $('#date_fin').val(new Date(data.date_fin).toISOString().slice(0, 16));
                 }
 
+                // IMPORTANT: Set method to PUT for update
                 $('#formMethod').val('PUT');
+                
+                // IMPORTANT: Set form action to the correct update URL
+                $('#eventForm').attr('action', window.eventRoutes.update.replace(':id', id));
+
                 $('#eventModalLabel').html('<i class="material-icons align-middle me-2">edit_calendar</i> Modifier l\'événement');
                 $('#eventModal').modal('show');
             },
@@ -149,16 +195,193 @@ $(document).ready(function () {
         });
     });
 
-    // --- Soumission du formulaire (inchangé) ---
-    $('#eventForm').on('submit', function (e) { /* ... (code inchangé) ... */ });
+    // --- Soumission du formulaire ---
+    $('#eventForm').on('submit', function (e) {
+        e.preventDefault();
+        
+        var form = this;
+        var formData = new FormData(form);
+        var url = $(form).attr('action');
+        var method = $('#formMethod').val(); // POST or PUT
 
-    // --- Suppression d’un événement (inchangé) ---
-    $('#eventsTable').on('click', '.deleteBtn', function () { /* ... (code inchangé) ... */ });
+        // Laravel requires _method field for PUT/PATCH/DELETE in FormData/POST requests
+        if (method === 'PUT') {
+            formData.append('_method', 'PUT');
+        }
 
-    // --- Fonction utilitaire pour les alertes (inchangé) ---
-    function showAlert(type, message) { /* ... (code inchangé) ... */ }
+        $.ajax({
+            url: url,
+            type: 'POST', // Always POST, let Laravel handle _method
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                $('#eventModal').modal('hide');
+                table.ajax.reload();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Succès',
+                    text: response.message || 'Opération réussie !',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            },
+            error: function (xhr) {
+                var errors = xhr.responseJSON ? xhr.responseJSON.errors : null;
+                var msg = 'Une erreur est survenue.';
+                if (errors) {
+                     msg = Object.values(errors).flat().join('\n');
+                } else if(xhr.responseJSON && xhr.responseJSON.message) {
+                    msg = xhr.responseJSON.message;
+                }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: msg
+                });
+            }
+        });
+    });
 
-    // --- Initialisation de Select2 (inchangé) ---
+    // --- Suppression d’un événement ---
+    $('#eventsTable').on('click', '.deleteBtn', function () {
+        let id = $(this).data('id');
+        let url = window.eventRoutes.destroy.replace(':id', id);
+
+        Swal.fire({
+            title: 'Êtes-vous sûr ?',
+            text: "Cette action est irréversible !",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Oui, supprimer !',
+            cancelButtonText: 'Annuler'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: url,
+                    type: 'POST', // POST with _method=DELETE
+                    data: {
+                        _method: 'DELETE',
+                        _token: window.eventRoutes.csrf
+                    },
+                    success: function (response) {
+                        table.ajax.reload();
+                        Swal.fire(
+                            'Supprimé !',
+                            response.message || 'L\'événement a été supprimé.',
+                            'success'
+                        );
+                        // Hide selectAll checked state
+                        $('#selectAll').prop('checked', false);
+                         $('#bulkDeleteBtn').hide();
+                    },
+                    error: function (xhr) {
+                        Swal.fire(
+                            'Erreur !',
+                            'Une erreur est survenue lors de la suppression.',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
+    });
+    
+    // --- Gestion de la sélection multiple (Bulk Delete) ---
+    
+    // Select All
+    $('#selectAll').on('click', function() {
+        var checked = this.checked;
+        $('.event-checkbox').each(function() {
+            this.checked = checked;
+        });
+        toggleBulkDeleteBtn();
+    });
+
+    // Individual Checkbox
+    $('#eventsTable').on('change', '.event-checkbox', function() {
+        if(!this.checked) {
+            $('#selectAll').prop('checked', false);
+        }
+        // If all are checked, check selectAll
+        if ($('.event-checkbox:checked').length === $('.event-checkbox').length && $('.event-checkbox').length > 0) {
+            $('#selectAll').prop('checked', true);
+        }
+        toggleBulkDeleteBtn();
+    });
+
+    function toggleBulkDeleteBtn() {
+        var count = $('.event-checkbox:checked').length;
+        if(count > 0) {
+            $('#bulkDeleteBtn').show().text('Supprimer (' + count + ')');
+        } else {
+            $('#bulkDeleteBtn').hide();
+        }
+    }
+
+    // Bulk Delete Action
+    $('#bulkDeleteBtn').on('click', function() {
+        var ids = [];
+        $('.event-checkbox:checked').each(function() {
+            ids.push($(this).val());
+        });
+
+        if (ids.length === 0) return;
+
+        Swal.fire({
+            title: 'Confirmation de suppression',
+            text: "Voulez-vous vraiment supprimer les " + ids.length + " événements sélectionnés ?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Oui, supprimer tout !',
+            cancelButtonText: 'Annuler'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: window.eventRoutes.bulkDestroy,
+                    type: 'POST',
+                    data: {
+                        ids: ids,
+                        _token: window.eventRoutes.csrf
+                    },
+                    success: function (response) {
+                        table.ajax.reload();
+                        $('#selectAll').prop('checked', false);
+                        $('#bulkDeleteBtn').hide();
+                        Swal.fire(
+                            'Supprimé !',
+                            response.message || 'Les événements ont été supprimés.',
+                            'success'
+                        );
+                    },
+                    error: function (xhr) {
+                        Swal.fire(
+                            'Erreur !',
+                            xhr.responseJSON.message || 'Une erreur est survenue.',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
+    });
+
+    // Fonction utilitaire pour les alertes
+    function showAlert(type, message) {
+        // Implementation simple de l'alerte bootstrap si non existante
+        // Ou utiliser SweetAlert
+       Swal.fire({
+            icon: type === 'danger' ? 'error' : type,
+            title: type === 'danger' ? 'Erreur' : 'Info',
+            text: message
+        });
+    }
+
+    // --- Initialisation de Select2 ---
     $('#type_event').select2({
         dropdownParent: $('#eventModal'),
         placeholder: "Sélectionner ou saisir un type",

@@ -199,6 +199,10 @@ Route::middleware('paroisse')->prefix('parish')->group(function () {
     Route::post('/messe/update-status', [DemandeController::class, 'updateStatusToCelebrated'])->name('paroisse.messe.update-status');
     Route::post('/messess/bulk-confirm', [DemandeController::class, 'bulkConfirm'])->name('paroisse.messe.bulk-confirm');
     Route::post('/messess/bulk-cancel', [DemandeController::class, 'bulkCancel'])->name('paroisse.messe.bulk-cancel');
+    
+    // Routes pour l'export des messes
+    Route::get('/messes/export/excel', [\App\Http\Controllers\Paroisse\Messe\MesseExportController::class, 'exportMessesExcel'])->name('paroisse.messes.export.excel');
+    Route::get('/messes/export/pdf', [\App\Http\Controllers\Paroisse\Messe\MesseExportController::class, 'exportMessesPdf'])->name('paroisse.messes.export.pdf');
 
     // Routes de gestion des offrandes
     Route::get('/offerings', [OffrandeController::class, 'create'])->name('paroisse.offrande');
@@ -220,6 +224,7 @@ Route::middleware('paroisse')->prefix('parish')->group(function () {
         Route::post('/', [EventController::class, 'store'])->name('store');
         Route::get('/{event}', [EventController::class, 'show'])->name('show');
         Route::put('/{event}', [EventController::class, 'update'])->name('update');
+        Route::post('/bulk-destroy', [EventController::class, 'bulkDestroy'])->name('bulk-destroy');
         Route::delete('/{event}', [EventController::class, 'destroy'])->name('destroy');
     });
 
@@ -268,7 +273,8 @@ Route::middleware('auth')->prefix('user')->group(function () {
     Route::get('/masses/historique_messes', [MesseController::class, 'historique_messes'])->name('user.messe.historique_messes');
     Route::get('/masses/hold', [MesseController::class, 'hold'])->name('user.messe.hold');
     Route::delete('/mes-messes/{messe}', [MesseController::class, 'destroy'])->name('user.messe.destroy');
-    Route::get('/mes-messes/{messe}/receipt', [MesseController::class, 'downloadReceipt'])->name('user.messe.receipt');
+    Route::get('/mes-messes/{messe}/receipt', [MesseController::class, 'showReceipt'])->name('user.messe.receipt');
+    Route::get('/mes-messes/{messe}/receipt/download', [MesseController::class, 'downloadReceipt'])->name('user.messe.receipt.download');
 
     // Route pour lister les paroisses
     Route::get('/paroisses', [UserParoisseController::class, 'index'])->name('user.paroisse.index');

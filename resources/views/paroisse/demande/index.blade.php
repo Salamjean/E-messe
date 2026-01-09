@@ -13,6 +13,16 @@
             <h1>Liste des demandes de messes à célébrer</h1>
             <p class="text-muted" style="color: #1b63a2ff;">Consultez, filtrez et exportez toutes les intentions de messes.
             </p>
+            <div class="mt-3">
+                <a href="{{ route('paroisse.messes.export.excel', ['type' => 'a_celebrer']) }}"
+                    class="btn btn-sm btn-success text-white me-2">
+                    <i class="fas fa-file-excel"></i> Exporter Excel
+                </a>
+                <a href="{{ route('paroisse.messes.export.pdf', ['type' => 'a_celebrer']) }}"
+                    class="btn btn-sm btn-danger text-white">
+                    <i class="fas fa-file-pdf"></i> Exporter PDF
+                </a>
+            </div>
         </div>
 
         <!-- Zone d'actions groupées -->

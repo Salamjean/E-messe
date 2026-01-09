@@ -22,6 +22,7 @@ class Event extends Model
         'statut',
         'image',
         'created_by',
+        'paroisse_id',
     ];
 
     protected $casts = [
@@ -32,10 +33,14 @@ class Event extends Model
 
     /**
      * Relation vers la paroisse qui a créé l'événement
-     * Limite les champs récupérés pour optimiser la requête
      */
     public function paroisse()
     {
-        return $this->belongsTo(Paroisse::class, 'created_by');
+        return $this->belongsTo(Paroisse::class, 'paroisse_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

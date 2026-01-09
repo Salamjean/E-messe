@@ -228,7 +228,7 @@
                                     </div>
                                     <div class="info-box">
                                         <h4>{{ \Illuminate\Support\Str::limit($messe->type_intention, 30) }}</h4>
-                                        <p class="author">Par : {{ $messe->nom_demandeur }}</p>
+                                        <p class="author">Pour : {{ $messe->nom_demandeur }}</p>
                                         <div class="meta-tags">
                                             <span class="tag-time"><i class="far fa-clock"></i>
                                                 {{ $messe->heure_souhaitee }}</span>
@@ -264,8 +264,8 @@
                             <div class="request-info">
                                 <h3 class="requester-name">{{ $latest->nom_demandeur }}</h3>
                                 <p class="request-intention">
-                                    <span class="label">Intention :</span>
-                                    {{ \Illuminate\Support\Str::limit($latest->type_intention, 50) }}
+                                    <span class="label">Motif d'intention :</span>
+                                    {{ \Illuminate\Support\Str::limit($latest->motif_intention, 50) }}
                                 </p>
                                 <p class="request-date">
                                     Reçu le {{ $latest->created_at->format('d F Y') }}

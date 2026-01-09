@@ -46,8 +46,10 @@ class ParoisseDashboard extends Controller
             ->where('statut', '!=', 'rejete')
             ->sum('montant');
 
+        // dd($totalRetraits);
+
         // Calcul du solde disponible (Formule : Recettes / 1.01 - Retraits)
-        $soldeDisponible = ($totalPaiements / 1.01) - $totalRetraits;
+        $soldeDisponible = ($totalPaiements) - $totalRetraits;
 
         // --- 3. GRAPHIQUE LINÉAIRE (EVOLUTION MENSUELLE) ---
         // On veut le NOMBRE de demandes par mois (Jan-Déc) pour cette année vs année passée.
@@ -59,8 +61,9 @@ class ParoisseDashboard extends Controller
         $getMonthlyCounts = function ($year) use ($paroisse) {
             // Récupère les données brutes : [Mois => Nombre]
             $counts = $paroisse->messes()
-                ->selectRaw('MONTH(created_at) as month, COUNT(*) as total')
-                ->whereYear('created_at', $year)
+                ->where('statut', '!=', 'en_attente_paiement')
+                ->selectRaw('MONTH(updated_at) as month, COUNT(*) as total')
+                ->whereYear('updated_at', $year)
                 ->groupBy('month')
                 ->pluck('total', 'month') // Renvoie un tableau associatif [Mois => Total]
                 ->toArray();
@@ -74,6 +77,7 @@ class ParoisseDashboard extends Controller
             return $data;
         };
 
+        // dd($getMonthlyCounts($currentYear));
         $chartDataCurrentYear = $getMonthlyCounts($currentYear);
         $chartDataLastYear = $getMonthlyCounts($lastYear);
 
@@ -87,12 +91,15 @@ class ParoisseDashboard extends Controller
             ->take(5)
             ->get();
 
+        // dd($upcomingMessess);
         // Dernières demandes reçues (Carte droite)
         $latestOffrandes = $paroisse->messes()
             ->orderBy('created_at', 'desc')
+            ->where('statut', '!=', 'en_attente_paiement')
             ->take(1)
             ->get();
 
+        // dd($latestOffrandes);
         $types = Event::distinct()->pluck('type_event');
 
         return view('paroisse.dashboard', compact(

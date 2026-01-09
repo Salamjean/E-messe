@@ -1,12 +1,13 @@
-<div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered" style="background-color: #f8f9fa;">
+<div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true"
+    style="justify-content: right !important;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4">
             <form id="eventForm" enctype="multipart/form-data" method="POST">
                 @csrf
                 <input type="hidden" name="_method" id="formMethod" value="POST">
                 <input type="hidden" name="id" id="event_id">
 
-                <div class="modal-header bg-dark text-white">
+                <div class="modal-header bg-dark text-white" style="background-color: #5ea7b5 !important;">
                     <h5 class="modal-title" id="eventModalLabel"></h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
@@ -71,7 +72,7 @@
                     </button>
 
                     <!-- Bouton Sauvegarder avec icône "save" -->
-                    <button type="submit" class="btn btn-dark" id="saveBtn"
+                    <button type="submit" class="btn btn-save" id="saveBtn"
                         style="background-color: #c49d54; border:none;">
                         <i class="material-icons align-middle me-1">save</i> Créer l'évènement
                     </button>

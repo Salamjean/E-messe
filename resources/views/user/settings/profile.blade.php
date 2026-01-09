@@ -44,7 +44,12 @@
                                     <div
                                         style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; background-color: #e0e0e0; display: flex; align-items: center; justify-content: center;">
                                         @if ($user->profile_picture)
-                                            <img src="{{ Storage::url($user->profile_picture) }}" alt="Profile"
+                                            @php
+                                                $imageUrl = str_starts_with($user->profile_picture, 'http')
+                                                    ? $user->profile_picture
+                                                    : Storage::url($user->profile_picture);
+                                            @endphp
+                                            <img src="{{ $imageUrl }}" alt="Profile"
                                                 style="width: 100%; height: 100%; object-fit: cover;">
                                         @else
                                             <i class="fas fa-user fa-3x text-white"></i>
@@ -125,11 +130,13 @@
                                                 class="fas fa-user-friends text-muted"></i></span>
                                     </div>
                                     <select class="form-control border-left-0" name="civilite">
-                                        <!-- Assuming no 'civilite' column in User model yet, but adding UI for completeness as per design -->
-                                        <option value="M." {{ old('civilite') == 'M.' ? 'selected' : '' }}>M.</option>
-                                        <option value="Mme" {{ old('civilite') == 'Mme' ? 'selected' : '' }}>Mme
+                                        <option value="M."
+                                            {{ old('civilite', $user->civilite) == 'M.' ? 'selected' : '' }}>M.</option>
+                                        <option value="Mme"
+                                            {{ old('civilite', $user->civilite) == 'Mme' ? 'selected' : '' }}>Mme
                                         </option>
-                                        <option value="Mlle" {{ old('civilite') == 'Mlle' ? 'selected' : '' }}>Mlle
+                                        <option value="Mlle"
+                                            {{ old('civilite', $user->civilite) == 'Mlle' ? 'selected' : '' }}>Mlle
                                         </option>
                                     </select>
                                 </div>

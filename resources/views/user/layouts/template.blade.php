@@ -180,3 +180,44 @@
 
 <!-- JS : Personnalisé -->
 <script src="{{ asset('userAssets/assets/js/dashboard.js') }}"></script>
+
+@if (session('show_tutorial_popup'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                title: '<div class="text-center mb-3"><i class="fas fa-desktop fa-3x text-primary"></i></div><h3 class="font-weight-bold">Bienvenue sur E-messe</h3>',
+                html: '<p class="text-muted small">Pour vous aider à démarrer sur E-messe, nous avons préparé quelques vidéos tutoriels pour vous montrer comment demander une messe simplement.</p>',
+                showCancelButton: true,
+                confirmButtonText: 'Regarder la vidéo',
+                cancelButtonText: 'Plus tard',
+                reverseButtons: true,
+                customClass: {
+                    confirmButton: 'btn btn-primary px-4 mx-2',
+                    cancelButton: 'btn btn-outline-secondary px-4 mx-2',
+                    popup: 'border-radius-15'
+                },
+                buttonsStyling: false,
+                background: '#ffffff',
+                width: '400px',
+                padding: '2rem'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{{ route('user.settings.index') }}#tutorials";
+                }
+            });
+        });
+    </script>
+    <style>
+        .border-radius-15 {
+            border-radius: 15px !important;
+        }
+
+        .swal2-title {
+            padding-top: 0 !important;
+        }
+
+        .swal2-html-container {
+            margin-top: 10px !important;
+        }
+    </style>
+@endif

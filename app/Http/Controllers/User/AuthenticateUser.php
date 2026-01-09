@@ -70,7 +70,8 @@ class AuthenticateUser extends Controller
             $users->profile_picture = $profilePicturePath;
             $users->save();
 
-            return redirect()->route('user.dashboard')->with('success', 'Votre compte a été créé avec succès. Vous pouvez vous connecter.');
+            return redirect()->route('user.dashboard')->with('success', 'Votre compte a été créé avec succès. Vous pouvez vous connecter.')
+                ->with('show_tutorial_popup', true);
 
         } catch (\Exception $e) {
             Log::error('Error during registration: '.$e->getMessage());
@@ -124,7 +125,8 @@ class AuthenticateUser extends Controller
         $request->session()->regenerate();
 
         return redirect()->intended(route('user.dashboard', absolute: false))
-            ->with('success', 'Bienvenue sur votre page!');
+            ->with('success', 'Bienvenue sur votre page!')
+            ->with('show_tutorial_popup', true);
     }
 
     public function editProfile()
