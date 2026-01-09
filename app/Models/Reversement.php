@@ -20,7 +20,8 @@ class Reversement extends Model
         'montant',
         'statut',
         'cinetpay_transfer_id',
-        'donnees_api'
+        'donnees_api',
+        'paroisse_id'
     ];
 
     // Cast pour les champs JSON et autres types spécifiques

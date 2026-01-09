@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Paroisse;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\Reversement;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -24,11 +25,12 @@ class ParoisseDashboard extends Controller
         // Total global des demandes (pour calculer les pourcentages)
         $totalDemandes = $paroisse->messes()->whereIn('statut', ['en attente', 'confirmee', 'celebre'])->count();
 
-        // Montant total des demandes confirmées et célébrées (Somme des offrandes uniquement)
+        // Montant total des demandes (Somme des offrandes uniquement)
         $totalOffrandes = $paroisse->messes()
-            ->whereIn('statut', ['confirmee', 'celebre'])
+            ->whereIn('statut', ['en attente', 'confirmee', 'celebre'])
             ->sum('montant_offrande');
 
+        $montantDemande = $paroisse->montant_offrande;
         // --- 2. LOGIQUE PORTEFEUILLE ---
 
         // Somme des offrandes pour les paiements reçus (statut 'paye')
@@ -38,14 +40,19 @@ class ParoisseDashboard extends Controller
             ->where('paiements.statut', 'paye')
             ->sum('messes.montant_offrande');
 
-        // Somme des retraits effectués (hors rejetés)
+        // Somme des retraits effectués (hors rejetés) via paroisse_retraits
         $totalRetraits = DB::table('paroisse_retraits')
             ->where('paroisse_id', $paroisse->id)
             ->where('statut', '!=', 'rejete')
             ->sum('montant');
 
-        // Calcul du solde disponible (Formule : Recettes Offrandes - Retraits)
-        $soldeDisponible = $totalPaiementsOffrande - $totalRetraits;
+        // Somme des reversements via API qui sont encore en attente (car ils ne sont pas encore dans paroisse_retraits)
+        $totalReversementsApiPending = Reversement::where('paroisse_id', $paroisse->id)
+            ->where('statut', 'pending')
+            ->sum('montant');
+
+        // Calcul du solde disponible (Formule : Recettes Offrandes - Retraits - Reversals en attente)
+        $soldeDisponible = (int) $totalPaiementsOffrande - (int) ($totalRetraits + $totalReversementsApiPending);
 
         // --- 3. GRAPHIQUE LINÉAIRE (EVOLUTION MENSUELLE) ---
         // On veut le NOMBRE de demandes par mois (Jan-Déc) pour cette année vs année passée.
@@ -109,7 +116,8 @@ class ParoisseDashboard extends Controller
             'latestOffrandes',
             'chartDataCurrentYear',
             'chartDataLastYear',
-            'types'
+            'types',
+            'montantDemande'
         ));
     }
 

@@ -26,16 +26,17 @@ class PaiementStripeController extends Controller
                     ->with('info', 'Ce paiement a déjà été traité.');
             }
             
-            // Calculer les frais de 2% et le montant total
+            // Récupérer les détails des frais
+            $montantInitial = $paiement->messe->montant_offrande ?? ($paiement->montant - max($paiement->montant * 0.04, 200));
             $montantAvecFrais = (int) round($paiement->montant);
 
             
             // dd($montantAvecFrais);
             // Stocker les frais dans les données de transaction
             $donneesAvecFrais = [
-                'montant_initial' => $paiement->montant,
+                'montant_initial' => $montantInitial,
                 'montant_total' => $montantAvecFrais,
-                'taux_frais' => '2%'
+                'taux_frais' => '4% (min 200 FCFA)'
             ];
             
             // Configuration de Stripe
@@ -48,7 +49,7 @@ class PaiementStripeController extends Controller
                         'currency' => 'xof',
                         'product_data' => [
                             'name' => 'Demande de messe - ' . $paiement->reference,
-                            'description' => 'Demande de messe avec frais de service de 2%',
+                            'description' => 'Demande de messe avec frais de service de 4% (min 200 FCFA)',
                         ],
                         'unit_amount' => $montantAvecFrais, // Conversion en centimes (Stripe XOF)
                     ],

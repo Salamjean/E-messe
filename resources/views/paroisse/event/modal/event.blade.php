@@ -15,12 +15,14 @@
                 <div class="modal-body p-4">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label for="titre" class="form-label fw-semibold">Titre</label>
+                            <label for="titre" class="form-label fw-semibold">Titre <span
+                                    class="text-danger">*</span></label>
                             <input type="text" id="titre" name="titre" class="form-control" required>
                         </div>
 
                         <div class="col-md-6">
-                            <label for="type_event" class="form-label fw-semibold">Type d'événement</label>
+                            <label for="type_event" class="form-label fw-semibold">Type d'événement <span
+                                    class="text-danger">*</span></label>
                             <select id="type_event" name="type_event" class="form-select" required>
                                 <option value="">-- Sélectionner un type --</option>
                                 @foreach ($types as $type)
@@ -30,18 +32,21 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label for="date_debut" class="form-label fw-semibold">Date de début</label>
+                            <label for="date_debut" class="form-label fw-semibold">Date de début <span
+                                    class="text-danger">*</span></label>
                             <input type="datetime-local" id="date_debut" name="date_debut" class="form-control"
                                 required>
                         </div>
 
                         <div class="col-md-6">
-                            <label for="date_fin" class="form-label fw-semibold">Date de fin</label>
+                            <label for="date_fin" class="form-label fw-semibold">Date de fin <span
+                                    class="text-danger">*</span></label>
                             <input type="datetime-local" id="date_fin" name="date_fin" class="form-control">
                         </div>
 
                         <div class="col-md-6">
-                            <label for="lieu" class="form-label fw-semibold">Lieu</label>
+                            <label for="lieu" class="form-label fw-semibold">Lieu <span
+                                    class="text-danger">*</span></label>
                             <input type="text" id="lieu" name="lieu" class="form-control">
                         </div>
                         <div class="col-md-6">

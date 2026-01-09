@@ -81,7 +81,7 @@
                 <div class="stat-card card-orange shadow-sm">
                     <h6 class="card-title">Montant demande</h6>
                     <div class="card-bottom">
-                        <span class="stat-number">{{ number_format($totalOffrandes, 0, ',', ' ') }}F</span>
+                        <span class="stat-number">{{ number_format($montantDemande, 0, ',', ' ') }}F</span>
                         <div class="stat-trend">
                             <i class="fas fa-coins"></i>
                         </div>

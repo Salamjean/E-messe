@@ -22,6 +22,23 @@
             <div class="stepper-line"></div>
         </div>
 
+        <!-- Affichage des erreurs globales -->
+        @if ($errors->any())
+            <div class="alert alert-danger" style="max-width: 800px; margin: 0 auto 20px auto;">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-danger" style="max-width: 800px; margin: 0 auto 20px auto;">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <form action="{{ route('user.messe.store') }}" method="POST" class="messe-form" id="messeForm">
             @csrf
 
@@ -43,8 +60,8 @@
 
                     <div class="form-group">
                         <label for="interception_par">Par l'intercession de ... (Optionnel)</label>
-                        <input type="text" id="interception_par" name="interception_par" value="{{ old('interception_par') }}"
-                            placeholder="Ex: Saint Marie...">
+                        <input type="text" id="interception_par" name="interception_par"
+                            value="{{ old('interception_par') }}" placeholder="Ex: Saint Marie...">
                         @error('interception_par')
                             <div class="error-message">
                                 <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -96,7 +113,8 @@
                     <div class="form-row-custom three-cols">
                         <div class="form-group">
                             <label for="celebration_choisie">Type de célébration *</label>
-                            <select id="celebration_choisie" name="celebration_choisie" value="{{ old('celebration_choisie') }}" required>
+                            <select id="celebration_choisie" name="celebration_choisie"
+                                value="{{ old('celebration_choisie') }}" required>
                                 <option value="">Sélectionnez une option</option>
                                 <option value="Messe quotidienne">Messe quotidienne</option>
                                 <option value="Messe dominicale">Messe dominicale</option>
@@ -167,16 +185,26 @@
                         <!-- Filled by JS -->
                     </div>
 
-                    <!-- Hidden Inputs for User Info (Required by Backend) -->
-                    <input type="hidden" name="nom_demandeur" value="{{ Auth::user()->name }}">
-                    <input type="hidden" name="email_demandeur" value="{{ Auth::user()->email }}">
-                    <input type="hidden" name="telephone_demandeur" value="{{ Auth::user()->contact }}">
-
                     <div class="user-info-summary">
                         <h3>Vos coordonnées</h3>
-                        <p><strong>Nom:</strong> {{ Auth::user()->name }}</p>
-                        <p><strong>Email:</strong> {{ Auth::user()->email }}</p>
-                        <p><strong>Téléphone:</strong> {{ Auth::user()->contact }}</p>
+                        <div class="form-group mb-3">
+                            <label for="nom_demandeur">Nom complet *</label>
+                            <input type="text" id="nom_demandeur" name="nom_demandeur"
+                                value="{{ old('nom_demandeur', Auth::user()->name) }}" required>
+                        </div>
+                        <div class="form-row-custom">
+                            <div class="form-group mb-3">
+                                <label for="email_demandeur">Email *</label>
+                                <input type="email" id="email_demandeur" name="email_demandeur"
+                                    value="{{ old('email_demandeur', Auth::user()->email) }}" required>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="telephone_demandeur">Téléphone *</label>
+                                <input type="text" id="telephone_demandeur" name="telephone_demandeur"
+                                    value="{{ old('telephone_demandeur', Auth::user()->contact) }}" required
+                                    maxlength="20">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -520,8 +548,10 @@
             const recapContent = document.getElementById('recapContent');
 
             // --- Initialization ---
-            const today = new Date().toISOString().split('T')[0];
-            dateSouhaiteeInput.setAttribute('min', today);
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+            dateSouhaiteeInput.setAttribute('min', tomorrowStr);
 
             // --- Navigation Logic ---
             window.nextStep = function(step) {
@@ -682,12 +712,25 @@
                     'input[name="jours_dominicale[]"]:checked').length;
                 else if (type === 'Messe solennelle') count = 1;
 
-                const total = montantUnitaire * count;
-                montantOffrandeInput.value = total;
-                montantOffrandeDisplay.value = total > 0 ? total + ' FCFA' : '';
+                const totalOffrande = montantUnitaire * count;
 
-                if (count > 0) montantDetails.innerText = `${montantUnitaire} FCFA x ${count} = ${total} FCFA`;
-                else montantDetails.innerText = `Tarif unitaire: ${montantUnitaire} FCFA.`;
+                // Calcul des frais: 4% avec minimum 200 FCFA
+                let frais = 0;
+                if (totalOffrande > 0) {
+                    frais = Math.max(totalOffrande * 0.04, 200);
+                }
+                const totalAvecFrais = totalOffrande + frais;
+
+                montantOffrandeInput.value = totalOffrande;
+                montantOffrandeDisplay.value = totalOffrande > 0 ? totalOffrande + ' FCFA' : '';
+
+                if (count > 0) {
+                    let detailsText = `${montantUnitaire} FCFA x ${count} = ${totalOffrande} FCFA`;
+                    detailsText += ` + Frais de service: ${frais} FCFA`;
+                    montantDetails.innerText = detailsText;
+                    montantDetails.innerHTML =
+                        `${detailsText} <br><strong>Total à payer: ${totalAvecFrais} FCFA</strong>`;
+                } else montantDetails.innerText = `Tarif unitaire: ${montantUnitaire} FCFA.`;
             }
 
             function genererDimanches() {
@@ -726,9 +769,12 @@
                 const type = celebrationSelect.value;
                 const date = dateSouhaiteeInput.value;
                 const heure = document.getElementById('heure_souhaitee').value || 'Non spécifiée';
-                const montant = montantOffrandeDisplay.value;
+
                 const motif = document.getElementById('motif_intention').value;
                 const intercession = document.getElementById('interception_par').value || 'Non spécifié';
+                const nom = document.getElementById('nom_demandeur').value;
+                const email = document.getElementById('email_demandeur').value;
+                const tel = document.getElementById('telephone_demandeur').value;
 
                 let joursStr = '';
                 if (type === 'Messe quotidienne') {
@@ -743,15 +789,33 @@
                 }
                 if (joursStr) joursStr = joursStr.slice(0, -2);
 
-                recapContent.innerHTML = `
-                    <div class="recap-row"><span class="recap-label">Motif</span><span class="recap-val">${motif}</span></div>
-                    <div class="recap-row"><span class="recap-label">Intercession</span><span class="recap-val">${intercession}</span></div>
-                    <div class="recap-row"><span class="recap-label">Paroisse</span><span class="recap-val">${ville} - ${paroisse}</span></div>
-                    <div class="recap-row"><span class="recap-label">Célébration</span><span class="recap-val">${type}</span></div>
-                    ${joursStr ? `<div class="recap-row"><span class="recap-label">Jours</span><span class="recap-val">${joursStr}</span></div>` : ''}
-                    <div class="recap-row"><span class="recap-label">Début</span><span class="recap-val">${date} à ${heure}</span></div>
-                    <div class="recap-row"><span class="recap-label">Montant Total</span><span class="recap-val" style="color:#d4af37; font-size:1.1em">${montant}</span></div>
-                `;
+                const montantOffrande = parseFloat(montantOffrandeInput.value) || 0;
+                const frais = montantOffrande > 0 ? Math.max(montantOffrande * 0.04, 200) : 0;
+                const montantTotal = montantOffrande + frais;
+
+                recapContent.innerHTML = '';
+
+                const addRow = (label, val, style = '') => {
+                    if (val === undefined || val === null) return;
+                    const div = document.createElement('div');
+                    div.className = 'recap-row';
+                    div.innerHTML =
+                        `<span class="recap-label">${label}</span><span class="recap-val" style="${style}"></span>`;
+                    div.querySelector('.recap-val').textContent = val;
+                    recapContent.appendChild(div);
+                };
+
+                addRow('Motif', motif);
+                addRow('Intercession', intercession);
+                addRow('Paroisse', `${ville} - ${paroisse}`);
+                addRow('Célébration', type);
+                if (joursStr) addRow('Jours', joursStr);
+                addRow('Début', `${date} à ${heure}`);
+                addRow('Demandeur', `${nom} (${tel})`);
+                addRow('Montant Offrande', montantOffrande + ' FCFA');
+                addRow('Frais de service (4% - min 200F)', frais + ' FCFA');
+                addRow('Montant Total à payer', montantTotal + ' FCFA',
+                    'color:#d4af37; font-size:1.1em; font-weight: bold;');
             }
 
             // --- Utils ---

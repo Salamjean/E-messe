@@ -135,16 +135,22 @@ class ParoissePaiement extends Controller
             ->where('paiements.statut', 'paye')
             ->sum('messes.montant_offrande');
 
+        // Somme des retraits effectués (hors rejetés) via paroisse_retraits
+        // Note: Les reversements API réussis créent aussi une entrée dans paroisse_retraits avec le statut 'traite'.
         $totalRetraits = DB::table('paroisse_retraits')
             ->where('paroisse_id', $paroisseId)
             ->where('statut', '!=', 'rejete')
             ->sum('montant');
 
-        $totalReversementsApi = Reversement::where('paroisse_id', $paroisseId)
-            ->whereIn('statut', ['success', 'pending'])
+
+
+        // Somme des reversements via API qui sont encore en attente (non encore dans paroisse_retraits)
+        $totalReversementsApiPending = Reversement::where('paroisse_id', $paroisseId)
+            ->where('statut', 'pending')
             ->sum('montant');
 
-        return (int) $totalRecettesOffrande - (int) ($totalRetraits + $totalReversementsApi);
+        // Calcul du solde disponible (Formule : Recettes Offrandes - Retraits - Reversements en attente)
+        return (int) $totalRecettesOffrande - (int) ($totalRetraits + $totalReversementsApiPending);
     }
 
     /**

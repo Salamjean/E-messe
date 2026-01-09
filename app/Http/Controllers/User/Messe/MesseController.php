@@ -110,8 +110,8 @@ class MesseController extends Controller
             'jours_dominicale' => 'required_if:celebration_choisie,Messe dominicale|array',
             'montant_offrande' => 'required|numeric|min:0',
             'date_souhaitee' => 'required|date|after:today',
-            'heure_souhaitee' => 'nullable|date_format:H:i',
-            'paroisse_id' => 'nullable|exists:paroisses,id',
+            'heure_souhaitee' => 'nullable', // Plus flexible pour les navigateurs (H:i ou H:i:s)
+            'paroisse_id' => 'required|exists:paroisses,id',
             'ville_id' => 'required|exists:villes,id',
             'commune_id' => 'required|exists:communes,id',
             'nom_demandeur' => 'required|string|max:255',

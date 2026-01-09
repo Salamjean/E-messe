@@ -27,11 +27,12 @@ class PaiementController extends Controller
     {
         $paiement = Paiement::where('reference', $reference)
             ->where('user_id', Auth::id())
+            ->with('messe')
             ->firstOrFail();
 
         $messe = $paiement->messe;
 
-        // Calculer les frais de 2% et le montant total
+        // Calculer les frais de 4% et le montant total
 
         $montantTotal = $paiement->montant;
 
@@ -207,7 +208,19 @@ class PaiementController extends Controller
     private function getFraisDetails($paiement)
     {
         $donnees = json_decode($paiement->donnees_transaction, true) ?? [];
-        $montantOffrande = $paiement->messe->montant_offrande ?? ($paiement->montant / 1.04);
+        $montantOffrande = $paiement->messe->montant_offrande ?? $paiement->montant;
+        
+        // Si le montant de l'offrande est égal au montant du paiement, cela signifie que les frais n'ont pas été inclus
+        // ou que montant_offrande n'était pas disponible. On tente de recalculer si nécessaire.
+        if ($montantOffrande == $paiement->montant) {
+             // Si on n'a pas le montant initial, on ne peut pas deviner exactement à cause du "min 200"
+             // mais on va assumer que si c'est > 5000, les frais étaient 4%
+             if ($paiement->montant > 5200) {
+                 $montantOffrande = $paiement->montant / 1.04;
+             } elseif ($paiement->montant > 200) {
+                 $montantOffrande = $paiement->montant - 200;
+             }
+        }
 
         return [
             'montant_initial' => $montantOffrande,
