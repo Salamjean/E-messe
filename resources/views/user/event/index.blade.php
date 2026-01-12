@@ -66,14 +66,14 @@
                         <div class="card event-card-side" data-bs-toggle="modal" data-bs-target="#eventDetailModal"
                             data-title="{{ $event->titre }}"
                             data-description="{{ $event->description ?? 'Aucune description disponible.' }}"
-                            data-image="{{ $event->image ? asset('storage/' . $event->image) : 'https://via.placeholder.com/800x600.png?text=Pas+d\'image' }}"
+                            data-image="{{ $event->image_url ?? 'https://via.placeholder.com/800x600.png?text=Pas+d\'image' }}"
                             data-location="{{ $event->paroisse->name ?? 'Paroisse non spécifiée' }}"
                             data-dates="{{ \Carbon\Carbon::parse($event->date_debut)->format('d/m/Y') }}{{ $event->date_fin ? ' - ' . \Carbon\Carbon::parse($event->date_fin)->format('d/m/Y') : '' }}"
                             data-celebrant="{{ $event->celebrant ?? 'Non spécifié' }}"
                             data-participation="{{ $event->participation ?? 'Libre' }}">
 
                             <div class="event-card-image">
-                                <img src="{{ $event->image ? asset('storage/' . $event->image) : 'https://via.placeholder.com/400x300.png?text=Image' }}"
+                                <img src="{{ $event->image_url ?? 'https://via.placeholder.com/400x300.png?text=Image' }}"
                                     alt="Image de {{ $event->titre }}">
                             </div>
                             <div class="event-card-content">
@@ -121,7 +121,7 @@
                             @foreach ($events as $event)
                                 <tr>
                                     <td>
-                                        <img src="{{ $event->image ? asset('storage/' . $event->image) : 'https://via.placeholder.com/50x50.png?text=No+Img' }}"
+                                        <img src="{{ $event->image_url ?? 'https://via.placeholder.com/50x50.png?text=No+Img' }}"
                                             alt="{{ $event->titre }}" class="rounded" width="50" height="50"
                                             style="object-fit: cover;">
                                     </td>

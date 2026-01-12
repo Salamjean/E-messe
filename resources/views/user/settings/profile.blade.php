@@ -43,17 +43,8 @@
                                 <div class="position-relative d-inline-block">
                                     <div
                                         style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; background-color: #e0e0e0; display: flex; align-items: center; justify-content: center;">
-                                        @if ($user->profile_picture)
-                                            @php
-                                                $imageUrl = str_starts_with($user->profile_picture, 'http')
-                                                    ? $user->profile_picture
-                                                    : Storage::url($user->profile_picture);
-                                            @endphp
-                                            <img src="{{ $imageUrl }}" alt="Profile"
-                                                style="width: 100%; height: 100%; object-fit: cover;">
-                                        @else
-                                            <i class="fas fa-user fa-3x text-white"></i>
-                                        @endif
+                                        <img src="{{ $user->profile_picture_url }}" alt="Profile"
+                                            style="width: 100%; height: 100%; object-fit: cover;" id="profile-preview">
                                     </div>
                                     <label for="profile_picture"
                                         class="btn btn-warning btn-sm position-absolute rounded-circle shadow-sm"
@@ -62,6 +53,9 @@
                                     </label>
                                     <input type="file" name="profile_picture" id="profile_picture" class="d-none"
                                         accept="image/*">
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">Formats: JPG, PNG, SVG. Max 2 Mo</small>
                                 </div>
                             </div>
 
@@ -192,11 +186,20 @@
     <script>
         document.getElementById('profile_picture').addEventListener('change', function(e) {
             if (e.target.files && e.target.files[0]) {
+                const file = e.target.files[0];
+
+                // Vérification de la taille (2 Mo = 2048 * 1024 octets)
+                if (file.size > 2048 * 1024) {
+                    alert('L\'image est trop volumineuse. La taille maximale est de 2 Mo.');
+                    this.value = '';
+                    return;
+                }
+
                 var reader = new FileReader();
                 reader.onload = function(e) {
-                    document.querySelector('.position-relative img').src = e.target.result;
+                    document.getElementById('profile-preview').src = e.target.result;
                 }
-                reader.readAsDataURL(e.target.files[0]);
+                reader.readAsDataURL(file);
             }
         });
     </script>

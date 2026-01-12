@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Paroissien extends Model
 {
@@ -37,5 +38,27 @@ class Paroissien extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the photo URL.
+     */
+    public function getPhotoUrlAttribute()
+    {
+        $value = $this->photo;
+        
+        if (!$value) {
+            return 'https://via.placeholder.com/200';
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            return $value;
+        }
+
+        if (file_exists(public_path($value))) {
+            return asset($value);
+        }
+
+        return Storage::url($value);
     }
 }

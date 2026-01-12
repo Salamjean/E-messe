@@ -46,8 +46,16 @@
                     <!-- Photo de profil -->
                     <div class="profile-img-section">
                         <div class="img-container">
-                            <img src="{{ Auth::guard('paroisse')->user()->profile_picture ? asset('storage/' . Auth::guard('paroisse')->user()->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::guard('paroisse')->user()->name) . '&size=200&background=f35525&color=fff' }}"
-                                alt="Photo de profil" class="profile-img" id="profile-picture-preview">
+                            @php
+                                $paroisseUser = Auth::guard('paroisse')->user();
+                                $paroissePic = $paroisseUser->profile_picture
+                                    ? Storage::url($paroisseUser->profile_picture)
+                                    : 'https://ui-avatars.com/api/?name=' .
+                                        urlencode($paroisseUser->name) .
+                                        '&size=200&background=f35525&color=fff';
+                            @endphp
+                            <img src="{{ $paroissePic }}" alt="Photo de profil" class="profile-img"
+                                id="profile-picture-preview">
                             <label for="profile_picture" class="img-upload-btn">
                                 <i class="fas fa-camera"></i>
                             </label>

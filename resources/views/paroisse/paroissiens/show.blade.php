@@ -10,12 +10,8 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-4 text-center">
-                        @if ($paroissien->photo)
-                            <img src="{{ asset('storage/' . $paroissien->photo) }}" alt="Photo"
-                                class="img-fluid rounded-circle" style="max-width: 200px;">
-                        @else
-                            <img src="https://via.placeholder.com/200" alt="Pas de photo" class="img-fluid rounded-circle">
-                        @endif
+                        <img src="{{ $paroissien->photo_url }}" alt="Photo" class="img-fluid rounded-circle"
+                            style="max-width: 200px;">
                         <h4 class="mt-3">{{ $paroissien->nom_prenom }}</h4>
                         <p class="text-muted">{{ $paroissien->situation_matrimoniale }}</p>
                     </div>

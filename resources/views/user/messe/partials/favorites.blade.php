@@ -7,9 +7,8 @@
                     <div class="card parish-card border-0 shadow-sm h-100" style="border-radius: 15px;">
                         <div class="card-body d-flex flex-row align-items-center p-3">
                             <div class="parish-image me-3">
-                                <img src="{{ $paroisse->profile_picture ? asset('storage/' . $paroisse->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode($paroisse->name) . '&background=random' }}"
-                                    alt="{{ $paroisse->name }}" class="rounded-circle"
-                                    style="width: 60px; height: 60px; object-fit: cover;">
+                                <img src="{{ $paroisse->profile_picture_url }}" alt="{{ $paroisse->name }}"
+                                    class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
                             </div>
                             <div class="parish-info flex-grow-1">
                                 <h6 class="fw-bold mb-1 text-dark">{{ $paroisse->name }}</h6>

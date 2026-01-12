@@ -657,11 +657,11 @@
                 <div class="form-row">
                     <div class="form-col">
                         <div class="form-group">
-                            <label for="profile_picture">Photo de profil (facultatif)</label>
+                            <label for="profile_picture">Photo de profil (facultatif - Max 2 Mo)</label>
                             <div class="input-with-icon">
                                 <i class="input-icon fas fa-camera"></i>
                                 <input type="file" id="profile_picture" name="profile_picture" accept="image/*"
-                                    value="{{ old('profile_picture') }}">
+                                    value="{{ old('profile_picture') }}" onchange="checkFileSize(this)">
                                 @error('profile_picture')
                                     <div class="error-message">
                                         <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -694,6 +694,16 @@
                 passwordInput.type = 'password';
                 element.classList.remove('fa-eye-slash');
                 element.classList.add('fa-eye');
+            }
+        }
+
+        function checkFileSize(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                if (file.size > 2048 * 1024) {
+                    alert('L\'image est trop volumineuse. La taille maximale est de 2 Mo.');
+                    input.value = '';
+                }
             }
         }
     </script>

@@ -64,20 +64,7 @@
     <div class="sidebar-footer">
         <div class="user-profile d-flex align-items-center mb-3">
             <div class="profile-image-container me-3">
-                @php
-                    $profilePicture = Auth::user()->profile_picture;
-                    if ($profilePicture) {
-                        if (!str_starts_with($profilePicture, 'http')) {
-                            $profilePicture = asset('storage/' . $profilePicture);
-                        }
-                    } else {
-                        $profilePicture =
-                            'https://ui-avatars.com/api/?name=' .
-                            urlencode(Auth::user()->name ?: 'User') .
-                            '&background=random&color=fff';
-                    }
-                @endphp
-                <img class="img-xs rounded-circle" src="{{ $profilePicture }}" alt="Photo de profil">
+                <img class="img-xs rounded-circle" src="{{ Auth::user()->profile_picture_url }}" alt="Photo de profil">
             </div>
             <div class="profile-info">
                 <p class="profile-name mb-0 text-dark font-weight-bold text-truncate">

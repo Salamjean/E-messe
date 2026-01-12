@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Event extends Model
 {
@@ -42,5 +43,27 @@ class Event extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get the image URL.
+     */
+    public function getImageUrlAttribute()
+    {
+        $value = $this->image;
+
+        if (! $value) {
+            return null;
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            return $value;
+        }
+
+        if (file_exists(public_path($value))) {
+            return asset($value);
+        }
+
+        return Storage::url($value);
     }
 }

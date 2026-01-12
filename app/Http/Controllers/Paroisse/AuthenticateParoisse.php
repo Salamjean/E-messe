@@ -159,7 +159,7 @@ class AuthenticateParoisse extends Controller
             'current_password.required' => 'Le mot de passe actuel est requis pour confirmer les modifications.',
             'profile_picture.image' => 'Le fichier doit être une image.',
             'profile_picture.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou svg.',
-            'profile_picture.max' => 'L\'image ne doit pas dépasser 2048 KB.',
+            'profile_picture.max' => 'L\'image ne doit pas dépasser 2 Mo.',
         ]);
 
         try {

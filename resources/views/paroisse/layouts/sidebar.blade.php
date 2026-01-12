@@ -5,10 +5,8 @@
     <!-- En-tête du menu latéral -->
     <div class="mdc-drawer__header">
         <a href="{{ route('paroisse.dashboard') }}" class="brand-logo">
-            <img src="{{ optional(Auth::guard('paroisse')->user())->profile_picture
-                ? asset('storage/' . Auth::guard('paroisse')->user()->profile_picture)
-                : asset('assets/assets/images/sancta.jpg') }}"
-                style="width: 50%; margin-left:50px" alt="logo">
+            <img src="{{ Auth::guard('paroisse')->user()->profile_picture_url }}" style="width: 50%; margin-left:50px"
+                alt="logo">
         </a>
     </div>
 

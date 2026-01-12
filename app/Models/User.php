@@ -121,4 +121,27 @@ class User extends Authenticatable
     {
         return $this->morphMany(Notification::class, 'notifiable')->orderBy('created_at', 'desc');
     }
+
+    /**
+     * Get the profile picture URL.
+     */
+    public function getProfilePictureUrlAttribute()
+    {
+        $value = $this->profile_picture;
+        
+        if (!$value) {
+            return 'https://ui-avatars.com/api/?name=' . urlencode($this->name ?: 'User') . '&background=random&color=fff';
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            return $value;
+        }
+
+        // Check if file exists in public directory
+        if (file_exists(public_path($value))) {
+            return asset($value);
+        }
+
+        return Storage::url($value);
+    }
 }

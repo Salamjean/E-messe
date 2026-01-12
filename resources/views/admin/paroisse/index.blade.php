@@ -68,26 +68,7 @@
                         data-name="{{ strtolower($paroisse->name) }}">
                         <div class="card-header">
                             <div class="profile-img">
-                                @php
-                                    $profilePic = $paroisse->profile_picture;
-
-                                    // Déterminer la source de l'image
-                                    if (!$profilePic) {
-                                        // Si pas d'image : UI Avatars
-                                        $src =
-                                            'https://ui-avatars.com/api/?name=' .
-                                            urlencode($paroisse->name) .
-                                            '&size=200&background=f35525&color=fff';
-                                    } elseif (str_starts_with($profilePic, 'http')) {
-                                        // Si c'est une URL externe (Google, etc.) : on l'utilise directement
-                                        $src = $profilePic;
-                                    } else {
-                                        // Si c'est un fichier local : on utilise asset('storage/...')
-                                        $src = asset('storage/' . $profilePic);
-                                    }
-                                @endphp
-
-                                <img src="{{ $src }}" alt="{{ $paroisse->name }}">
+                                <img src="{{ $paroisse->profile_picture_url }}" alt="{{ $paroisse->name }}">
                             </div>
                             <div class="actions">
                                 <button class="btn-icon edit-btn" data-id="{{ $paroisse->id }}" title="Modifier">

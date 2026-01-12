@@ -142,7 +142,7 @@
                             @if ($paroissien->photo)
                                 <div class="mt-2">
                                     <p class="text-muted small">Photo actuelle :</p>
-                                    <img src="{{ asset('storage/' . $paroissien->photo) }}"
+                                    <img src="{{ $paroissien->photo_url }}"
                                         style="width: 100px; height: 100px; object-fit: cover; border-radius: 5px;">
                                 </div>
                             @endif

@@ -51,7 +51,7 @@ class SettingsController extends Controller
             'email.unique' => 'Cette adresse e-mail est déjà utilisée.',
             'contact.required' => 'Le contact est obligatoire.',
             'profile_picture.image' => 'Le fichier doit être une image.',
-            'profile_picture.max' => 'L\'image ne doit pas dépasser 2048 KB.',
+            'profile_picture.max' => 'L\'image ne doit pas dépasser 2 Mo.',
         ]);
 
         try {

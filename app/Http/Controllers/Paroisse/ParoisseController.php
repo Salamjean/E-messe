@@ -90,7 +90,7 @@ class ParoisseController extends Controller
             'tel.min' => 'Le contact doit avoir au moins 10 chiffres.',
             'profile_picture.image' => 'Le fichier doit être une image.',
             'profile_picture.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou svg.',
-            'profile_picture.max' => 'L\'image ne doit pas dépasser 2048 KB.',
+            'profile_picture.max' => 'L\'image ne doit pas dépasser 2 Mo.',
             'commune_id.required' => 'La commune est obligatoire.',
         ]);
 
@@ -247,7 +247,7 @@ class ParoisseController extends Controller
                 'email.unique' => 'Cet email est déjà utilisé.',
                 'profile_picture.image' => 'Le fichier doit être une image.',
                 'profile_picture.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou svg.',
-                'profile_picture.max' => 'L\'image ne doit pas dépasser 2MB.',
+                'profile_picture.max' => 'L\'image ne doit pas dépasser 2 Mo.',
             ]);
             Log::info('Validation réussie', $validated);
 

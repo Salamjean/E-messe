@@ -51,7 +51,7 @@ class AuthenticateUser extends Controller
             'password.regex' => 'Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial.', // Message d'erreur personnalisé pour regex
             'profile_picture.image' => 'Le fichier doit être une image.',
             'profile_picture.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou svg.',
-            'profile_picture.max' => 'L\'image ne doit pas dépasser 2048 KB.',
+            'profile_picture.max' => 'L\'image ne doit pas dépasser 2 Mo.',
         ]);
 
         try {
@@ -171,7 +171,7 @@ class AuthenticateUser extends Controller
             'current_password.required' => 'Le mot de passe actuel est requis pour confirmer les modifications.',
             'profile_picture.image' => 'Le fichier doit être une image.',
             'profile_picture.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou svg.',
-            'profile_picture.max' => 'L\'image ne doit pas dépasser 2048 KB.',
+            'profile_picture.max' => 'L\'image ne doit pas dépasser 2 Mo.',
         ]);
 
         try {

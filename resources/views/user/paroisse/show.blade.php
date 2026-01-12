@@ -14,8 +14,8 @@
             <div class="col-md-12">
                 <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
                     <div class="position-relative" style="height: 200px; background-color: #f8f9fa;">
-                        @if ($paroisse->cover_image)
-                            <img src="{{ asset('storage/' . $paroisse->cover_image) }}" alt="Couverture"
+                        @if ($paroisse->cover_image_url)
+                            <img src="{{ $paroisse->cover_image_url }}" alt="Couverture"
                                 class="w-100 h-100 object-fit-cover">
                         @else
                             <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
@@ -32,8 +32,8 @@
 
                     <div class="card-body px-4 pb-5">
                         <div class="d-flex align-items-end mt-n5 mb-4 position-relative" style="z-index: 1;">
-                            <img src="{{ $paroisse->profile_picture ? asset('storage/' . $paroisse->profile_picture) : 'https://ui-avatars.com/api/?name=' . urlencode($paroisse->name) . '&background=random' }}"
-                                alt="{{ $paroisse->name }}" class="rounded-circle border border-4 border-white shadow-sm"
+                            <img src="{{ $paroisse->profile_picture_url }}" alt="{{ $paroisse->name }}"
+                                class="rounded-circle border border-4 border-white shadow-sm"
                                 style="width: 100px; height: 100px; object-fit: cover; background-color: #fff;">
                             <div class="ms-3 mb-2">
                                 <h2 class="fw-bold mb-0 text-dark">{{ $paroisse->name }}</h2>

@@ -9,10 +9,8 @@
                 <button class="mdc-button mdc-menu-button">
                     <span class="d-flex align-items-center">
                         <span class="figure">
-                            <img src="{{ optional(Auth::guard('paroisse')->user())->profile_picture
-                                ? asset('storage/' . Auth::guard('paroisse')->user()->profile_picture)
-                                : asset('assets/assets/images/sancta-blanc.jpg') }}"
-                                alt="user" class="user">
+                            <img src="{{ Auth::guard('paroisse')->user()->profile_picture_url }}" alt="user"
+                                class="user">
                         </span>
                         <span class="user-name text-white"> {{ Auth::guard('paroisse')->user()->name }} </span>
                     </span>
