@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -128,9 +129,9 @@ class User extends Authenticatable
     public function getProfilePictureUrlAttribute()
     {
         $value = $this->profile_picture;
-        
-        if (!$value) {
-            return 'https://ui-avatars.com/api/?name=' . urlencode($this->name ?: 'User') . '&background=random&color=fff';
+
+        if (! $value) {
+            return 'https://ui-avatars.com/api/?name='.urlencode($this->name ?: 'User').'&background=random&color=fff';
         }
 
         if (filter_var($value, FILTER_VALIDATE_URL)) {
