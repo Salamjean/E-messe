@@ -63,7 +63,7 @@ Route::get('/test-hostinger', function () {
         \Mail::raw('Test Hostinger SMTP - '.now(), function ($message) {
             $message->to('leprodev03@gmail.com')
                 ->subject('Test Hostinger SMTP')
-                ->from('contact@edemarchee-ci.com', 'E-Messe');
+                ->from(config('mail.from.address'), config('mail.from.name'));
         });
 
         \Log::info('Hostinger test email sent successfully');

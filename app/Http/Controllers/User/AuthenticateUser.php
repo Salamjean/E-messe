@@ -70,8 +70,7 @@ class AuthenticateUser extends Controller
             $users->profile_picture = $profilePicturePath;
             $users->save();
 
-            return redirect()->route('user.dashboard')->with('success', 'Votre compte a été créé avec succès. Vous pouvez vous connecter.')
-                ->with('show_tutorial_popup', true);
+            return redirect()->route('login')->with('success', 'Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.');
 
         } catch (\Exception $e) {
             Log::error('Error during registration: '.$e->getMessage());

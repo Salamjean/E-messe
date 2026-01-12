@@ -3,19 +3,20 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class SendEmailToParoisseAfterRegistrationNotification extends Notification
 {
-   use Queueable;
+    use Queueable;
 
     /**
      * Create a new notification instance.
      */
     public $code;
+
     public $email;
+
     public $logoUrl;
 
     public function __construct($codeToSend, $sendToemail)
@@ -41,8 +42,8 @@ class SendEmailToParoisseAfterRegistrationNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('E-Messe : Votre paroisse a été enregistré sur E-MESSE') 
-            ->from('contact@edemarchee-ci.com', 'E-Messe')
+            ->subject('E-Messe : Votre paroisse a été enregistré sur E-MESSE')
+            ->from(config('mail.from.address'), config('mail.from.name'))
             ->view('emails.paroisse_registration', [
                 'code' => $this->code,
                 'email' => $this->email,

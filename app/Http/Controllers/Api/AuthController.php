@@ -217,54 +217,48 @@ class AuthController extends Controller
     // }
 
     public function login(Request $request)
-{
-    $request->validate([
-        'login' => 'required|string',
-        'password' => 'required|string',
-    ]);
+    {
+        $request->validate([
+            'login' => 'required|string',
+            'password' => 'required|string',
+        ]);
 
-    $user = User::where('email', $request->login)
-        ->orWhere('user_name', $request->login)
-        ->first();
+        $user = User::where('email', $request->login)
+            ->orWhere('user_name', $request->login)
+            ->first();
 
-    if (! $user || ! Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Identifiants incorrects.',
+            ], 401);
+        }
+
+        // Supprimer anciens tokens
+        $user->tokens()->delete();
+
+        // 🔥 MARQUER CONNECTÉ
+        $user->actif = 1;
+        $user->save();
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
         return response()->json([
-            'status' => 'error',
-            'message' => 'Identifiants incorrects.',
-        ], 401);
+            'status' => 'success',
+            'message' => 'Connexion réussie.',
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'user_name' => $user->user_name,
+                'email' => $user->email,
+                'contact' => $user->contact,
+                'profile_picture' => $user->profile_picture,
+                'actif' => $user->actif,
+            ],
+        ], 200);
     }
-
-    // 🔴 NE PAS bloquer ici avec actif
-    // actif = état de connexion, pas de blocage
-
-    // Supprimer anciens tokens
-    $user->tokens()->delete();
-
-    // 🔥 MARQUER CONNECTÉ
-    $user->actif = 1;
-    $user->save();
-
-    $token = $user->createToken('auth_token')->plainTextToken;
-
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Connexion réussie.',
-        'access_token' => $token,
-        'token_type' => 'Bearer',
-        'user' => [
-            'id' => $user->id,
-            'name' => $user->name,
-            'user_name' => $user->user_name,
-            'email' => $user->email,
-            'contact' => $user->contact,
-            'profile_picture' => $user->profile_picture,
-            'actif' => $user->actif,
-        ],
-    ], 200);
-}
-
-
-
 
     public function loginWithGoogle(Request $request)
     {
@@ -360,7 +354,6 @@ class AuthController extends Controller
         ]);
     }
 
-
     /**
      * Enregistrement d'un utilisateur
      */
@@ -424,7 +417,6 @@ class AuthController extends Controller
      *     )
      * )
      */
-    
     public function register(Request $request)
     {
         $validated = $request->validate([
@@ -559,7 +551,6 @@ class AuthController extends Controller
             'message' => 'Déconnexion réussie',
         ]);
     }
-
 
     // /**
     //  * Mot de passe oublié - Envoi du lien

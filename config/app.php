@@ -117,8 +117,12 @@ return [
     | Supported drivers: "file", "cache"
     |
     */
-App\Providers\CustomNotificationProvider::class,
-NotificationChannels\Fcm\FcmServiceProvider::class,
+    /*
+    'providers' => [
+        App\Providers\CustomNotificationProvider::class,
+        NotificationChannels\Fcm\FcmServiceProvider::class,
+    ],
+    */
 
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
