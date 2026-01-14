@@ -190,14 +190,14 @@
 
             if (!localStorage.getItem(tutorialKey)) {
                 Swal.fire({
-                    title: '<div class="text-center mb-3"><i class="fas fa-desktop fa-3x text-primary"></i></div><h3 class="font-weight-bold">Bienvenue sur E-messe</h3>',
+                    title: '<div class="text-center mb-3"><i class="fas fa-desktop fa-3x" style="color: #cca45e;"></i></div><h3 class="font-weight-bold">Bienvenue sur E-messe</h3>',
                     html: '<p class="text-muted small">Pour vous aider à démarrer sur E-messe, nous avons préparé quelques vidéos tutoriels pour vous montrer comment demander une messe simplement.</p>',
                     showCancelButton: true,
                     confirmButtonText: 'Regarder la vidéo',
                     cancelButtonText: 'Plus tard',
                     reverseButtons: true,
                     customClass: {
-                        confirmButton: 'btn btn-primary px-4 mx-2',
+                        confirmButton: 'btn btn-tutorial px-4 mx-2',
                         cancelButton: 'btn btn-outline-secondary px-4 mx-2',
                         popup: 'border-radius-15'
                     },
@@ -219,6 +219,18 @@
     <style>
         .border-radius-15 {
             border-radius: 15px !important;
+        }
+
+        .btn-tutorial {
+            background-color: #cca45e !important;
+            border-color: #cca45e !important;
+            color: #ffffff !important;
+        }
+
+        .btn-tutorial:hover {
+            background-color: #b38f4d !important;
+            border-color: #b38f4d !important;
+            color: #ffffff !important;
         }
 
         .swal2-title {

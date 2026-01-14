@@ -150,7 +150,6 @@ class AuthenticateUser extends Controller
                 'regex:/[a-z]/',
                 'regex:/[A-Z]/',
                 'regex:/[0-9]/',
-                'regex:/[@$!%*#?&.]/',
             ],
             'current_password' => ['required', function ($attribute, $value, $fail) use ($user) {
                 if (! Hash::check($value, $user->password)) {
@@ -320,7 +319,6 @@ class AuthenticateUser extends Controller
                 'regex:/[a-z]/',      // Au moins une minuscule
                 'regex:/[A-Z]/',      // Au moins une majuscule
                 'regex:/[0-9]/',      // Au moins un chiffre
-                'regex:/[@$!%*#?&.]/', // Au moins un caractère spécial
             ],
         ], [
             'password.regex' => 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial.',

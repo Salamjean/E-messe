@@ -316,22 +316,6 @@ class MesseController extends Controller
                 'dates_selectionnees' => $datesJson,
             ]);
 
-            // --- Envoi de la notification ---
-
-            // if ($messe->user) {
-            //     try {
-            //         // Notification en base
-            //         $messe->user->notify(new MesseEnAttentePaiementNotification($messe));
-
-            //         // Envoi FCM via HTTP
-            //         $notification = new MesseEnAttentePaiementNotification($messe);
-            //         $notification->toFcmHttp($messe->user);
-
-            //     } catch (\Exception $e) {
-            //         Log::error('Échec de l\'envoi de la notificationen attente de paiement pour la messe #' . $messe->id . ': ' . $e->getMessage());
-            //     }
-            // }
-
             if ($messe->user) {
                 try {
                     $messe->user->notify(new MesseEnAttentePaiementNotification($messe));
@@ -340,30 +324,30 @@ class MesseController extends Controller
                 }
             }
 
-            $reference = 'MESSE_API_'.time().'_'.$messe->id;
+            // $reference = 'MESSE_API_'.time().'_'.$messe->id;
 
-            // 🔹 Simulation Paiement
-            $paiementEffectue = rand(0, 1); // à remplacer par ton intégration réelle
-            // Calculer les frais: 4% avec un minimum de 200 FCFA
-            $frais = max($request->montant_offrande * 0.04, 200);
-            $montantTotal = $request->montant_offrande + $frais;
+            // // 🔹 Simulation Paiement
+            // $paiementEffectue = rand(0, 1); // à remplacer par ton intégration réelle
+            // // Calculer les frais: 4% avec un minimum de 200 FCFA
+            // $frais = max($request->montant_offrande * 0.04, 200);
+            // $montantTotal = $request->montant_offrande + $frais;
 
-            $paiement = Paiement::create([
-                'messe_id' => $messe->id,
-                'user_id' => $user->id,
-                'reference' => $reference,
-                'montant' => $montantTotal,
-                'devise' => 'XOF',
-                'methode' => 'wave',
-                'statut' => $paiementEffectue ? 'paye' : 'en_attente',
-                'transaction_id' => $paiementEffectue ? uniqid('TX_') : null,
-                'donnees_transaction' => $paiementEffectue ? json_encode(['message' => 'Paiement réussi']) : null,
-                'date_paiement' => $paiementEffectue ? now() : null,
-            ]);
+            // $paiement = Paiement::create([
+            //     'messe_id' => $messe->id,
+            //     'user_id' => $user->id,
+            //     'reference' => $reference,
+            //     'montant' => $montantTotal,
+            //     'devise' => 'XOF',
+            //     'methode' => 'wave',
+            //     'statut' => $paiementEffectue ? 'paye' : 'en_attente',
+            //     'transaction_id' => $paiementEffectue ? uniqid('TX_') : null,
+            //     'donnees_transaction' => $paiementEffectue ? json_encode(['message' => 'Paiement réussi']) : null,
+            //     'date_paiement' => $paiementEffectue ? now() : null,
+            // ]);
 
-            $messe->update([
-                'statut' => $paiementEffectue ? 'en_attente_paiement' : 'en_attente_paiement',
-            ]);
+            // $messe->update([
+            //     'statut' => 'en_attente_paiement',
+            // ]);
 
             // ===================================================
             // 🔔 ENVOI DE NOTIFICATION FIREBASE AUX FAVORIS

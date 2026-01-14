@@ -18,15 +18,16 @@ class FicheController extends Controller
         $user = Auth::user();
         // Check if the user already has a fiche
         $paroissien = Paroissien::where('user_id', $user->id)->first();
-        
+
         // Use an empty model if none exists, or the existing one
-        if (!$paroissien) {
-            $paroissien = new Paroissien();
-            // Pre-fill some data from User account if available and not set
-            $paroissien->nom_prenom = $user->name;
-            $paroissien->telephone = $user->contact;
-            $paroissien->email = $user->email; // If Paroissien has email, but schema didn't show it. Schema has nom_prenom, telephone, etc.
-        }
+        // if (! $paroissien) {
+        //     $paroissien = new Paroissien;
+        //     // Pre-fill some data from User account if available and not set
+        //     $paroissien->nom_prenom = $user->name;
+        //     $paroissien->telephone = $user->contact;
+        //     $paroissien->email = $user->email; // If Paroissien has email, but schema didn't show it. Schema has nom_prenom, telephone, etc.
+        // }
+        // dd($paroissien); 
 
         return view('user.fiche.create', compact('paroissien'));
     }
@@ -53,7 +54,7 @@ class FicheController extends Controller
 
         $data = $request->except(['photo', '_token', '_method']);
         $data['user_id'] = $user->id;
-        
+
         // Handle Booleans
         $data['est_dans_mouvement'] = $request->has('est_dans_mouvement');
         $data['est_baptise'] = $request->has('est_baptise');

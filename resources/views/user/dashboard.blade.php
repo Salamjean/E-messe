@@ -121,7 +121,7 @@
     </div>
 
     <!-- Votre Paroisse -->
-    <div class="row">
+    {{-- <div class="row">
         <div class="col-12">
             <h4 class="font-weight-bold text-dark mb-3">Votre Paroisse</h4>
             <div class="card bg-white"
@@ -138,5 +138,5 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 @endsection

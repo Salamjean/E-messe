@@ -54,13 +54,13 @@ class PaiementController extends Controller
 
             // 3. Formatage Téléphone (International sans +)
             $phone = $user->phone ?? '0707070707';
-            $phone = preg_replace('/[^0-9]/', '', $phone); // Garde que les chiffres
+            $phone = preg_replace('/[^0-9]/', '', $phone);
             // Si le numéro est ivoirien (10 chiffres), on ajoute 225
             if (strlen($phone) === 10) {
                 $phone = '225'.$phone;
             }
 
-            // 4. Préparation payload CinetPay V2
+            // 4. Préparation payload CinetPay V2 
             $paymentData = [
                 'apikey' => env('CINETPAY_API_KEY'),
                 'site_id' => env('CINETPAY_SITE_ID'),
@@ -162,7 +162,7 @@ class PaiementController extends Controller
 
                 // Mise à jour de la messe
                 if ($paiement->messe) {
-                    $paiement->messe->update(['statut' => 'paye']); // ou 'en_attente' selon ta logique
+                    $paiement->messe->update(['statut' => 'paye']);
                 }
 
                 // Notification User

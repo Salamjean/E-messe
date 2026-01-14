@@ -52,6 +52,7 @@
 #sidebar .nav .nav-item {
     margin-bottom: 5px;
     background-color: #ffffff;
+    
     width: 100%;
 }
 
@@ -68,12 +69,14 @@
     /* Force left alignment */
     text-align: left;
     background-color: #ffffff;
+    
 }
 
 #sidebar .nav .nav-item .nav-link:hover {
-    color: #0d6efd !important;
+    color: #c49d54 !important;
     /* Blue hover */
     background-color: #ffffff;
+    
 }
 
 #sidebar .nav .nav-item .nav-link i.menu-icon {
@@ -88,7 +91,7 @@
 }
 
 #sidebar .nav .nav-item .nav-link:hover i.menu-icon {
-    color: #0d6efd !important;
+    color: #c49d54 !important;
 }
 
 /* Active State */
@@ -96,7 +99,7 @@
 #sidebar .nav .nav-item.active .nav-link {
     background: linear-gradient(to right, #9e7f41, #8f7238);
     /* Gold/Brown gradient to match mock */
-    color: #ffffff !important;
+    color: #c49d54 !important;
     border-radius: 25px;
     /* Ensure rounded pill shape */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);

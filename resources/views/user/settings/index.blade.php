@@ -39,25 +39,10 @@
                 </div>
 
                 <!-- Notifications Section -->
-                <div class="card shadow-sm mb-4"
+                {{-- <div class="card shadow-sm mb-4"
                     style="border-radius: 15px !important; border: 1px solid #e2dcdcff !important;">
                     <div class="card-body">
                         <h5 class="card-title mb-4 font-weight-bold">Notifications</h5>
-
-                        <!-- SMS (Hidden as per request) -->
-                        {{-- 
-                    <div class="d-flex align-items-center justify-content-between py-3 border-bottom">
-                        <div class="d-flex align-items-center">
-                            <div class="mr-3"><i class="fas fa-comment fa-lg"></i></div>
-                            <span class="h6 mb-0">SMS</span>
-                        </div>
-                        <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="smsSwitch">
-                            <label class="custom-control-label" for="smsSwitch"></label>
-                        </div>
-                    </div>
-                    --}}
-
                         <div class="d-flex align-items-center justify-content-between py-3 border-bottom">
                             <div class="d-flex align-items-center">
                                 <div class="mr-3"><i class="fas fa-envelope fa-lg"></i></div>
@@ -80,7 +65,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
                 <!-- Préférences Générales Section -->
                 <div class="card shadow-sm mb-4" id="tutorials"

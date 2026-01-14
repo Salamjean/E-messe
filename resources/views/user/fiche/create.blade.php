@@ -34,7 +34,7 @@
                             @csrf
 
                             <!-- Photo Upload -->
-                            <div class="text-center mb-5">
+                            {{-- <div class="text-center mb-5">
                                 <div class="position-relative d-inline-block">
                                     <div
                                         style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; background-color: #e0e0e0; display: flex; align-items: center; justify-content: center;">
@@ -53,21 +53,23 @@
                                     <input type="file" name="photo" id="photo" class="d-none" accept="image/*">
                                 </div>
                                 <p class="text-muted small mt-2">Photo d'identité</p>
-                            </div>
+                            </div> --}}
 
                             <h5 class="font-weight-bold mb-4 text-gold section-title">Information Personnelle</h5>
+                            <p class="text-muted small mt-2 text-center text-gold">Remplissez les champs suivants</p>
                             <div class="row">
                                 <div class="col-md-6 form-group mb-4">
                                     <label class="font-weight-bold text-muted small">Nom & Prénom(s) <span
                                             class="text-danger">*</span></label>
                                     <input type="text" class="form-control" name="nom_prenom"
-                                        value="{{ old('nom_prenom', $paroissien->nom_prenom) }}" placeholder="Nom complet">
+                                        value="{{ old('nom_prenom', $paroissien->nom_prenom ?? '') }}"
+                                        placeholder="Nom complet">
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
                                     <label class="font-weight-bold text-muted small">Date de Naissance <span
                                             class="text-danger">*</span></label>
                                     <input type="date" class="form-control" name="date_naissance"
-                                        value="{{ old('date_naissance', $paroissien->date_naissance ? $paroissien->date_naissance : '') }}">
+                                        value="{{ old('date_naissance', $paroissien->date_naissance ?? '') }}">
                                 </div>
                             </div>
                             <div class="row">
@@ -77,9 +79,11 @@
                                     <select class="form-control" name="sexe">
                                         <option value="" disabled selected>Choisir...</option>
                                         <option value="M"
-                                            {{ old('sexe', $paroissien->sexe) == 'M' ? 'selected' : '' }}>Masculin</option>
+                                            {{ old('sexe', $paroissien->sexe ?? '') == 'M' ? 'selected' : '' }}>Masculin
+                                        </option>
                                         <option value="F"
-                                            {{ old('sexe', $paroissien->sexe) == 'F' ? 'selected' : '' }}>Féminin</option>
+                                            {{ old('sexe', $paroissien->sexe ?? '') == 'F' ? 'selected' : '' }}>Féminin
+                                        </option>
                                     </select>
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
@@ -88,16 +92,16 @@
                                     <select class="form-control" name="situation_matrimoniale">
                                         <option value="" disabled selected>Choisir...</option>
                                         <option value="Célibataire"
-                                            {{ old('situation_matrimoniale', $paroissien->situation_matrimoniale) == 'Célibataire' ? 'selected' : '' }}>
+                                            {{ old('situation_matrimoniale', $paroissien->situation_matrimoniale ?? '') == 'Célibataire' ? 'selected' : '' }}>
                                             Célibataire</option>
                                         <option value="Marié(e)"
-                                            {{ old('situation_matrimoniale', $paroissien->situation_matrimoniale) == 'Marié(e)' ? 'selected' : '' }}>
+                                            {{ old('situation_matrimoniale', $paroissien->situation_matrimoniale ?? '') == 'Marié(e)' ? 'selected' : '' }}>
                                             Marié(e)</option>
                                         <option value="Veuf(ve)"
-                                            {{ old('situation_matrimoniale', $paroissien->situation_matrimoniale) == 'Veuf(ve)' ? 'selected' : '' }}>
+                                            {{ old('situation_matrimoniale', $paroissien->situation_matrimoniale ?? '') == 'Veuf(ve)' ? 'selected' : '' }}>
                                             Veuf(ve)</option>
                                         <option value="Divorcé(e)"
-                                            {{ old('situation_matrimoniale', $paroissien->situation_matrimoniale) == 'Divorcé(e)' ? 'selected' : '' }}>
+                                            {{ old('situation_matrimoniale', $paroissien->situation_matrimoniale ?? '') == 'Divorcé(e)' ? 'selected' : '' }}>
                                             Divorcé(e)</option>
                                     </select>
                                 </div>
@@ -107,21 +111,21 @@
                                     <label class="font-weight-bold text-muted small">Statut d'activité <span
                                             class="text-danger">*</span></label>
                                     <input type="text" class="form-control" name="statut_activite"
-                                        value="{{ old('statut_activite', $paroissien->statut_activite) }}"
+                                        value="{{ old('statut_activite', $paroissien->statut_activite ?? '') }}"
                                         placeholder="Ex: Étudiant, Cadre, Commerçant...">
                                 </div>
                                 <div class="col-md-6 form-group mb-4">
                                     <label class="font-weight-bold text-muted small">Téléphone <span
                                             class="text-danger">*</span></label>
                                     <input type="text" class="form-control" name="telephone"
-                                        value="{{ old('telephone', $paroissien->telephone) }}" placeholder="+225...">
+                                        value="{{ old('telephone', $paroissien->telephone ?? '') }}" placeholder="+225...">
                                 </div>
                             </div>
                             <div class="form-group mb-4">
                                 <label class="font-weight-bold text-muted small">Adresse Habituelle <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" name="adresse"
-                                    value="{{ old('adresse', $paroissien->adresse) }}"
+                                    value="{{ old('adresse', $paroissien->adresse ?? '') }}"
                                     placeholder="Quartier, Rue, Ville...">
                             </div>
 
@@ -132,7 +136,7 @@
                                 <label class="font-weight-bold text-muted small">Paroisse de Résidence <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" name="nom_paroisse"
-                                    value="{{ old('nom_paroisse', $paroissien->nom_paroisse) }}"
+                                    value="{{ old('nom_paroisse', $paroissien->nom_paroisse ?? '') }}"
                                     placeholder="Nom de votre paroisse actuelle">
                             </div>
 
@@ -141,16 +145,16 @@
                                 <div class="custom-control custom-switch mb-2">
                                     <input type="checkbox" class="custom-control-input" id="est_dans_mouvement"
                                         name="est_dans_mouvement"
-                                        {{ old('est_dans_mouvement', $paroissien->est_dans_mouvement) ? 'checked' : '' }}
+                                        {{ old('est_dans_mouvement', $paroissien->est_dans_mouvement ?? '') ? 'checked' : '' }}
                                         onchange="toggleMouvementField()">
                                     <label class="custom-control-label font-weight-bold"
                                         for="est_dans_mouvement">Appartenez-vous à un mouvement/groupe ?</label>
                                 </div>
                                 <div id="mouvement-field"
-                                    style="display: {{ old('est_dans_mouvement', $paroissien->est_dans_mouvement) ? 'block' : 'none' }};">
+                                    style="display: {{ old('est_dans_mouvement', $paroissien->est_dans_mouvement ?? '') ? 'block' : 'none' }};">
                                     <label class="font-weight-bold text-muted small mt-2">Nom du Mouvement</label>
                                     <input type="text" class="form-control" name="nom_mouvement"
-                                        value="{{ old('nom_mouvement', $paroissien->nom_mouvement) }}"
+                                        value="{{ old('nom_mouvement', $paroissien->nom_mouvement ?? '') }}"
                                         placeholder="Ex: Légion de Marie, Chorale...">
                                 </div>
                             </div>
@@ -160,23 +164,23 @@
                                 <div class="custom-control custom-switch mb-2">
                                     <input type="checkbox" class="custom-control-input" id="est_baptise"
                                         name="est_baptise"
-                                        {{ old('est_baptise', $paroissien->est_baptise) ? 'checked' : '' }}
+                                        {{ old('est_baptise', $paroissien->est_baptise ?? '') ? 'checked' : '' }}
                                         onchange="toggleBaptemeFields()">
                                     <label class="custom-control-label font-weight-bold" for="est_baptise">Êtes-vous
                                         baptisé(e) ?</label>
                                 </div>
                                 <div id="bapteme-fields"
-                                    style="display: {{ old('est_baptise', $paroissien->est_baptise) ? 'block' : 'none' }};">
+                                    style="display: {{ old('est_baptise', $paroissien->est_baptise ?? '') ? 'block' : 'none' }};">
                                     <div class="row mt-3">
                                         <div class="col-md-6 form-group">
                                             <label class="font-weight-bold text-muted small">Date de Baptême</label>
                                             <input type="date" class="form-control" name="date_bapteme"
-                                                value="{{ old('date_bapteme', $paroissien->date_bapteme) }}">
+                                                value="{{ old('date_bapteme', $paroissien->date_bapteme ?? '') }}">
                                         </div>
                                         <div class="col-md-6 form-group">
                                             <label class="font-weight-bold text-muted small">Paroisse de Baptême</label>
                                             <input type="text" class="form-control" name="nom_paroisse_bapteme"
-                                                value="{{ old('nom_paroisse_bapteme', $paroissien->nom_paroisse_bapteme) }}"
+                                                value="{{ old('nom_paroisse_bapteme', $paroissien->nom_paroisse_bapteme ?? '') }}"
                                                 placeholder="Paroisse où vous avez été baptisé">
                                         </div>
                                     </div>

@@ -15,9 +15,9 @@
 
     <div class="navbar-menu-wrapper d-flex align-items-stretch">
         <!-- Bouton Toggle Sidebar (Desktop) -->
-        <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+        {{-- <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
             <span class="icon-menu"></span>
-        </button>
+        </button> --}}
 
         <!-- Welcome Message -->
         <div class="welcome-message d-flex flex-column ms-3 mt-2">
