@@ -378,11 +378,8 @@ class MesseController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => $paiementEffectue
-                    ? 'Messe enregistrée et paiement effectué avec succès.'
-                    : 'Messe enregistrée, en attente de paiement.',
+                'message' => 'Messe enregistrée.',
                 'messe' => $messe,
-                'paiement' => $paiement ?? null,
             ], 201);
 
         } catch (\Exception $e) {
