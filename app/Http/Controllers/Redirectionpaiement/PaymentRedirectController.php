@@ -59,6 +59,12 @@ class PaymentRedirectController extends Controller
 
                     // B. Mise à jour de la Messe liée
                     if ($paiement->messe) {
+                        $paiement->update([
+                            'statut' => 'paye',
+                            'date_paiement' => now(),
+                            'donnees_transaction' => $result['data'] ?? [],
+                        ]);
+
                         $paiement->messe->update(['statut' => 'en attente']);
                     }
 
