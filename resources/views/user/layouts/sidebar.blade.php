@@ -27,8 +27,8 @@
 
         <!-- Mes demandes -->
         <li
-            class="nav-item {{ request()->routeIs('user.messe.index') || request()->routeIs('user.messe.show') || request()->routeIs('user.messe.history') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('user.messe.index') }}">
+            class="nav-item {{ request()->routeIs('user.messe.hold') || request()->routeIs('user.messe.show') || request()->routeIs('user.messe.history') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('user.messe.hold') }}">
                 <i class="fas fa-list-alt menu-icon"></i>
                 <span class="menu-title">Mes demandes</span>
             </a>

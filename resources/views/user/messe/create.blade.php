@@ -190,18 +190,18 @@
                         <div class="form-group mb-3">
                             <label for="nom_demandeur">Nom complet *</label>
                             <input type="text" id="nom_demandeur" name="nom_demandeur"
-                                value="{{ old('nom_demandeur', Auth::user()->name) }}" required>
+                                value="{{ old('nom_demandeur', Auth::user()->name) }}" readonly required>
                         </div>
                         <div class="form-row-custom">
                             <div class="form-group mb-3">
                                 <label for="email_demandeur">Email *</label>
                                 <input type="email" id="email_demandeur" name="email_demandeur"
-                                    value="{{ old('email_demandeur', Auth::user()->email) }}" required>
+                                    value="{{ old('email_demandeur', Auth::user()->email) }}" readonly required>
                             </div>
                             <div class="form-group mb-3">
                                 <label for="telephone_demandeur">Téléphone *</label>
                                 <input type="text" id="telephone_demandeur" name="telephone_demandeur"
-                                    value="{{ old('telephone_demandeur', Auth::user()->contact) }}" required
+                                    value="{{ old('telephone_demandeur', Auth::user()->contact) }}" readonly required
                                     maxlength="20">
                             </div>
                         </div>
@@ -813,7 +813,7 @@
                 addRow('Début', `${date} à ${heure}`);
                 addRow('Demandeur', `${nom} (${tel})`);
                 addRow('Montant Offrande', montantOffrande + ' FCFA');
-                addRow('Frais de service (4% - min 200F)', frais + ' FCFA');
+                addRow('Frais de service (200F)', frais + ' FCFA');
                 addRow('Montant Total à payer', montantTotal + ' FCFA',
                     'color:#d4af37; font-size:1.1em; font-weight: bold;');
             }
