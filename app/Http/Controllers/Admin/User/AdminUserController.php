@@ -64,7 +64,11 @@ class AdminUserController extends Controller
     // Supprimer définitivement un utilisateur
     public function forceDelete($id)
     {
-        $user = User::find($id);
+        $user = User::findOrFail($id);
+        
+        // Supprimer explicitement le profil paroissien lié car la migration n'a pas onDelete('cascade')
+        $user->paroissien()->delete();
+        
         $user->delete(); // Suppression définitive de la base de données
         
         return redirect()->route('users.archived')

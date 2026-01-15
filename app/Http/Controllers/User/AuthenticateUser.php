@@ -116,6 +116,17 @@ class AuthenticateUser extends Controller
             ])->withInput();
         }
 
+        $user = Auth::user();
+
+        // Vérifier si l'utilisateur est archivé
+        if ($user->isArchived()) {
+            Auth::logout();
+
+            return redirect()->back()->withErrors([
+                'login_id' => 'Votre compte a été archivé. Veuillez contacter l\'administration.',
+            ])->withInput();
+        }
+
         // Mettre à jour le statut actif à 1
         $user = Auth::user();
         $user->actif = 1;

@@ -51,9 +51,9 @@ class GoogleAuthController extends Controller
                     'password' => bcrypt(Str::random(16)),
                     'actif' => 1,
                 ]);
-                \Log::info('Google Auth: Utilisateur créé avec succès', ['id' => $user->id]);
+                \Log::info('Google Auth: Utilisateur créé avec succès', ['id' => $user]);
             } else {
-                \Log::info('Google Auth: Utilisateur existant trouvé', ['id' => $user->id]);
+                \Log::info('Google Auth: Utilisateur existant trouvé', ['id' => $user]);
                 // Si l'utilisateur existe mais n'a pas de google_id (ex: inscrit par email avant), on le met à jour
                 if (empty($user->google_id)) {
                     $user->update([
@@ -64,6 +64,13 @@ class GoogleAuthController extends Controller
 
                 // Mettre à jour le statut actif
                 $user->update(['actif' => 1]);
+            }
+
+            // Vérifier si l'utilisateur est archivé
+            if ($user->isArchived()) {
+                \Log::warning('Google Auth: Tentative de connexion d\'un utilisateur archivé', ['id' => $user->id]);
+
+                return redirect()->route('login')->with('error', 'Votre compte a été archivé. Veuillez contacter l\'administration.');
             }
 
             // Connecter l'utilisateur

@@ -1,13 +1,13 @@
 <nav class="navbar fixed-top " style="z-index: 999">
     <div
         class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center navbar-brand-custom d-none d-lg-flex">
-        <a class="navbar-brand brand-logo" href="{{ url('/') }}" style="width: 150px;">
+        <a class="navbar-brand brand-logo" href="{{ route('user.dashboard') }}" style="width: 150px;">
             <img src="{{ asset('assets/assets/images/logo_principal.svg') }}" alt="Logo E-Messe"
                 class="logo-full navbar-logo" style="height: 80px; width: 300px;" />
         </a>
     </div>
     <div class="text-center d-flex align-items-center justify-content-center navbar-brand-custom d-lg-none">
-        <a class="navbar-brand brand-logo" href="{{ url('/') }}">
+        <a class="navbar-brand brand-logo" href="{{ route('user.dashboard') }}">
             <img src="{{ asset('assets/assets/images/logo_principal.svg') }}" alt="Logo E-Messe"
                 class="logo-full navbar-logo" style="height: 60px; width: 200px;" />
         </a>

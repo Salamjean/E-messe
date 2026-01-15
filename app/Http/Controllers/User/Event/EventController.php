@@ -49,4 +49,21 @@ class EventController extends Controller
             'selected_date' => $request->input('filter_date'),
         ]);
     }
+
+    /**
+     * Retourne les détails d'un événement au format JSON.
+     */
+    public function show($id)
+    {
+        $event = Event::with('paroisse')->findOrFail($id);
+        
+        // Formater les dates pour le JS
+        $event->formatted_date_debut = $event->date_debut->format('d/m/Y H:i');
+        $event->formatted_date_fin = $event->date_fin ? $event->date_fin->format('d/m/Y H:i') : null;
+        $event->formatted_participation = $event->participation_frais 
+            ? number_format($event->participation_frais, 0, ',', ' ') . ' FCFA' 
+            : 'Libre';
+
+        return response()->json($event);
+    }
 }

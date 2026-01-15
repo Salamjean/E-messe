@@ -45,7 +45,6 @@ body {
    Carte d'événement
 ============================ */
 .event-card-side {
-  display: flex;
   border: none;
   border-radius: var(--border-radius);
   overflow: hidden;
@@ -53,8 +52,7 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: transform var(--transition-speed) ease,
     box-shadow var(--transition-speed) ease;
-  height: 200px;
-  cursor: pointer;
+  height: 100%;
 }
 
 .event-card-side:hover {
@@ -174,28 +172,22 @@ body {
 /* ============================
    Modal
 ============================ */
-.modal-details-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.modal-detail-item {
+.icon-box-mini {
+  width: 32px;
+  height: 32px;
   display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
 }
 
-.modal-detail-item i {
-  color: var(--accent-color);
-  font-size: 1.2rem;
-  margin-top: 0.2rem;
+.description-section-mini {
+  background: #f8f9fa;
+  border-left: 3px solid #c49d54;
 }
 
-.modal-image {
-  width: 100%;
-  height: auto;
-  border-radius: var(--border-radius);
+.uppercase {
+  text-transform: uppercase;
 }
 
 /* ============================

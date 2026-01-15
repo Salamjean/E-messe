@@ -11,10 +11,21 @@
 @section('content')
     <div class="container-fluid mt-0">
         <!-- En-tête -->
-        <div class="">
-            <h2 class="fw-bold text-dark" style="margin-bottom: 2rem;"><i class="fa-solid fa-calendar-days me-2"></i>Nos
-                Événements</h2>
-            <p class="text-muted">Découvrez et filtrez nos événements à venir et en cours.</p>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold text-dark mb-1"><i class="fa-solid fa-calendar-days me-2"></i>Nos Événements</h2>
+                <p class="text-muted mb-0">Découvrez et filtrez nos événements à venir et en cours.</p>
+            </div>
+            <div class="btn-group shadow-sm p-1 bg-white rounded-3" role="group">
+                <button type="button" id="card-view-btn" class="btn btn-light active rounded-2 px-3"
+                    onclick="toggleView('card')">
+                    <i class="fa-solid fa-grip me-1"></i> Cartes
+                </button>
+                <button type="button" id="table-view-btn" class="btn btn-light rounded-2 px-3"
+                    onclick="toggleView('table')">
+                    <i class="fa-solid fa-list me-1"></i> Tableau
+                </button>
+            </div>
         </div>
 
         <!-- Filtres -->
@@ -63,31 +74,84 @@
             @else
                 <div class="event-grid">
                     @foreach ($events as $event)
-                        <div class="card event-card-side" data-bs-toggle="modal" data-bs-target="#eventDetailModal"
-                            data-title="{{ $event->titre }}"
-                            data-description="{{ $event->description ?? 'Aucune description disponible.' }}"
-                            data-image="{{ $event->image_url ?? 'https://via.placeholder.com/800x600.png?text=Pas+d\'image' }}"
-                            data-location="{{ $event->paroisse->name ?? 'Paroisse non spécifiée' }}"
-                            data-dates="{{ \Carbon\Carbon::parse($event->date_debut)->format('d/m/Y') }}{{ $event->date_fin ? ' - ' . \Carbon\Carbon::parse($event->date_fin)->format('d/m/Y') : '' }}"
-                            data-celebrant="{{ $event->celebrant ?? 'Non spécifié' }}"
-                            data-participation="{{ $event->participation ?? 'Libre' }}">
-
-                            <div class="event-card-image">
+                        <div class="card event-card-side h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                            <div class="position-relative">
                                 <img src="{{ $event->image_url ?? 'https://via.placeholder.com/400x300.png?text=Image' }}"
+                                    class="w-100" style="object-fit: cover; height: 250px;"
                                     alt="Image de {{ $event->titre }}">
+                                <span
+                                    class="badge bg-warning text-dark position-absolute top-0 start-0 m-3 px-3 py-2 rounded-pill fw-bold shadow-sm">
+                                    {{ $event->type_event }}
+                                </span>
                             </div>
-                            <div class="event-card-content">
-                                <h5 class="event-card-title">{{ $event->titre }}</h5>
-                                <div class="event-card-parish">
-                                    <i class="fa-solid fa-location-dot"></i>
-                                    {{ $event->paroisse->name ?? 'Non spécifiée' }}
+                            <div class="card-body p-4">
+                                <h4 class="card-title fw-bold text-dark mb-3">{{ $event->titre }}</h4>
+
+                                <div class="row g-3 mb-4">
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="icon-box-mini bg-light text-primary rounded-3 p-2 me-2">
+                                                <i class="fa-regular fa-calendar-days"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block fw-bold uppercase"
+                                                    style="font-size: 0.6rem;">DATE & HEURE</small>
+                                                <span class="small fw-semibold d-block">
+                                                    {{ \Carbon\Carbon::parse($event->date_debut)->format('d/m/Y H:i') }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="icon-box-mini bg-light text-danger rounded-3 p-2 me-2">
+                                                <i class="fa-solid fa-location-dot"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block fw-bold uppercase"
+                                                    style="font-size: 0.6rem;">LIEU</small>
+                                                <span class="small fw-semibold d-block text-truncate"
+                                                    title="{{ $event->lieu ?: $event->paroisse->name ?? 'Non spécifiée' }}">
+                                                    {{ $event->lieu ?: $event->paroisse->name ?? 'Non spécifiée' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="icon-box-mini bg-light text-success rounded-3 p-2 me-2">
+                                                <i class="fa-solid fa-user-tie"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block fw-bold uppercase"
+                                                    style="font-size: 0.6rem;">CÉLÉBRANT</small>
+                                                <span
+                                                    class="small fw-semibold d-block text-truncate">{{ $event->celebrant ?: 'Non spécifié' }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="icon-box-mini bg-light text-info rounded-3 p-2 me-2">
+                                                <i class="fa-solid fa-ticket"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block fw-bold uppercase"
+                                                    style="font-size: 0.6rem;">PARTICIPATION</small>
+                                                <span
+                                                    class="small fw-semibold d-block">{{ $event->participation_frais ? number_format($event->participation_frais, 0, ',', ' ') . ' FCFA' : 'Libre' }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <p class="text-muted mt-2">{{ \Illuminate\Support\Str::limit($event->description, 100) }}
-                                </p>
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <small><i
-                                            class="fa-regular fa-calendar-days me-1"></i>{{ \Carbon\Carbon::parse($event->date_debut)->format('d/m/Y') }}</small>
-                                    <span class="badge event-type-badge">{{ $event->type_event }}</span>
+
+                                <div class="description-section-mini p-3 bg-light rounded-3">
+                                    <small class="text-muted d-block fw-bold uppercase mb-2"
+                                        style="font-size: 0.6rem;">DESCRIPTION</small>
+                                    <p class="card-text small text-muted mb-0"
+                                        style="text-align: justify; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                        {{ $event->description }}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -121,17 +185,17 @@
                             @foreach ($events as $event)
                                 <tr>
                                     <td>
-                                        <img src="{{ $event->image_url ?? 'https://via.placeholder.com/50x50.png?text=No+Img' }}"
+                                        <img src="{{ $event->image_url ?? asset('assets/images/placeholder-event.jpg') }}"
                                             alt="{{ $event->titre }}" class="rounded" width="50" height="50"
                                             style="object-fit: cover;">
                                     </td>
                                     <td>{{ $event->titre }}</td>
                                     <td>{{ $event->paroisse->nom ?? 'Non spécifiée' }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($event->date_debut)->format('d/m/Y') }}</td>
-                                    <td>{{ $event->date_fin ? \Carbon\Carbon::parse($event->date_fin)->format('d/m/Y') : 'N/A' }}
+                                    <td>{{ \Carbon\Carbon::parse($event->date_debut)->format('d/m/Y H:i') }}</td>
+                                    <td>{{ $event->date_fin ? \Carbon\Carbon::parse($event->date_fin)->format('d/m/Y H:i') : 'N/A' }}
                                     </td>
                                     <td><span class="badge event-type-badge">{{ $event->type_event }}</span></td>
-                                    <td>{{ $event->description ?? 'Aucune description' }}</td>
+                                    <td>{{ \Illuminate\Support\Str::limit($event->description, 100) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -141,57 +205,6 @@
         </div>
     </div>
 
-    <!-- MODAL -->
-    <div class="modal fade" id="eventDetailModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fa-solid fa-circle-info me-2"></i>Détails de l'événement</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <img id="modal-image" src="" alt="Image de l'événement" class="img-fluid rounded mb-3"
-                        style="display:none;">
-                    <h4 id="modal-title" class="fw-bold mb-3"></h4>
-
-                    <div class="modal-details-grid">
-                        <div class="modal-detail-item">
-                            <i class="fa-regular fa-calendar"></i>
-                            <div>
-                                <strong>Date(s)</strong>
-                                <p id="modal-dates"></p>
-                            </div>
-                        </div>
-                        <div class="modal-detail-item">
-                            <i class="fa-solid fa-location-dot"></i>
-                            <div>
-                                <strong>Lieu</strong>
-                                <p id="modal-location"></p>
-                            </div>
-                        </div>
-                        <div class="modal-detail-item">
-                            <i class="fa-solid fa-user"></i>
-                            <div>
-                                <strong>Célébrant</strong>
-                                <p id="modal-celebrant"></p>
-                            </div>
-                        </div>
-                        <div class="modal-detail-item">
-                            <i class="fa-solid fa-users"></i>
-                            <div>
-                                <strong>Participation</strong>
-                                <p id="modal-participation"></p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr>
-                    <strong>Description :</strong>
-                    <p id="modal-description" class="mt-2"></p>
-                </div>
-            </div>
-        </div>
-    </div>
 @endsection
 
 @push('js')
@@ -200,5 +213,6 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
-    <script src="{{ asset('js/events-datatables.js') }}"></script>
+    <script src="{{ asset('js/user/events.js') }}"></script>
 @endpush
+```

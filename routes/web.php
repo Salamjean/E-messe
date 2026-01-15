@@ -258,7 +258,7 @@ Route::prefix('user')->group(function () {
     Route::get('/register', [AuthenticateUser::class, 'register'])->name('register');
     Route::post('/register', [AuthenticateUser::class, 'handleRegister'])->name('handleRegister');
 });
-Route::middleware('auth')->prefix('user')->group(function () {
+Route::middleware(['auth', 'user.status'])->prefix('user')->group(function () {
     Route::get('/dashboard', [UserDashboard::class, 'dashboard'])->name('user.dashboard');
     Route::get('/logout', [UserDashboard::class, 'logout'])->name('user.logout');
 

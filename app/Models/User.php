@@ -124,6 +124,11 @@ class User extends Authenticatable
         return $this->morphMany(Notification::class, 'notifiable')->orderBy('created_at', 'desc');
     }
 
+    public function paroissien()
+    {
+        return $this->hasOne(Paroissien::class);
+    }
+
     /**
      * Get the profile picture URL.
      */
