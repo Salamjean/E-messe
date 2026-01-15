@@ -5,7 +5,6 @@
         <div class="row mb-4">
             <div class="col-12">
                 <h1 class="h3 mb-0 text-gray-800">Ma Fiche d'identification</h1>
-                <p class="text-muted">Remplissez ce formulaire pour compléter votre identification paroissiale.</p>
             </div>
         </div>
 
@@ -56,7 +55,9 @@
                             </div> --}}
 
                             <h5 class="font-weight-bold mb-4 text-gold section-title">Information Personnelle</h5>
-                            <p class="text-muted small mt-2 text-center text-gold">Remplissez les champs suivants</p>
+                            <p class="text-muted">Remplissez ce formulaire pour compléter votre identification paroissiale.
+                            </p>
+
                             <div class="row">
                                 <div class="col-md-6 form-group mb-4">
                                     <label class="font-weight-bold text-muted small">Nom & Prénom(s) <span

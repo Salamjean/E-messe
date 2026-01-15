@@ -57,8 +57,8 @@ class AdminUserController extends Controller
         $user = User::find($id);
         $user->unarchive(); // Utilise la méthode unarchive du modèle
         
-        return redirect()->route('users.archived')
-            ->with('success', 'Utilisateur restauré avec succès');
+        return redirect()->route('admin.user.index')
+            ->with('success', 'Utilisateur désarchivé avec succès');
     }
 
     // Supprimer définitivement un utilisateur

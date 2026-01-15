@@ -1,143 +1,10 @@
 @extends('paroisse.layouts.template')
 
 @section('content')
-    <!-- JQuery (Indispensable pour ce code) -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-    <!-- Liens CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    @include('paroisse.retrait.partials._styles')
 
     <style>
-        :root {
-            --primary: #c49d54;
-            --dark: #5ea7b5;
-            --light: #ffffff;
-            --gray: #f8f9fa;
-            --border-radius: 12px;
-            --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s ease;
-        }
-
-        body {
-            background-color: #f9fafb;
-            color: var(--dark);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .retrait-container {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .retrait-header {
-            background: linear-gradient(135deg, var(--dark));
-            color: var(--light);
-            border-radius: var(--border-radius);
-            padding: 25px 30px;
-            margin-bottom: 30px;
-            box-shadow: var(--box-shadow);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .retrait-header h1 {
-            font-weight: 700;
-            margin: 0;
-            font-size: 28px;
-        }
-
-        .retrait-header p {
-            margin: 5px 0 0;
-            opacity: 0.9;
-        }
-
-        .user-profile {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 3px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .user-profile img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .card-modern {
-            background: var(--light);
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            border: none;
-            margin-bottom: 25px;
-            overflow: hidden;
-            transition: var(--transition);
-        }
-
-        .card-modern:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-header-modern {
-            background: linear-gradient(135deg, var(--primary));
-            color: white;
-            padding: 18px 25px;
-            font-weight: 600;
-            font-size: 18px;
-            border: none;
-        }
-
-        .card-body-modern {
-            padding: 30px;
-        }
-
-        .solde-card {
-            background: linear-gradient(var(--dark) 100%);
-            color: white;
-            border-radius: var(--border-radius);
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .solde-icon {
-            background: rgba(255, 255, 255, 0.15);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 20px;
-            font-size: 24px;
-        }
-
-        .solde-info h3 {
-            font-size: 16px;
-            margin: 0 0 5px;
-            opacity: 0.9;
-            font-weight: 500;
-        }
-
-        .solde-info .montant {
-            font-size: 28px;
-            font-weight: 700;
-            margin: 0;
-        }
-
-        .solde-info .texte {
-            font-size: 13px;
-            opacity: 0.8;
-            margin: 5px 0 0;
-        }
-
+        /* Styles spécifiques à la page de création */
         .form-label {
             font-weight: 600;
             color: var(--dark);
@@ -154,7 +21,7 @@
 
         .form-control-modern:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 0.25rem rgba(243, 85, 37, 0.25);
+            box-shadow: 0 0 0 0.25rem rgba(196, 157, 84, 0.25);
         }
 
         .info-additionnelle {
@@ -187,7 +54,7 @@
         }
 
         .btn-soumettre {
-            background: linear-gradient(135deg, var(--primary));
+            background: linear-gradient(135deg, var(--primary) 0%,  #cca45e 100%);
             color: white;
             border: none;
             border-radius: 10px;
@@ -198,11 +65,10 @@
 
         .btn-soumettre:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(243, 85, 37, 0.3);
+            box-shadow: 0 5px 15px rgba(196, 157, 84, 0.3);
             color: white;
         }
 
-        /* Spinner pour le bouton */
         .spinner-loading {
             display: inline-block;
             width: 1rem;
@@ -219,92 +85,34 @@
                 transform: rotate(360deg);
             }
         }
-
-        .method-badge {
-            display: inline-block;
-            background: rgba(243, 85, 37, 0.1);
-            color: var(--primary);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-
-        @media (max-width: 768px) {
-            .retrait-header {
-                flex-direction: column;
-                text-align: center;
-                padding: 20px;
-            }
-
-            .user-profile {
-                margin-top: 15px;
-            }
-
-            .solde-card {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .solde-icon {
-                margin-right: 0;
-                margin-bottom: 15px;
-            }
-        }
     </style>
 
-    <div class="retrait-container">
-        <!-- En-tête -->
-        <div class="retrait-header">
-            <div>
-                <h1><i class="fas fa-money-bill-wave me-2"></i>Demande de Retrait</h1>
-                <p>Gérez vos retraits de fonds, {{ Auth::guard('paroisse')->user()->name }}!</p>
-            </div>
-            <div class="user-profile">
-                <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::guard('paroisse')->user()->name) }}"
-                    alt="Profile">
-            </div>
-        </div>
+    <div class="container-fluid mt-4" style="max-width: 1600px; margin: 0 auto; padding: 20px;">
+        @include('paroisse.retrait.partials._header', [
+            'title' => 'Demande de Retrait',
+            'subtitle' => 'Gérez vos retraits de fonds, ' . Auth::guard('paroisse')->user()->name . '!',
+            'icon' => 'money-bill-wave',
+        ])
 
         <div class="row">
             <div class="col-lg-7">
-                <!-- Carte de formulaire -->
                 <div class="card-modern">
                     <div class="card-header-modern">
                         <i class="fas fa-pen-to-square me-2"></i>Formulaire de Demande de Retrait
                     </div>
                     <div class="card-body-modern">
-                        <!-- Carte d'information sur le solde -->
-                        <div class="solde-card">
-                            <div class="solde-icon">
-                                <i class="fas fa-wallet"></i>
-                            </div>
-                            <div class="solde-info">
-                                <h3>Solde disponible</h3>
-                                <p class="montant">{{ number_format($soldeDisponible ?? 0, 0, ',', ' ') }} FCFA</p>
-                                <p class="texte">Montant maximum que vous pouvez retirer</p>
-                            </div>
-                        </div>
+                        @include('paroisse.retrait.partials._stats')
 
-                        <!-- Formulaire de retrait -->
                         <form id="retraitForm">
                             @csrf
-
-                            <!-- Montant à retirer (Commun) -->
                             <div class="mb-4">
                                 <label for="montant" class="form-label">Montant à retirer (FCFA) <span
                                         class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control form-control-modern" id="montant"
-                                        name="montant" required min="1000" max="{{ $soldeDisponible ?? 0 }}"
-                                        placeholder="Ex: 5000">
-                                </div>
-                                <div class="form-text text-muted mt-2">Le montant minimum de retrait est de 1 000 FCFA
-                                </div>
+                                <input type="number" class="form-control form-control-modern" id="montant" name="montant"
+                                    required min="1000" max="{{ $soldeDisponible ?? 0 }}" placeholder="Ex: 5000">
+                                <div class="form-text text-muted mt-2">Le montant minimum de retrait est de 1 000 FCFA</div>
                             </div>
 
-                            <!-- Méthode de retrait -->
                             <div class="mb-4">
                                 <label for="methode" class="form-label">Méthode de retrait <span
                                         class="text-danger">*</span></label>
@@ -318,8 +126,7 @@
                                 </select>
                             </div>
 
-                            <!-- SECTION MOBILE MONEY -->
-                            <div id="section-mobile-money" class="animate-section">
+                            <div id="section-mobile-money" class="d-none">
                                 <div class="row mb-4">
                                     <label class="form-label">Numéro du destinataire <span
                                             class="text-danger">*</span></label>
@@ -340,17 +147,13 @@
                                 </div>
                             </div>
 
-                            <!-- SECTION VIREMENT BANCAIRE -->
-                            <div id="section-banque" class="d-none animate-section">
-                                <!-- Nom de la banque -->
+                            <div id="section-banque" class="d-none">
                                 <div class="mb-4">
                                     <label for="nom_banque" class="form-label">Nom de la banque <span
                                             class="text-danger">*</span></label>
                                     <input type="text" class="form-control form-control-modern banque-input"
                                         id="nom_banque" name="nom_banque" placeholder="Ex: Ecobank, NSIA, etc.">
                                 </div>
-
-                                <!-- Numéro de compte / IBAN -->
                                 <div class="mb-4">
                                     <label for="numero_compte" class="form-label">Numéro de compte / RIB <span
                                             class="text-danger">*</span></label>
@@ -358,8 +161,6 @@
                                         id="numero_compte" name="numero_compte"
                                         placeholder="Entrez le numéro de compte complet">
                                 </div>
-
-                                <!-- Nom du titulaire -->
                                 <div class="mb-4">
                                     <label for="nom_titulaire" class="form-label">Nom du titulaire du compte <span
                                             class="text-danger">*</span></label>
@@ -368,15 +169,13 @@
                                 </div>
                             </div>
 
-                            <!-- Informations dynamiques -->
                             <div id="additional-info" class="info-additionnelle d-none">
                                 <h6><i class="fas fa-info-circle me-1"></i> Informations importantes</h6>
                                 <p id="info-text" class="mb-0 small"></p>
                             </div>
 
-                            <!-- Boutons -->
                             <div class="d-flex gap-3 justify-content-end mt-4">
-                                <a href="{{ url()->previous() }}" class="btn btn-retour">
+                                <a href="{{ route('paroisse.retraits') }}" class="btn btn-retour">
                                     <i class="fas fa-arrow-left me-1"></i> Retour
                                 </a>
                                 <button type="submit" class="btn btn-soumettre" id="btn-submit">
@@ -391,7 +190,6 @@
             </div>
 
             <div class="col-lg-5">
-                <!-- Carte d'informations -->
                 <div class="card-modern mb-4">
                     <div class="card-header-modern">
                         <i class="fas fa-lightbulb me-2"></i>Informations importantes
@@ -406,7 +204,7 @@
                                 ],
                                 [
                                     'icon' => 'fa-exclamation-circle',
-                                    'title' => 'Vérification des informations',
+                                    'title' => 'Vérification',
                                     'text' =>
                                         'Assurez-vous que vos coordonnées sont correctes pour éviter tout retard.',
                                 ],
@@ -416,42 +214,34 @@
                                     'text' => 'Toutes vos transactions sont cryptées et sécurisées.',
                                 ],
                             ];
-
-                            $methods = ['Wave', 'Orange Money', 'MTN Money', 'Virement Bancaire'];
                         @endphp
 
                         @foreach ($infos as $info)
                             <div class="d-flex align-items-start mb-3">
-                                <div class="me-3 text-primary">
-                                    <i class="fas {{ $info['icon'] }} fa-lg"></i>
-                                </div>
+                                <div class="me-3 text-primary"><i class="fas {{ $info['icon'] }} fa-lg"></i></div>
                                 <div>
                                     <h6 class="mb-1">{{ $info['title'] }}</h6>
                                     <p class="small mb-0">{{ $info['text'] }}</p>
                                 </div>
                             </div>
                         @endforeach
-
                         <hr>
-
                         <h6 class="mb-3">Méthodes disponibles</h6>
                         <div class="d-flex flex-wrap gap-2">
-                            @foreach ($methods as $method)
+                            @foreach (['Wave', 'Orange Money', 'MTN Money', 'Virement Bancaire'] as $method)
                                 <span class="method-badge">{{ $method }}</span>
                             @endforeach
                         </div>
                     </div>
                 </div>
 
-                <!-- Carte de contact -->
                 <div class="card-modern">
                     <div class="card-header-modern">
                         <i class="fas fa-headset me-2"></i>Besoin d'aide?
                     </div>
                     <div class="card-body-modern">
-                        <p class="small">
-                            Si vous rencontrez des difficultés avec votre demande de retrait, contactez notre support.
-                        </p>
+                        <p class="small">Si vous rencontrez des difficultés avec votre demande de retrait, contactez notre
+                            support.</p>
                         <div class="d-grid">
                             <a href="#" class="btn btn-outline-primary">
                                 <i class="fas fa-phone me-1"></i>+225
@@ -464,48 +254,33 @@
         </div>
     </div>
 
-    <!-- Script JS / jQuery / AJAX -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @include('paroisse.retrait.partials._scripts')
+
     <script>
         $(document).ready(function() {
-            // Configuration CSRF pour AJAX
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('input[name="_token"]').val()
                 }
             });
 
-            // ==========================================
-            // DEFINITION DES ROUTES ET DONNEES          
-            // ==========================================
             const soldeDisponible = {{ $soldeDisponible ?? 0 }};
-
-            // Les deux routes demandées
             const routeVirement = "{{ route('paroisse.retrait.request') }}";
             const routeMobileMoney = "{{ route('reversement.store') }}";
-
             const mobileMethods = ['wave', 'orange_money', 'mtn_money', 'moov_money'];
             const methodInfo = {
-                'wave': 'Retrait Wave : Vérifiez que votre compte est actif (plafond max).',
+                'wave': 'Retrait Wave : Vérifiez que votre compte est actif.',
                 'orange_money': 'Retrait Orange Money : Assurez-vous d\'avoir activé votre compte.',
                 'mtn_money': 'Retrait MTN Money : Compte vérifié requis.',
                 'moov_money': 'Retrait Moov Money : Compte vérifié requis.',
                 'virement_bancaire': 'Virement : Le nom du titulaire doit correspondre à votre compte paroissial.'
             };
 
-            // ==========================================
-            // GESTION DE L'AFFICHAGE DU FORMULAIRE
-            // ==========================================
             $('#methode').on('change', function() {
                 const selectedMethod = $(this).val();
-
-                // 1. Réinitialisation visuelle
                 $('#section-mobile-money, #section-banque, #additional-info').addClass('d-none');
-
-                // On réinitialise l'attribut required
                 $('.mobile-input, .banque-input').prop('required', false);
 
-                // 2. Logique d'affichage
                 if (mobileMethods.includes(selectedMethod)) {
                     $('#section-mobile-money').removeClass('d-none');
                     $('.mobile-input').prop('required', true);
@@ -514,97 +289,54 @@
                     $('.banque-input').prop('required', true);
                 }
 
-                // 3. Texte d'information
                 if (selectedMethod && methodInfo[selectedMethod]) {
                     $('#info-text').text(methodInfo[selectedMethod]);
                     $('#additional-info').removeClass('d-none');
                 }
             });
 
-            // ==========================================
-            // SOUMISSION DU FORMULAIRE
-            // ==========================================
             $('#retraitForm').on('submit', function(e) {
                 e.preventDefault();
-
                 const $form = $(this);
                 const $btn = $('#btn-submit');
                 const $spinner = $btn.find('.spinner-loading');
                 const $btnText = $btn.find('.btn-text');
-
-                // Récupération des valeurs
                 const montant = parseFloat($('#montant').val());
                 const methode = $('#methode').val();
 
-                // LOGIQUE DE ROUTAGE
-                let targetUrl = '';
-                if (mobileMethods.includes(methode)) {
-                    targetUrl = routeMobileMoney;
-                } else if (methode === 'virement_bancaire') {
-                    targetUrl = routeVirement;
-                } else {
-                    Swal.fire('Erreur', 'Veuillez sélectionner une méthode de paiement.', 'warning');
-                    return;
-                }
+                let targetUrl = mobileMethods.includes(methode) ? routeMobileMoney : (methode ===
+                    'virement_bancaire' ? routeVirement : '');
+                if (!targetUrl) return;
 
-                // Validation Frontend Basique
                 if (montant < 1000 || montant > soldeDisponible) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Montant incorrect',
-                        text: 'Le montant doit être compris entre 1 000 et ' + soldeDisponible
-                            .toLocaleString() + ' FCFA.',
-                        confirmButtonColor: '#c49d54'
+                        text: 'Intervalle: 1 000 - ' + soldeDisponible.toLocaleString() + ' FCFA.'
                     });
                     return;
                 }
 
-                // Construction du résumé pour la confirmation
-                let detailsHtml = `<div class="text-start fs-6 mt-3">
-                    <p class="mb-1"><strong>Montant :</strong> <span class="text-primary">${montant.toLocaleString()} FCFA</span></p>
-                    <p class="mb-1"><strong>Méthode :</strong> ${methode.replace('_', ' ').toUpperCase()}</p>`;
-
-                if (mobileMethods.includes(methode)) {
-                    detailsHtml +=
-                        `<p class="mb-1"><strong>Numéro :</strong> (+${$('#prefix').val()}) ${$('#telephone').val()}</p>`;
-                } else if (methode === 'virement_bancaire') {
-                    detailsHtml += `<p class="mb-1"><strong>Banque :</strong> ${$('#nom_banque').val()}</p>
-                                    <p class="mb-1"><strong>Compte :</strong> ${$('#numero_compte').val()}</p>`;
-                }
-                detailsHtml += `</div>`;
-
-                // Confirmation SweetAlert
                 Swal.fire({
                     title: 'Confirmer la demande',
-                    html: detailsHtml,
+                    text: "Souhaitez-vous envoyer cette demande de retrait ?",
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#c49d54',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Oui, envoyer',
-                    cancelButtonText: 'Annuler',
-                    reverseButtons: true
+                    confirmButtonText: 'Oui, envoyer'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Début du processus d'envoi
                         $btn.prop('disabled', true);
                         $btnText.addClass('d-none');
                         $spinner.removeClass('d-none');
 
-                        // --- CORRECTION CRITIQUE ICI ---
-                        // On désactive les champs de l'autre méthode pour ne pas les envoyer
-                        // Cela évite les erreurs de validation côté serveur sur des champs vides
                         if (methode === 'virement_bancaire') {
                             $('#section-mobile-money :input').prop('disabled', true);
                         } else {
                             $('#section-banque :input').prop('disabled', true);
                         }
 
-                        // Sérialisation des données
                         const formData = $form.serialize();
-
-                        // On réactive les champs immédiatement après la sérialisation
-                        // au cas où l'utilisateur annulerait ou voudrait corriger
                         $('#section-mobile-money :input, #section-banque :input').prop('disabled',
                             false);
 
@@ -617,39 +349,20 @@
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Succès !',
-                                    text: response.message ||
-                                        'Opération effectuée avec succès.',
-                                    confirmButtonColor: '#c49d54'
+                                    text: response.message
                                 }).then(() => {
-                                    window.location.reload();
+                                    window.location.href =
+                                        "{{ route('paroisse.retraits') }}";
                                 });
-                                $form[0].reset();
                             },
                             error: function(xhr) {
-                                let errorMessage =
-                                    "Une erreur est survenue lors du traitement.";
-
-                                if (xhr.responseJSON) {
-                                    if (xhr.responseJSON.errors) {
-                                        // Affiche les erreurs de validation Laravel
-                                        let errorsHtml = '<ul class="text-start">';
-                                        $.each(xhr.responseJSON.errors, function(key,
-                                            val) {
-                                            errorsHtml += '<li>' + val[0] +
-                                                '</li>';
-                                        });
-                                        errorsHtml += '</ul>';
-                                        errorMessage = errorsHtml;
-                                    } else if (xhr.responseJSON.message) {
-                                        errorMessage = xhr.responseJSON.message;
-                                    }
-                                }
-
+                                let msg = "Erreur lors du traitement.";
+                                if (xhr.responseJSON && xhr.responseJSON.message) msg =
+                                    xhr.responseJSON.message;
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Erreur',
-                                    html: errorMessage,
-                                    confirmButtonColor: '#c49d54'
+                                    text: msg
                                 });
                             },
                             complete: function() {

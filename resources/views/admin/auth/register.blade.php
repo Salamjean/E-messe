@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="Style.css">
-    <link rel="shortcut icon" href="{{asset('assets/assets/img/logo pla.jpeg')}}" />
+    <link rel="shortcut icon" href="{{ asset('assets/assets/img/logo pla.jpeg') }}" />
     <title>Inscription d'un Admin</title>
     <style>
         body {
@@ -68,8 +69,8 @@
             z-index: 2;
         }
 
-        .input:focus ~ .label,
-        .input:valid ~ .label {
+        .input:focus~.label,
+        .input:valid~.label {
             top: -5px;
             left: 5px;
             font-size: 12px;
@@ -103,67 +104,142 @@
         }
     </style>
 </head>
+
 <body>
 
-<form class="form-control" method="POST" action="{{ route('super_admin.handleRegister') }}">
-  <div class="row" style="width:100%; justify-content:center">
-    @if (Session::get('success1')) <!-- Pour la suppression -->
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Suppression réussie',
-                text: '{{ Session::get('success1') }}',
-                showConfirmButton: true,  // Afficher le bouton OK
-                confirmButtonText: 'OK',  // Texte du bouton
-                background: '#ffcccc',   // Couleur de fond personnalisée
-                color: '#b30000'          // Texte rouge foncé
-            });
-        </script>
-    @endif
+    <form class="form-control" method="POST" action="{{ route('super_admin.handleRegister') }}">
+        <div class="row" style="width:100%; justify-content:center">
+            @if (Session::get('success1'))
+                <!-- Pour la suppression -->
+                <script>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Suppression réussie',
+                        text: '{{ Session::get('success1') }}',
+                        showConfirmButton: true, // Afficher le bouton OK
+                        confirmButtonText: 'OK', // Texte du bouton
+                        background: '#ffcccc', // Couleur de fond personnalisée
+                        color: '#b30000' // Texte rouge foncé
+                    });
+                </script>
+            @endif
 
-    @if (Session::get('success')) <!-- Pour la modification -->
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Action réussie',
-                text: '{{ Session::get('success') }}',
-                showConfirmButton: true,  // Afficher le bouton OK
-                confirmButtonText: 'OK',  // Texte du bouton
-                background: '#ccffcc',   // Couleur de fond personnalisée
-                color: '#006600'          // Texte vert foncé
-            });
-        </script>
-    @endif
+            @if (Session::get('success'))
+                <!-- Pour la modification -->
+                <script>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Action réussie',
+                        text: '{{ Session::get('success') }}',
+                        showConfirmButton: true, // Afficher le bouton OK
+                        confirmButtonText: 'OK', // Texte du bouton
+                        background: '#ccffcc', // Couleur de fond personnalisée
+                        color: '#006600' // Texte vert foncé
+                    });
+                </script>
+            @endif
 
-    @if (Session::get('error')) <!-- Pour une erreur générale -->
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Erreur',
-                text: '{{ Session::get('error') }}',
-                showConfirmButton: true,  // Afficher le bouton OK
-                confirmButtonText: 'OK',  // Texte du bouton
-                background: '#f86750',    // Couleur de fond rouge vif
-                color: '#ffffff'          // Texte blanc
-            });
-        </script>
-    @endif
-</div>
-    <p class="title">Kks-Technologies</p>
+            @if (Session::get('error'))
+                <!-- Pour une erreur générale -->
+                <script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erreur',
+                        text: '{{ Session::get('error') }}',
+                        showConfirmButton: true, // Afficher le bouton OK
+                        confirmButtonText: 'OK', // Texte du bouton
+                        background: '#f86750', // Couleur de fond rouge vif
+                        color: '#ffffff' // Texte blanc
+                    });
+                </script>
+            @endif
+        </div>
+        <p class="title">Kks-Technologies</p>
 
-    @csrf
-    @method('post')
+        @csrf
+        @method('post')
 
-    @if (Session::get('success'))
-        <div class="success-message">{{ Session::get('success') }}</div>
-    @endif
+        @if (Session::get('success'))
+            <div class="success-message">{{ Session::get('success') }}</div>
+        @endif
 
-    <div class="input-field">
+        <div class="input-field">
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+            <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+            <!-- Script d'initialisation de Select2 -->
+            <script>
+                $(document).ready(function() {
+                    $('#name').select2({
+                        placeholder: "Sélectionnez une commune",
+                        allowClear: true,
+                        width: '100%'
+                    });
+                });
+            </script>
+            <input class="input" type="text" name="name" placeholder="Entrez votre nom & prénoms"
+                value="{{ old('name') }}" required />
+            <label class="label" for="name">Nom et Prénoms</label>
+            @error('name')
+                <div class="error-message">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="input-field">
+            <input class="input" type="email" name="email" placeholder="Email@exemple.com"
+                value="{{ old('email') }}" required />
+            <label class="label" for="email">Email</label>
+            @error('email')
+                <div class="error-message">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="input-field">
+            <input class="input" type="password" name="password" required />
+            <label class="label" for="password">Mot de passe</label>
+            @error('password')
+                <div class="error-message">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <button type="submit" class="submit-btn">S'inscrire</button>
+    </form>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (Session::has('success1'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Suppression réussie',
+                    text: '{{ Session::get('success1') }}',
+                    confirmButtonText: 'OK'
+                });
+            @endif
+
+            @if (Session::has('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Action réussie',
+                    text: '{{ Session::get('success') }}',
+                    confirmButtonText: 'OK'
+                });
+            @endif
+
+            @if (Session::has('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: '{{ Session::get('error') }}',
+                    confirmButtonText: 'OK'
+                });
+            @endif
+        });
+    </script>
+
+    <!-- Scripts pour Select2 -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    
-    <!-- Script d'initialisation de Select2 -->
     <script>
         $(document).ready(function() {
             $('#name').select2({
@@ -173,75 +249,6 @@
             });
         });
     </script>
-        <input class="input" type="text" name="name" placeholder="Entrez votre nom & prénoms" value="{{ old('name') }}" required />
-        <label class="label" for="name">Nom et Prénoms</label>
-        @error('name')
-            <div class="error-message">{{ $message }}</div>
-        @enderror
-    </div>
-
-    <div class="input-field">
-        <input class="input" type="email" name="email" placeholder="Email@exemple.com" value="{{ old('email') }}" required />
-        <label class="label" for="email">Email</label>
-        @error('email')
-            <div class="error-message">{{ $message }}</div>
-        @enderror
-    </div>
-
-    <div class="input-field">
-        <input class="input" type="password" name="password" required />
-        <label class="label" for="password">Mot de passe</label>
-        @error('password')
-            <div class="error-message">{{ $message }}</div>
-        @enderror
-    </div>
-
-    <button type="submit" class="submit-btn">S'inscrire</button>
-</form>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-      @if (Session::has('success1'))
-          Swal.fire({
-              icon: 'success',
-              title: 'Suppression réussie',
-              text: '{{ Session::get('success1') }}',
-              confirmButtonText: 'OK'
-          });
-      @endif
-
-      @if (Session::has('success'))
-          Swal.fire({
-              icon: 'success',
-              title: 'Action réussie',
-              text: '{{ Session::get('success') }}',
-              confirmButtonText: 'OK'
-          });
-      @endif
-
-      @if (Session::has('error'))
-          Swal.fire({
-              icon: 'error',
-              title: 'Erreur',
-              text: '{{ Session::get('error') }}',
-              confirmButtonText: 'OK'
-          });
-      @endif
-  });
-</script>
-
-<!-- Scripts pour Select2 -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script>
-  $(document).ready(function() {
-      $('#name').select2({
-          placeholder: "Sélectionnez une commune",
-          allowClear: true,
-          width: '100%'
-      });
-  });
-</script>
 </body>
-</html>
 
+</html>

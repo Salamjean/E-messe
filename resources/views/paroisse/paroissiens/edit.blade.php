@@ -149,8 +149,10 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">Mettre à jour</button>
-                    <a href="{{ route('paroissien.index') }}" class="btn btn-secondary">Annuler</a>
+                    <button type="submit" class="btn btn-primary"
+                        style="margin-top: 10px; background-color: #cca45e; border-color: #cca45e;">Mettre à jour</button>
+                    <a href="{{ route('paroissien.index') }}" class="btn btn-secondary"
+                        style="margin-top: 10px;">Annuler</a>
                 </form>
             </div>
         </div>

@@ -35,6 +35,7 @@ class User extends Authenticatable
         'smsNotif',
         'pushNotif',
         'fcm_token',
+        'archived_at',
     ];
 
     /**

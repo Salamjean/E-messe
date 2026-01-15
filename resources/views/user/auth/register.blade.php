@@ -4,487 +4,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User - Sing up</title>
+    <title>Inscription - E-Messe</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="shortcut icon" href="{{ asset('assets/assets/images/logo_principal.svg') }}" />
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
         :root {
-            --primary: #cda45e;
-            --primary-light: rgba(243, 85, 37, 0.1);
-            --black: #000000;
-            --white: #ffffff;
-            --gray-light: #f8f9fa;
-            --gray: #6c757d;
-            --gray-dark: #343a40;
-            --border-radius: 16px;
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            --shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.12);
+            --primary: #cca45e;
+            --primary-dark: #b38d45;
+            --secondary: #5ea7b5;
+            --dark: #1a1a1a;
+            --light: #ffffff;
+            --gray: #f8f9fa;
+            --text-muted: #6c757d;
+            --border-radius: 20px;
+            --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            --shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            font-family: 'Outfit', sans-serif;
         }
 
         body {
-            background:
-                linear-gradient(#c7a663, #ffffffff),
-                url('{{ asset('assets/assets/images/bggg.jpg') }}');
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background: #f0f2f5;
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 20px;
-            position: relative;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(204, 164, 94, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(94, 167, 181, 0.15) 0px, transparent 50%);
             overflow-x: hidden;
         }
 
-        body::before {
-            content: '';
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: var(--primary-light);
-            border-radius: 50%;
-            top: -150px;
-            right: -150px;
-            z-index: -1;
-        }
-
-        body::after {
-            content: '';
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            background: var(--primary-light);
-            border-radius: 50%;
-            bottom: -100px;
-            left: -100px;
-            z-index: -1;
-        }
-
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            max-width: 1000px;
+        .auth-card {
+            background: var(--light);
             width: 100%;
-            min-height: 400px;
+            max-width: 1100px;
+            min-height: 700px;
+            display: flex;
             border-radius: var(--border-radius);
-            overflow: hidden;
             box-shadow: var(--shadow);
-            background: var(--white);
-            position: relative;
-        }
-
-        .back-button {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            background: var(--white);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary);
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: var(--transition);
-            z-index: 10;
-        }
-
-        .back-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-            color: var(--primary);
-        }
-
-        .left-panel {
-            flex: 1;
-            min-width: 300px;
-            background: linear-gradient(135deg, var(--primary) 0%, #bea56aff 100%);
-            color: var(--white);
-            padding: 40px 30px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
             overflow: hidden;
-        }
-
-        .left-panel::before {
-            content: '';
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            top: -50px;
-            left: -50px;
-        }
-
-        .left-panel::after {
-            content: '';
-            position: absolute;
-            width: 150px;
-            height: 150px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            bottom: -50px;
-            right: -50px;
-        }
-
-        .left-content {
             position: relative;
-            z-index: 1;
+            animation: slideUp 0.8s ease-out;
         }
 
-        .logo {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-        }
-
-        .logo-circle {
-            width: 36px;
-            height: 36px;
-            background: var(--white);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 10px;
-            color: var(--primary);
-        }
-
-        .left-panel h2 {
-            font-size: 26px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            line-height: 1.3;
-        }
-
-        .left-panel p {
-            font-size: 15px;
-            line-height: 1.5;
-            margin-bottom: 25px;
-            opacity: 0.9;
-        }
-
-        .features {
-            list-style: none;
-            margin-top: 30px;
-        }
-
-        .features li {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-
-        .features i {
-            background: rgba(255, 255, 255, 0.2);
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
-            font-size: 13px;
-        }
-
-        .right-panel {
-            flex: 1;
-            min-width: 300px;
-            padding: 30px 25px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            background: var(--white);
-        }
-
-        .right-panel h2 {
-            font-size: 24px;
-            color: var(--black);
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .welcome-text {
-            color: var(--gray);
-            margin-bottom: 25px;
-            font-size: 14px;
-            text-align: center;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-            position: relative;
-        }
-
-        .form-group label {
-            display: block;
-            color: var(--gray-dark);
-            margin-bottom: 8px;
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        .input-with-icon {
-            position: relative;
-        }
-
-        .input-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--gray);
-            font-size: 15px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px 12px 12px 40px;
-            border: 2px solid #e6e6e6;
-            border-radius: var(--border-radius);
-            font-size: 14px;
-            transition: var(--transition);
-            background-color: var(--gray-light);
-        }
-
-        .form-group input:focus {
-            border-color: var(--primary);
-            outline: none;
-            background-color: var(--white);
-            box-shadow: 0 0 0 3px rgba(243, 85, 37, 0.15);
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--gray);
-            cursor: pointer;
-            font-size: 15px;
-        }
-
-        .signup-button {
-            background-color: var(--primary);
-            color: var(--white);
-            border: none;
-            padding: 14px;
-            border-radius: var(--border-radius);
-            width: 100%;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            margin-bottom: 20px;
-            letter-spacing: 0.5px;
-            /* box-shadow: 0 4px 15px rgba(243, 85, 37, 0.3); */
-        }
-
-        .signup-button:hover {
-            transform: translateY(-2px);
-            color: #ffffffff !important;
-            background-color: var(--primary);
-            transform: translateY(-2px);
-            border: 2px solid var(--primary);
-
-
-        }
-
-        .signup-button:active {
-            transform: translateY(0);
-        }
-
-        .signup-link {
-            text-align: center;
-            font-size: 14px;
-            color: var(--gray-dark);
-        }
-
-        .signup-link a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-            transition: var(--transition);
-        }
-
-        .signup-link a:hover {
-            color: var(--primary);
-            text-decoration: underline;
-        }
-
-        /* Nouvelles règles pour la disposition en deux colonnes */
-        .form-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-
-        .form-col {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        /* Style pour les messages d'erreur */
-        .error-message {
-            color: rgb(184, 8, 8);
-            font-size: 12px;
-            margin-top: 5px;
-            display: flex;
-            align-items: center;
-        }
-
-        .error-message i {
-            margin-right: 5px;
-            font-size: 11px;
-        }
-
-        /* Style pour le champ fichier */
-        .form-group input[type="file"] {
-            padding-left: 40px;
-            cursor: pointer;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            body {
-                padding: 15px;
-            }
-
-            .container {
-                flex-direction: column;
-                border-radius: 12px;
-            }
-
-            .left-panel,
-            .right-panel {
-                padding: 25px 20px;
-            }
-
-            .left-panel {
-                order: 2;
-            }
-
-            .right-panel {
-                order: 1;
-            }
-
-            .back-button {
-                top: 10px;
-                left: 10px;
-                width: 35px;
-                height: 35px;
-            }
-
-            .form-row {
-                flex-direction: column;
-                gap: 0;
-            }
-
-            .form-col {
-                min-width: 100%;
-            }
-
-            .left-panel h2 {
-                font-size: 22px;
-            }
-
-            .features {
-                margin-top: 20px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body::before {
-                width: 200px;
-                height: 200px;
-                top: -100px;
-                right: -100px;
-            }
-
-            body::after {
-                width: 150px;
-                height: 150px;
-                bottom: -75px;
-                left: -75px;
-            }
-
-            .left-panel::before {
-                width: 150px;
-                height: 150px;
-            }
-
-            .left-panel::after {
-                width: 100px;
-                height: 100px;
-            }
-
-            .logo {
-                font-size: 20px;
-            }
-
-            .logo-circle {
-                width: 32px;
-                height: 32px;
-            }
-
-            .right-panel h2 {
-                font-size: 22px;
-            }
-
-            .form-group input {
-                padding: 10px 10px 10px 35px;
-            }
-
-            .input-icon {
-                left: 10px;
-                font-size: 14px;
-            }
-
-            .password-toggle {
-                right: 10px;
-                font-size: 14px;
-            }
-        }
-
-        /* Pour les très petits écrans */
-        @media (max-width: 320px) {
-
-            .left-panel,
-            .right-panel {
-                padding: 20px 15px;
-            }
-
-            .left-panel h2 {
-                font-size: 20px;
-            }
-
-            .right-panel h2 {
-                font-size: 20px;
-            }
-        }
-
-        /* Animation d'entrée */
-        @keyframes fadeIn {
+        @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
             }
 
             to {
@@ -493,207 +68,432 @@
             }
         }
 
-        .left-panel {
-            animation: fadeIn 0.6s ease-out 0.2s both;
+        .auth-left {
+            flex: 1;
+            background: linear-gradient(#c2a367, #c2a367), url('{{ asset('assets/assets/images/bggg.jpg') }}');
+            background-size: cover;
+            background-position: center;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: var(--light);
+            position: relative;
         }
 
-        .right-panel {
-            animation: fadeIn 0.6s ease-out 0.4s both;
+        .auth-left::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(204, 164, 94, 0.3) 0%, transparent 100%);
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            z-index: 1;
+        }
+
+        .brand-logo img {
+            width: 45px;
+            height: 45px;
+            background: white;
+            padding: 5px;
+            border-radius: 12px;
+        }
+
+        .left-content {
+            z-index: 1;
+        }
+
+        .left-content h1 {
+            font-size: 38px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .left-content p {
+            font-size: 17px;
+            opacity: 0.9;
+            max-width: 400px;
+        }
+
+        .auth-right {
+            flex: 1.5;
+            background: var(--light);
+            padding: 50px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        .auth-header h2 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .auth-header p {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 6px;
+        }
+
+        .input-group-modern {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-group-modern i {
+            position: absolute;
+            left: 16px;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .form-control-modern {
+            width: 100%;
+            padding: 12px 16px 12px 48px;
+            border: 2px solid #f1f1f1;
+            border-radius: 12px;
+            font-size: 14.5px;
+            transition: var(--transition);
+            background: #fbfbfb;
+        }
+
+        .form-control-modern:focus {
+            border-color: var(--primary);
+            background: white;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(204, 164, 94, 0.1);
+        }
+
+        .form-control-modern:focus+i {
+            color: var(--primary);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            left: auto !important;
+            cursor: pointer;
+            color: var(--text-muted);
+            z-index: 10;
+        }
+
+        .btn-auth {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-auth:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(204, 164, 94, 0.2);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+            color: #e0e0e0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #eeeeee;
+        }
+
+        .divider span {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .social-buttons {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn-social {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 12px;
+            border: 2px solid #f1f1f1;
+            border-radius: 12px;
+            background: white;
+            color: var(--dark);
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .btn-social:hover {
+            border-color: #e0e0e0;
+            background: #fbfbfb;
+            transform: translateY(-2px);
+        }
+
+        .btn-social img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .footer-text {
+            text-align: center;
+            font-size: 15px;
+            color: var(--text-muted);
+        }
+
+        .footer-text a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .back-home {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            width: 45px;
+            height: 45px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark);
+            text-decoration: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .back-home:hover {
+            background: var(--primary);
+            color: white;
+            transform: rotate(-10deg);
+        }
+
+        .error-hint {
+            color: #ff4d4d;
+            font-size: 12px;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        @media (max-width: 992px) {
+            .auth-left {
+                display: none;
+            }
+
+            .auth-card {
+                max-width: 600px;
+            }
+
+            .auth-right {
+                padding: 40px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <a href="/" class="back-button" title="Retour à l'accueil">
-            <i class="fas fa-arrow-left"></i>
-        </a>
+    <a href="/" class="back-home" title="Retour à l'accueil">
+        <i class="fas fa-arrow-left"></i>
+    </a>
 
-        <div class="left-panel">
+    <div class="auth-card">
+        <div class="auth-left">
+            <div class="brand-logo">
+                <img src="{{ asset('assets/assets/images/logo_principal.svg') }}" alt="Logo">
+                <span>E-MESSE</span>
+            </div>
             <div class="left-content">
-                <div class="logo">
-                    <div class="logo-circle">
-                        <i class="fas fa-fire"></i>
-                    </div>
-                    BrandName
-                </div>
-                <h2>Rejoignez-nous dès aujourd'hui</h2>
-                <p>Inscrivez-vous pour accéder à votre espace personnel et découvrir toutes les fonctionnalités de notre
-                    plateforme.</p>
-
-                <ul class="features">
-                    <li><i class="fas fa-check"></i> Interface intuitive et moderne</li>
-                    <li><i class="fas fa-check"></i> Sécurité avancée de vos données</li>
-                    <li><i class="fas fa-check"></i> Accès à toutes vos fonctionnalités</li>
-                </ul>
+                <h1>Bienvenue dans la communauté.</h1>
+                <p>Créez votre compte en quelques secondes et commencez à vivre votre foi avec E-Messe.</p>
+            </div>
+            <div class="left-footer">
+                <p style="font-size: 14px; opacity: 0.7;">&copy; 2026 E-Messe. Tous droits réservés.</p>
             </div>
         </div>
 
-        <div class="right-panel">
-            <h2>Inscription</h2>
-            <p class="welcome-text">Remplissez le formulaire ci-dessous pour créer un compte.</p>
+        <div class="auth-right">
+            <div class="auth-header">
+                <h2>Inscription</h2>
+                <p>Commençons l'aventure ensemble !</p>
+            </div>
 
             <form method="POST" action="{{ route('handleRegister') }}" enctype="multipart/form-data">
                 @csrf
-                <!-- Première ligne: Nom complet et Nom d'utilisateur -->
                 <div class="form-row">
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label for="name">Nom complet</label>
-                            <div class="input-with-icon">
-                                <i class="input-icon fas fa-user"></i>
-                                <input type="text" id="name" name="name"
-                                    placeholder="Entrez votre nom complet" value="{{ old('name') }}">
-                                @error('name')
-                                    <div class="error-message">
-                                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
+                    <div class="form-group">
+                        <label class="form-label">Nom complet</label>
+                        <div class="input-group-modern">
+                            <i class="fas fa-user"></i>
+                            <input type="text" name="name" class="form-control-modern" value="{{ old('name') }}"
+                                placeholder="Jean Dupont">
                         </div>
+                        @error('name')
+                            <div class="error-hint"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
+                        @enderror
                     </div>
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label for="user_name">Nom d'utilisateur</label>
-                            <div class="input-with-icon">
-                                <i class="input-icon fas fa-at"></i>
-                                <input type="text" id="user_name" name="user_name"
-                                    placeholder="Entrez votre nom d'utilisateur" value="{{ old('user_name') }}">
-                                @error('user_name')
-                                    <div class="error-message">
-                                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
+                    <div class="form-group">
+                        <label class="form-label">Nom d'utilisateur</label>
+                        <div class="input-group-modern">
+                            <i class="fas fa-at"></i>
+                            <input type="text" name="user_name" class="form-control-modern"
+                                value="{{ old('user_name') }}" placeholder="jdupont225">
+                        </div>
+                        @error('user_name')
+                            <div class="error-hint"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <div class="input-group-modern">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" name="email" class="form-control-modern" value="{{ old('email') }}"
+                                placeholder="jean.dupont@email.com">
+                        </div>
+                        @error('email')
+                            <div class="error-hint"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contact (Téléphone)</label>
+                        <div class="input-group-modern">
+                            <i class="fas fa-mobile-alt"></i>
+                            <input type="text" name="contact" class="form-control-modern"
+                                value="{{ old('contact') }}" placeholder="+225 0707070707">
+                        </div>
+                        @error('contact')
+                            <div class="error-hint"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Mot de passe</label>
+                        <div class="input-group-modern">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="password" name="password" class="form-control-modern"
+                                placeholder="••••••••">
+                            <i class="fas fa-eye password-toggle" onclick="togglePassword('password', this)"></i>
+                        </div>
+                        @error('password')
+                            <div class="error-hint"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirmation</label>
+                        <div class="input-group-modern">
+                            <i class="fas fa-shield-alt"></i>
+                            <input type="password" id="password_confirmation" name="password_confirmation"
+                                class="form-control-modern" placeholder="••••••••">
+                            <i class="fas fa-eye password-toggle"
+                                onclick="togglePassword('password_confirmation', this)"></i>
                         </div>
                     </div>
                 </div>
 
-                <!-- Deuxième ligne: Email -->
-                <div class="form-row">
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label for="email">Adresse email</label>
-                            <div class="input-with-icon">
-                                <i class="input-icon fas fa-envelope"></i>
-                                <input type="email" id="email" name="email"
-                                    placeholder="Entrez votre adresse email" value="{{ old('email') }}">
-                                @error('email')
-                                    <div class="error-message">
-                                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
-                        </div>
+                <div class="form-group">
+                    <label class="form-label">Photo de profil (facultatif)</label>
+                    <div class="input-group-modern">
+                        <i class="fas fa-camera"></i>
+                        <input type="file" name="profile_picture" class="form-control-modern" accept="image/*"
+                            onchange="checkFileSize(this)">
                     </div>
+                    @error('profile_picture')
+                        <div class="error-hint"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
+                    @enderror
                 </div>
 
-                <!-- Troisième ligne: Commune et Contact -->
-                <div class="form-row">
-                    {{-- <div class="form-col">
-                        <div class="form-group">
-                            <label for="commune">Commune</label>
-                            <div class="input-with-icon">
-                                <i class="input-icon fas fa-map-marker-alt"></i>
-                                <input type="text" id="commune" name="commune" placeholder="Entrez votre commune" >
-                                @error('commune')
-                                    <div class="error-message">
-                                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
-                        </div>
-                    </div> --}}
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label for="contact">Contact</label>
-                            <div class="input-with-icon">
-                                <i class="input-icon fas fa-mobile-alt"></i>
-                                <input type="text" id="contact" name="contact"
-                                    placeholder="Entrez votre numéro de téléphone" value="{{ old('contact') }}">
-                                @error('contact')
-                                    <div class="error-message">
-                                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Mot de passe et confirmation -->
-                <div class="form-row">
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label for="password">Mot de passe</label>
-                            <div class="input-with-icon">
-                                <i class="input-icon fas fa-lock"></i>
-                                <input type="password" id="password" name="password"
-                                    placeholder="Entrez votre mot de passe" value="{{ old('password') }}">
-                                @error('password')
-                                    <div class="error-message">
-                                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                                    </div>
-                                @enderror
-                                <i class="password-toggle fas fa-eye" onclick="togglePassword('password', this)"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label for="password_confirmation">Confirmation</label>
-                            <div class="input-with-icon">
-                                <i class="input-icon fas fa-lock"></i>
-                                <input type="password" name="password_confirmation" id="password_confirmation"
-                                    placeholder="Confirmer" />
-                                <i class="password-toggle fas fa-eye"
-                                    onclick="togglePassword('password_confirmation', this)"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Photo de profil -->
-                <div class="form-row">
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label for="profile_picture">Photo de profil (facultatif - Max 2 Mo)</label>
-                            <div class="input-with-icon">
-                                <i class="input-icon fas fa-camera"></i>
-                                <input type="file" id="profile_picture" name="profile_picture" accept="image/*"
-                                    value="{{ old('profile_picture') }}" onchange="checkFileSize(this)">
-                                @error('profile_picture')
-                                    <div class="error-message">
-                                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bouton d'inscription -->
-                <button type="submit" class="signup-button">S'inscrire</button>
+                <button type="submit" class="btn-auth">Créer mon compte</button>
             </form>
 
-            <div class="signup-link">
-                Vous avez déjà un compte ? <a href="{{ route('login') }}">Se connecter</a>
+            <div class="divider">
+                <span>OU</span>
             </div>
+
+            <div class="social-buttons">
+                <a href="{{ route('google.login') }}" class="btn-social">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                    <span>S'inscrire avec Google</span>
+                </a>
+            </div>
+
+            <p class="footer-text">
+                Vous avez déjà un compte ? <a href="{{ route('login') }}">Connectez-vous</a>
+            </p>
         </div>
     </div>
 
     <script>
         function togglePassword(inputId, element) {
             const passwordInput = document.getElementById(inputId);
-
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
-                element.classList.remove('fa-eye');
-                element.classList.add('fa-eye-slash');
+                element.classList.replace('fa-eye', 'fa-eye-slash');
             } else {
                 passwordInput.type = 'password';
-                element.classList.remove('fa-eye-slash');
-                element.classList.add('fa-eye');
+                element.classList.replace('fa-eye-slash', 'fa-eye');
             }
         }
 

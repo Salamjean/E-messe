@@ -138,7 +138,7 @@ class EventController extends Controller
 
             if ($usersToNotify->isNotEmpty()) {
                 // ✅ CORRECTION : Utilisation de la Facade Notification
-                // Cela enverra automatiquement via Database ET FCM grâce à ta classe Notification
+                // Cela enverra  automatiquement via Database ET FCM grâce à ta classe Notification
                 Notification::send($usersToNotify, new NouveauEvenementParoisseNotification($event));
 
                 Log::info('Notification envoyée à '.$usersToNotify->count().' utilisateurs.');

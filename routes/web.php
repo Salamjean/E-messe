@@ -18,13 +18,14 @@ use App\Http\Controllers\Redirectionpaiement\PaymentRedirectController;
 use App\Http\Controllers\Redirectionpaiement\RedirectController;
 use App\Http\Controllers\User\AuthenticateUser;
 use App\Http\Controllers\User\Event\EventController as UserEventController;
+use App\Http\Controllers\User\FicheController;
+use App\Http\Controllers\User\GoogleAuthController;
 use App\Http\Controllers\User\Messe\MesseController;
 use App\Http\Controllers\User\Messe\PaiementController;
 use App\Http\Controllers\User\Messe\PaiementStripeController;
 use App\Http\Controllers\User\ParoisseController as UserParoisseController;
 use App\Http\Controllers\User\SettingsController;
 use App\Http\Controllers\User\UserDashboard;
-use App\Http\Controllers\User\FicheController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'home'])->name('home');
@@ -45,10 +46,8 @@ Route::post('/verify-otp', [AuthenticateUser::class, 'verifyOtp'])->name('verify
 Route::get('/reset-password', [AuthenticateUser::class, 'showResetPasswordForm'])->name('reset-password.form');
 Route::post('/reset-password', [AuthenticateUser::class, 'resetPassword'])->name('reset-password.update');
 
-// Route::prefix('paiement/cinetpay')->group(function () {
-//     Route::get('/success', [PaymentRedirectController::class, 'success'])->name('cinetpay.success');
-//     Route::get('/cancel', [PaymentRedirectController::class, 'cancel'])->name('cinetpay.cancel');
-// });
+Route::get('auth/google', [GoogleAuthController::class, 'redirect'])->name('google.login');
+Route::get('auth/google/callback', [GoogleAuthController::class, 'callback']);
 
 Route::prefix('paiement/cinetpay')->group(function () {
     Route::match(['get', 'post'], '/success', [PaymentRedirectController::class, 'success'])->name('cinetpay.success');
@@ -63,6 +62,9 @@ Route::get('/paiement/wave/error', [RedirectController::class, 'error'])->name('
 Route::prefix('admin')->group(function () {
     Route::get('/login', [AuthenticateAdmin::class, 'login'])->name('admin.login');
     Route::post('/login', [AuthenticateAdmin::class, 'handleLogin'])->name('admin.handleLogin');
+    Route::get('/register', [AuthenticateAdmin::class, 'register'])->name('admin.register');
+    Route::post('/register', [AuthenticateAdmin::class, 'handleRegister'])->name('admin.handleRegister');
+    Route::get('/logout', [AdminController::class, 'logout'])->name('admin.logout');
 });
 
 Route::middleware('admin')->prefix('admin')->group(function () {
@@ -199,7 +201,7 @@ Route::middleware('paroisse')->prefix('parish')->group(function () {
     Route::post('/messe/update-status', [DemandeController::class, 'updateStatusToCelebrated'])->name('paroisse.messe.update-status');
     Route::post('/messess/bulk-confirm', [DemandeController::class, 'bulkConfirm'])->name('paroisse.messe.bulk-confirm');
     Route::post('/messess/bulk-cancel', [DemandeController::class, 'bulkCancel'])->name('paroisse.messe.bulk-cancel');
-    
+
     // Routes pour l'export des messes
     Route::get('/messes/export/excel', [\App\Http\Controllers\Paroisse\Messe\MesseExportController::class, 'exportMessesExcel'])->name('paroisse.messes.export.excel');
     Route::get('/messes/export/pdf', [\App\Http\Controllers\Paroisse\Messe\MesseExportController::class, 'exportMessesPdf'])->name('paroisse.messes.export.pdf');

@@ -54,16 +54,16 @@ class ParoissienController extends Controller
                 $method = method_field('DELETE');
 
                 return "
-                <div class='btn-group'>
-                    <a href='{$showUrl}' class='btn btn-view btn-action btn-sm me-1' title='Voir'>
+                <div class='btn-action-group'>
+                    <a href='{$showUrl}' class='btn-action btn-view' title='Voir'>
                         <i class='fa fa-eye'></i>
                     </a>
-                    <a href='{$editUrl}' class='btn btn-edit btn-action btn-sm me-1' title='Modifier'>
+                    <a href='{$editUrl}' class='btn-action btn-edit' title='Modifier'>
                         <i class='fa fa-edit'></i>
                     </a>
                     <form action='{$deleteUrl}' method='POST' style='display:inline;' onsubmit='return confirm(\"Êtes-vous sûr de vouloir supprimer ce fidèle ?\")'>
                         {$csrf} {$method}
-                        <button type='submit' class='btn btn-delete btn-action btn-sm me-1' title='Supprimer'>
+                        <button type='submit' class='btn-action btn-delete' title='Supprimer'>
                             <i class='fa fa-trash'></i>
                         </button>
                     </form>

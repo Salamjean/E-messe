@@ -32,26 +32,7 @@
                     <div class="paroisse-card" data-name="{{ strtolower($user->name) }}">
                         <div class="card-header">
                             <div class="profile-img">
-                                @php
-                                    $profilePic = $user->profile_picture;
-
-                                    // Déterminer la source de l'image
-                        if (!$profilePic) {
-                                        // Si pas d'image : UI Avatars
-                                        $src =
-                                            'https://ui-avatars.com/api/?name=' .
-                                            urlencode($user->name) .
-                                            '&size=200&background=f35525&color=fff';
-                                       } elseif (str_starts_with($profilePic, 'http')) {
-                                        // Si c'est une URL externe (Google, etc.) : on l'utilise directement
-                                        $src = $profilePic;
-                                    } else {
-                                        // Si c'est un fichier local : on utilise asset('storage/...')
-                                        $src = asset('storage/' . $profilePic);
-                                    }
-                                @endphp
-
-                                <img src="{{ $src }}" alt="{{ $user->name }}">
+                                <img src="{{ $user->profile_picture_url }}" alt="{{ $user->name }}">
                             </div>
                             <div class="actions">
                                 <button class="btn-icon archive-btn" data-id="{{ $user->id }}"
@@ -508,7 +489,7 @@
             });
 
             // Bouton d'archivage
-            document.querySelectorAll('.delete-btn').forEach(button => {
+            document.querySelectorAll('.archive-btn').forEach(button => {
                 button.addEventListener('click', function() {
                     const userId = this.getAttribute('data-id');
                     const archiveUrl = this.getAttribute('data-url');
@@ -541,38 +522,6 @@
             document.querySelectorAll('.btn-close').forEach(button => {
                 button.addEventListener('click', function() {
                     this.parentElement.style.display = 'none';
-                });
-            });
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Bouton d'archivage
-            document.querySelectorAll('.archive-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const userId = this.getAttribute('data-id');
-                    const archiveUrl = this.getAttribute('data-url');
-
-                    if (confirm('Êtes-vous sûr de vouloir archiver cet utilisateur ?')) {
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = archiveUrl;
-
-                        const csrfToken = document.createElement('input');
-                        csrfToken.type = 'hidden';
-                        csrfToken.name = '_token';
-                        csrfToken.value = "{{ csrf_token() }}";
-
-                        const methodField = document.createElement('input');
-                        methodField.type = 'hidden';
-                        methodField.name = '_method';
-                        methodField.value = 'DELETE';
-
-                        form.appendChild(csrfToken);
-                        form.appendChild(methodField);
-                        document.body.appendChild(form);
-                        form.submit();
-                    }
                 });
             });
         });
