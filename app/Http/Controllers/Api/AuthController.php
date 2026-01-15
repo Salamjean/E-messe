@@ -234,6 +234,13 @@ class AuthController extends Controller
             ], 401);
         }
 
+        if ($user->isArchived()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Votre compte a été archivé. Veuillez contacter l\'administration.',
+            ], 403);
+        }
+
         // Supprimer anciens tokens
         $user->tokens()->delete();
 
@@ -272,6 +279,13 @@ class AuthController extends Controller
         $user = User::where('google_id', $validated['googleId'])
             ->orWhere('email', $validated['email'])
             ->first();
+
+        if ($user && $user->isArchived()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Votre compte a été archivé. Veuillez contacter l\'administration.',
+            ], 403);
+        }
 
         if (! $user) {
             $user = User::create([
@@ -317,6 +331,13 @@ class AuthController extends Controller
 
         if (! $user && ! empty($validated['email'])) {
             $user = User::where('email', $validated['email'])->first();
+        }
+
+        if ($user && $user->isArchived()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Votre compte a été archivé. Veuillez contacter l\'administration.',
+            ], 403);
         }
 
         if (! $user) {
@@ -713,6 +734,13 @@ class AuthController extends Controller
                 'status' => 'error',
                 'message' => 'Aucun utilisateur trouvé avec cet e-mail.',
             ], 404);
+        }
+
+        if ($user->isArchived()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Votre compte a été archivé. Veuillez contacter l\'administration.',
+            ], 403);
         }
 
         $otp = rand(100000, 999999);

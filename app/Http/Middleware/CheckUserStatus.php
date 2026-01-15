@@ -17,6 +17,15 @@ class CheckUserStatus
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check() && Auth::user()->isArchived()) {
+            if ($request->expectsJson()) {
+                Auth::user()->tokens()->delete();
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Votre compte a été archivé. Veuillez contacter l\'administration.',
+                ], 403);
+            }
+
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

@@ -77,7 +77,7 @@ Route::get('/test-hostinger', function () {
     }
 });
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'user.status'])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     // Le groupe de route user/profil
     Route::prefix('user')->group(function () {

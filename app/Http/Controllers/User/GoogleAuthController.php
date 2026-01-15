@@ -47,19 +47,29 @@ class GoogleAuthController extends Controller
                     'user_name' => $userName,
                     'email' => $googleUser->getEmail(),
                     'google_id' => $googleUser->getId(),
+                    'profile_picture' => $googleUser->getAvatar(),
                     'contact' => '00000000',
                     'password' => bcrypt(Str::random(16)),
                     'actif' => 1,
                 ]);
                 \Log::info('Google Auth: Utilisateur créé avec succès', ['id' => $user]);
             } else {
-                \Log::info('Google Auth: Utilisateur existant trouvé', ['id' => $user]);
-                // Si l'utilisateur existe mais n'a pas de google_id (ex: inscrit par email avant), on le met à jour
+                \Log::info('Google Auth: Utilisateur existant trouvé', ['id' => $user->id]);
+                
+                // Mettre à jour les informations Google si nécessaire
+                $updates = [];
                 if (empty($user->google_id)) {
-                    $user->update([
-                        'google_id' => $googleUser->getId(),
-                    ]);
-                    \Log::info('Google Auth: google_id mis à jour pour l\'utilisateur');
+                    $updates['google_id'] = $googleUser->getId();
+                }
+                
+                // Si l'utilisateur n'a pas encore d'image de profil, on prend celle de Google
+                if (empty($user->profile_picture)) {
+                    $updates['profile_picture'] = $googleUser->getAvatar();
+                }
+
+                if (!empty($updates)) {
+                    $user->update($updates);
+                    \Log::info('Google Auth: Informations utilisateur mises à jour', $updates);
                 }
 
                 // Mettre à jour le statut actif
