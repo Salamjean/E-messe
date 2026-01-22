@@ -83,6 +83,7 @@ class ParoissienController extends Controller
 
     public function store(Request $request)
     {
+        // dd($request->all());
         $request->validate([
             'nom_prenom' => 'required|string|max:255',
             'telephone' => 'required|string|max:20',
@@ -112,6 +113,9 @@ class ParoissienController extends Controller
             $data['photo'] = $request->file('photo')->store('photos_paroissiens', 'public');
         }
 
+        // Forcer le nom de la paroisse à celle de l'utilisateur connecté
+        $data['nom_paroisse'] = Auth::guard('paroisse')->user()->name;
+
         Paroissien::create($data);
 
         return redirect()->route('paroissien.index')->with('success', 'Fidèle enregistré avec succès.');
@@ -119,16 +123,21 @@ class ParoissienController extends Controller
 
     public function show(Paroissien $paroissien)
     {
+        $this->authorizeParoissien($paroissien);
+
         return view('paroisse.paroissiens.show', compact('paroissien'));
     }
 
     public function edit(Paroissien $paroissien)
     {
+        $this->authorizeParoissien($paroissien);
+
         return view('paroisse.paroissiens.edit', compact('paroissien'));
     }
 
     public function update(Request $request, Paroissien $paroissien)
     {
+        $this->authorizeParoissien($paroissien);
         $request->validate([
             'nom_prenom' => 'required|string|max:255',
             'telephone' => 'required',
@@ -154,6 +163,9 @@ class ParoissienController extends Controller
             $data['photo'] = $request->file('photo')->store('photos_paroissiens', 'public');
         }
 
+        // Assurer que le nom de la paroisse ne change pas
+        $data['nom_paroisse'] = Auth::guard('paroisse')->user()->name;
+
         $paroissien->update($data);
 
         return redirect()->route('paroissien.index')->with('success', 'Fidèle mis à jour avec succès.');
@@ -161,6 +173,7 @@ class ParoissienController extends Controller
 
     public function destroy(Paroissien $paroissien)
     {
+        $this->authorizeParoissien($paroissien);
         if ($paroissien->photo) {
             Storage::disk('public')->delete($paroissien->photo);
         }
@@ -170,11 +183,28 @@ class ParoissienController extends Controller
     }
 
     /**
+     * Vérifie si le fidèle appartient à la paroisse connectée.
+     */
+    private function authorizeParoissien(Paroissien $paroissien)
+    {
+        $paroisse = Auth::guard('paroisse')->user();
+        if ($paroissien->nom_paroisse !== $paroisse->name) {
+            abort(403, 'Action non autorisée.');
+        }
+    }
+
+    /**
      * Méthode privée pour centraliser la logique de filtrage (SQL)
      */
     private function getFilteredQuery(Request $request)
     {
+        $paroisse = Auth::guard('paroisse')->user();
         $query = Paroissien::query()->distinct();
+
+        // Filtre obligatoire : seulement les fidèles de la paroisse connectée
+        if ($paroisse) {
+            $query->where('nom_paroisse', $paroisse->name);
+        }
 
         if ($request->filled('sexe')) {
             $query->where('sexe', $request->sexe);
@@ -189,10 +219,12 @@ class ParoissienController extends Controller
 
     public function exportExcel(Request $request)
     {
+        $paroisse = Auth::guard('paroisse')->user();
         $filters = [
             'sexe' => $request->sexe,
             'situation_matrimoniale' => $request->situation_matrimoniale,
             'search' => $request->search_term,
+            'nom_paroisse' => $paroisse ? $paroisse->name : null,
         ];
 
         return Excel::download(new ParoissiensExport($filters), 'paroissiens_'.date('d-m-Y').'.xlsx');

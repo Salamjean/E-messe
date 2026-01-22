@@ -135,13 +135,18 @@
         }
 
         .auth-logo {
-            height: 45px;
+            height: 100px;
+            width: 100px;
+            margin: auto;
             margin-bottom: 25px;
+            display: block;
+
         }
 
         .auth-header h2 {
             font-size: 28px;
-            font-weight: 700;
+            font-weight: 500;
+            text-align: center;
             color: var(--dark);
             margin-bottom: 8px;
         }
@@ -149,6 +154,7 @@
         .auth-header p {
             color: var(--text-muted);
             font-size: 15px;
+            text-align: center;
         }
 
         .form-group {

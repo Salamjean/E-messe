@@ -60,7 +60,7 @@ class PaiementController extends Controller
                 $phone = '225'.$phone;
             }
 
-            // 4. Préparation payload CinetPay V2 
+            // 4. Préparation payload CinetPay V2
             $paymentData = [
                 'apikey' => env('CINETPAY_API_KEY'),
                 'site_id' => env('CINETPAY_SITE_ID'),
@@ -151,7 +151,10 @@ class PaiementController extends Controller
         // On vérifie le statut réel auprès de l'API CinetPay (Plus sûr que de se fier juste au POST)
         $verification = $this->verifyCinetPayStatus($transactionId, $siteId);
 
-        if ($verification['status'] === 'ACCEPTED') {
+        if (
+            isset($verification['code']) &&
+            $verification['code'] === '00'
+        ) {
             // Paiement validé
             if ($paiement->statut !== 'paye') {
                 $paiement->update([
@@ -159,6 +162,16 @@ class PaiementController extends Controller
                     'date_paiement' => now(),
                     'donnees_transaction' => array_merge($paiement->donnees_transaction ?? [], $verification['details']),
                 ]);
+
+                if ($paiement->messe) {
+                    $paiement->update([
+                        'statut' => 'paye',
+                        'date_paiement' => now(),
+                        'donnees_transaction' => array_merge($paiement->donnees_transaction ?? [], $verification['details']),
+                    ]);
+
+                    $paiement->messe->update(['statut' => 'en attente']);
+                }
 
                 // Mise à jour de la messe
                 if ($paiement->messe) {

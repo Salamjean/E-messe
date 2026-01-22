@@ -70,7 +70,8 @@
                                     <label class="font-weight-bold text-muted small">Date de Naissance <span
                                             class="text-danger">*</span></label>
                                     <input type="date" class="form-control" name="date_naissance"
-                                        value="{{ old('date_naissance', $paroissien->date_naissance ?? '') }}">
+                                        value="{{ old('date_naissance', optional($paroissien->date_naissance)->format('Y-m-d')) }}">
+
                                 </div>
                             </div>
                             <div class="row">
@@ -132,14 +133,26 @@
 
                             <hr class="my-4">
 
-                            <h5 class="font-weight-bold mb-4 text-gold section-title">Vie Paroissiale</h5>
+                            <h5 class="font-weight-bold mb-4 text-gold section-title">Paroisse de Résidence</h5>
                             <div class="form-group mb-4">
-                                <label class="font-weight-bold text-muted small">Paroisse de Résidence <span
-                                        class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="nom_paroisse"
-                                    value="{{ old('nom_paroisse', $paroissien->nom_paroisse ?? '') }}"
-                                    placeholder="Nom de votre paroisse actuelle">
+                                <div class="col-md-5">
+                                    <label class="font-weight-bold text-muted small">
+                                        Paroisse de Résidence <span class="text-danger">*</span>
+                                    </label>
+
+                                    <select name="nom_paroisse" id="nom_paroisse" class="form-select">
+                                        <option value="" disabled>Nom de votre paroisse actuelle</option>
+
+                                        @foreach ($paroisse as $item)
+                                            <option value="{{ $item->name }}"
+                                                {{ old('nom_paroisse') == $item->name ? 'selected' : '' }}>
+                                                {{ $item->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
+
 
                             <!-- Mouvement -->
                             <div class="form-group mb-4 bg-light p-3 rounded">
@@ -176,7 +189,8 @@
                                         <div class="col-md-6 form-group">
                                             <label class="font-weight-bold text-muted small">Date de Baptême</label>
                                             <input type="date" class="form-control" name="date_bapteme"
-                                                value="{{ old('date_bapteme', $paroissien->date_bapteme ?? '') }}">
+                                                value="{{ old('date_bapteme', optional($paroissien->date_bapteme)->format('Y-m-d')) }}">
+
                                         </div>
                                         <div class="col-md-6 form-group">
                                             <label class="font-weight-bold text-muted small">Paroisse de Baptême</label>

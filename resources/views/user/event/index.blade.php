@@ -16,7 +16,7 @@
                 <h2 class="fw-bold text-dark mb-1"><i class="fa-solid fa-calendar-days me-2"></i>Nos Événements</h2>
                 <p class="text-muted mb-0">Découvrez et filtrez nos événements à venir et en cours.</p>
             </div>
-            <div class="btn-group shadow-sm p-1 bg-white rounded-3" role="group">
+            {{-- <div class="btn-group shadow-sm p-1 bg-white rounded-3" role="group">
                 <button type="button" id="card-view-btn" class="btn btn-light active rounded-2 px-3"
                     onclick="toggleView('card')">
                     <i class="fa-solid fa-grip me-1"></i> Cartes
@@ -25,7 +25,7 @@
                     onclick="toggleView('table')">
                     <i class="fa-solid fa-list me-1"></i> Tableau
                 </button>
-            </div>
+            </div> --}}
         </div>
 
         <!-- Filtres -->

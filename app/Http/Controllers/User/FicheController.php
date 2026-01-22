@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\Paroisse;
 use App\Models\Paroissien;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,17 +20,9 @@ class FicheController extends Controller
         // Check if the user already has a fiche
         $paroissien = Paroissien::where('user_id', $user->id)->first();
 
-        // Use an empty model if none exists, or the existing one
-        // if (! $paroissien) {
-        //     $paroissien = new Paroissien;
-        //     // Pre-fill some data from User account if available and not set
-        //     $paroissien->nom_prenom = $user->name;
-        //     $paroissien->telephone = $user->contact;
-        //     $paroissien->email = $user->email; // If Paroissien has email, but schema didn't show it. Schema has nom_prenom, telephone, etc.
-        // }
-        // dd($paroissien); 
+        $paroisse = Paroisse::all();
 
-        return view('user.fiche.create', compact('paroissien'));
+        return view('user.fiche.create', compact('paroissien', 'paroisse'));
     }
 
     /**

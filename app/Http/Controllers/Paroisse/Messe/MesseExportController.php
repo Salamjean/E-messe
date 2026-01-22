@@ -17,10 +17,12 @@ class MesseExportController extends Controller
 
     public function exportExcel(Request $request)
     {
+        $paroisse = Auth::guard('paroisse')->user();
         $filters = [
             'sexe' => $request->sexe,
             'situation_matrimoniale' => $request->situation_matrimoniale,
             'search' => $request->search_term,
+            'nom_paroisse' => $paroisse ? $paroisse->name : null,
         ];
 
         return Excel::download(new ParoissiensExport($filters), 'paroissiens_'.date('d-m-Y').'.xlsx');
@@ -49,7 +51,12 @@ class MesseExportController extends Controller
 
     private function getFilteredQuery(Request $request)
     {
+        $paroisse = Auth::guard('paroisse')->user();
         $query = Paroissien::query();
+
+        if ($paroisse) {
+            $query->where('nom_paroisse', $paroisse->name);
+        }
 
         if ($request->filled('sexe')) {
             $query->where('sexe', $request->sexe);

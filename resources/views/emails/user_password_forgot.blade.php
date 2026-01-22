@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <title>Réinitialisation du mot de passe</title>
 </head>
+
 <body>
     <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-        <img src="{{ asset('assets/assets/img/logoplateau.png') }}" alt="E-Messe Logo" style="width: 120px; margin-bottom: 20px;">
+        <img src="{{ asset('assets/assets/images/logo_principal.svg') }}" alt="E-Messe Logo"
+            style="width: 120px; margin-bottom: 20px;">
 
         <h2>Bonjour {{ $user->name }},</h2>
 
@@ -20,7 +23,7 @@
         <!-- 🔥 Deep link mobile généré correctement -->
         <p>
             <a href="maparoisse://reset-password?email={{ urlencode($user->email) }}&otp={{ $code }}"
-               style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
                 Ouvrir l'application
             </a>
         </p>
@@ -30,4 +33,5 @@
         <p>Cordialement,<br>L’équipe E-Messe</p>
     </div>
 </body>
+
 </html>

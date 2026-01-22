@@ -103,7 +103,7 @@ class ParoisseDashboard extends Controller
             ->get();
 
         // dd($latestOffrandes);
-        $types = Event::distinct()->pluck('type_event');
+        $types = Event::where('paroisse_id', $paroisse->id)->distinct()->pluck('type_event');
 
         return view('paroisse.dashboard', compact(
             'pendingDemandes',

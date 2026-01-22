@@ -41,6 +41,11 @@ class ParoissiensExport implements FromQuery, ShouldAutoSize, WithHeadings, With
             });
         }
 
+        // Filtre Paroisse (Sécurité)
+        if (! empty($this->filters['nom_paroisse'])) {
+            $query->where('nom_paroisse', $this->filters['nom_paroisse']);
+        }
+
         return $query;
     }
 
