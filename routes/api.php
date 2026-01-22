@@ -31,6 +31,9 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::post('/paiement/wave/webhook', [WaveController::class, 'webhook'])->name('wave.webhook');
 Route::get('/paiement/wave/verifier/{id}', [WaveController::class, 'verifier']);
 
+// Notification CinetPay pour les reversements (payouts)
+Route::post('/cinetpay/notify', [\App\Http\Controllers\Paroisse\Paiement\ParoissePaiement::class, 'handleNotification'])->name('cinetpay.notify');
+
 Route::post('/test-firebase', [TestController::class, 'testFirebaseNotification']);
 // ✅ Routes pour redirection après paiement
 Route::get('/paiement/wave/success', [WaveController::class, 'success'])->name('wave.success');

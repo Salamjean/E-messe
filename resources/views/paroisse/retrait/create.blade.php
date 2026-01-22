@@ -54,7 +54,7 @@
         }
 
         .btn-soumettre {
-            background: linear-gradient(135deg, var(--primary) 0%,  #cca45e 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, #cca45e 100%);
             color: white;
             border: none;
             border-radius: 10px;
@@ -147,25 +147,57 @@
                                 </div>
                             </div>
 
-                            <div id="section-banque" class="d-none">
-                                <div class="mb-4">
-                                    <label for="nom_banque" class="form-label">Nom de la banque <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" class="form-control form-control-modern banque-input"
-                                        id="nom_banque" name="nom_banque" placeholder="Ex: Ecobank, NSIA, etc.">
+                            <div id="section-banque" class="d-none animate__animated animate__fadeIn">
+                                <div class="row g-3">
+                                    <div class="col-12 mb-3">
+                                        <label for="nom_banque" class="form-label">Détails Bancaires</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0"
+                                                style="border-radius: 10px 0 0 10px; border: 2px solid #eef2f6;">
+                                                <i class="fas fa-university text-primary"></i>
+                                            </span>
+                                            <input type="text"
+                                                class="form-control form-control-modern banque-input border-start-0"
+                                                id="nom_banque" name="nom_banque"
+                                                placeholder="Nom de la banque (ex: Ecobank, NSIA)"
+                                                style="border-radius: 0 10px 10px 0;">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="numero_compte" class="form-label small">Numéro de compte / RIB <span
+                                                class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0"
+                                                style="border-radius: 10px 0 0 10px; border: 2px solid #eef2f6;">
+                                                <i class="fas fa-credit-card text-primary"></i>
+                                            </span>
+                                            <input type="text"
+                                                class="form-control form-control-modern banque-input border-start-0"
+                                                id="numero_compte" name="numero_compte" placeholder="RIB / IBAN"
+                                                style="border-radius: 0 10px 10px 0;">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="nom_titulaire" class="form-label small">Titulaire du compte <span
+                                                class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0"
+                                                style="border-radius: 10px 0 0 10px; border: 2px solid #eef2f6;">
+                                                <i class="fas fa-user-circle text-primary"></i>
+                                            </span>
+                                            <input type="text"
+                                                class="form-control form-control-modern banque-input border-start-0"
+                                                id="nom_titulaire" name="nom_titulaire" placeholder="Nom complet"
+                                                style="border-radius: 0 10px 10px 0;">
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="mb-4">
-                                    <label for="numero_compte" class="form-label">Numéro de compte / RIB <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" class="form-control form-control-modern banque-input"
-                                        id="numero_compte" name="numero_compte"
-                                        placeholder="Entrez le numéro de compte complet">
-                                </div>
-                                <div class="mb-4">
-                                    <label for="nom_titulaire" class="form-label">Nom du titulaire du compte <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" class="form-control form-control-modern banque-input"
-                                        id="nom_titulaire" name="nom_titulaire" placeholder="Nom et Prénoms du titulaire">
+                                <div class="alert alert-info py-2 px-3 mt-2"
+                                    style="border-radius: 10px; border: none; background: rgba(196, 157, 84, 0.1);">
+                                    <small><i class="fas fa-info-circle me-1 text-primary"></i> Le virement bancaire peut
+                                        prendre jusqu'à 72h ouvrées selon votre établissement.</small>
                                 </div>
                             </div>
 
@@ -254,126 +286,133 @@
         </div>
     </div>
 
-    @include('paroisse.retrait.partials._scripts')
+    @push('js')
+        @include('paroisse.retrait.partials._scripts')
 
-    <script>
-        $(document).ready(function() {
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': $('input[name="_token"]').val()
-                }
-            });
-
-            const soldeDisponible = {{ $soldeDisponible ?? 0 }};
-            const routeVirement = "{{ route('paroisse.retrait.request') }}";
-            const routeMobileMoney = "{{ route('reversement.store') }}";
-            const mobileMethods = ['wave', 'orange_money', 'mtn_money', 'moov_money'];
-            const methodInfo = {
-                'wave': 'Retrait Wave : Vérifiez que votre compte est actif.',
-                'orange_money': 'Retrait Orange Money : Assurez-vous d\'avoir activé votre compte.',
-                'mtn_money': 'Retrait MTN Money : Compte vérifié requis.',
-                'moov_money': 'Retrait Moov Money : Compte vérifié requis.',
-                'virement_bancaire': 'Virement : Le nom du titulaire doit correspondre à votre compte paroissial.'
-            };
-
-            $('#methode').on('change', function() {
-                const selectedMethod = $(this).val();
-                $('#section-mobile-money, #section-banque, #additional-info').addClass('d-none');
-                $('.mobile-input, .banque-input').prop('required', false);
-
-                if (mobileMethods.includes(selectedMethod)) {
-                    $('#section-mobile-money').removeClass('d-none');
-                    $('.mobile-input').prop('required', true);
-                } else if (selectedMethod === 'virement_bancaire') {
-                    $('#section-banque').removeClass('d-none');
-                    $('.banque-input').prop('required', true);
-                }
-
-                if (selectedMethod && methodInfo[selectedMethod]) {
-                    $('#info-text').text(methodInfo[selectedMethod]);
-                    $('#additional-info').removeClass('d-none');
-                }
-            });
-
-            $('#retraitForm').on('submit', function(e) {
-                e.preventDefault();
-                const $form = $(this);
-                const $btn = $('#btn-submit');
-                const $spinner = $btn.find('.spinner-loading');
-                const $btnText = $btn.find('.btn-text');
-                const montant = parseFloat($('#montant').val());
-                const methode = $('#methode').val();
-
-                let targetUrl = mobileMethods.includes(methode) ? routeMobileMoney : (methode ===
-                    'virement_bancaire' ? routeVirement : '');
-                if (!targetUrl) return;
-
-                if (montant < 1000 || montant > soldeDisponible) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Montant incorrect',
-                        text: 'Intervalle: 1 000 - ' + soldeDisponible.toLocaleString() + ' FCFA.'
-                    });
-                    return;
-                }
-
-                Swal.fire({
-                    title: 'Confirmer la demande',
-                    text: "Souhaitez-vous envoyer cette demande de retrait ?",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#c49d54',
-                    confirmButtonText: 'Oui, envoyer'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $btn.prop('disabled', true);
-                        $btnText.addClass('d-none');
-                        $spinner.removeClass('d-none');
-
-                        if (methode === 'virement_bancaire') {
-                            $('#section-mobile-money :input').prop('disabled', true);
-                        } else {
-                            $('#section-banque :input').prop('disabled', true);
-                        }
-
-                        const formData = $form.serialize();
-                        $('#section-mobile-money :input, #section-banque :input').prop('disabled',
-                            false);
-
-                        $.ajax({
-                            url: targetUrl,
-                            type: 'POST',
-                            data: formData,
-                            dataType: 'json',
-                            success: function(response) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Succès !',
-                                    text: response.message
-                                }).then(() => {
-                                    window.location.href =
-                                        "{{ route('paroisse.retraits') }}";
-                                });
-                            },
-                            error: function(xhr) {
-                                let msg = "Erreur lors du traitement.";
-                                if (xhr.responseJSON && xhr.responseJSON.message) msg =
-                                    xhr.responseJSON.message;
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Erreur',
-                                    text: msg
-                                });
-                            },
-                            complete: function() {
-                                $btn.prop('disabled', false);
-                                $spinner.addClass('d-none');
-                                $btnText.removeClass('d-none');
-                            }
-                        });
+        <script>
+            $(document).ready(function() {
+                $.ajaxSetup({
+                    headers: {
+                        'X-CSRF-TOKEN': $('input[name="_token"]').val()
                     }
                 });
+
+                const soldeDisponible = {{ $soldeDisponible ?? 0 }};
+                const routeVirement = "{{ route('paroisse.retrait.request') }}";
+                const routeMobileMoney = "{{ route('reversement.store') }}";
+                const mobileMethods = ['wave', 'orange_money', 'mtn_money', 'moov_money'];
+                const methodInfo = {
+                    'wave': 'Retrait Wave : Vérifiez que votre compte est actif.',
+                    'orange_money': 'Retrait Orange Money : Assurez-vous d\'avoir activé votre compte.',
+                    'mtn_money': 'Retrait MTN Money : Compte vérifié requis.',
+                    'moov_money': 'Retrait Moov Money : Compte vérifié requis.',
+                    'virement_bancaire': 'Virement : Le nom du titulaire doit correspondre à votre compte paroissial.'
+                };
+
+                $('#methode').on('change', function() {
+                    const selectedMethod = $(this).val();
+                    $('#section-mobile-money, #section-banque, #additional-info').addClass('d-none');
+                    $('.mobile-input, .banque-input').prop('required', false);
+
+                    if (mobileMethods.includes(selectedMethod)) {
+                        $('#section-mobile-money').removeClass('d-none');
+                        $('.mobile-input').prop('required', true);
+                    } else if (selectedMethod === 'virement_bancaire') {
+                        $('#section-banque').removeClass('d-none');
+                        $('.banque-input').prop('required', true);
+                    }
+
+                    if (selectedMethod && methodInfo[selectedMethod]) {
+                        $('#info-text').text(methodInfo[selectedMethod]);
+                        $('#additional-info').removeClass('d-none');
+                    }
+                });
+
+                $('#retraitForm').on('submit', function(e) {
+                    e.preventDefault();
+                    const $form = $(this);
+                    const $btn = $('#btn-submit');
+                    const $spinner = $btn.find('.spinner-loading');
+                    const $btnText = $btn.find('.btn-text');
+                    const montant = parseFloat($('#montant').val());
+                    const methode = $('#methode').val();
+
+                    let targetUrl = mobileMethods.includes(methode) ? routeMobileMoney : (methode ===
+                        'virement_bancaire' ? routeVirement : '');
+                    if (!targetUrl) return;
+
+                    if (montant < 1000 || montant > soldeDisponible) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Montant incorrect',
+                            text: 'Intervalle: 1 000 - ' + soldeDisponible.toLocaleString() + ' FCFA.'
+                        });
+                        return;
+                    }
+
+                    Swal.fire({
+                        title: 'Confirmer la demande',
+                        text: "Souhaitez-vous envoyer cette demande de retrait ?",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#c49d54',
+                        confirmButtonText: 'Oui, envoyer'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $btn.prop('disabled', true);
+                            $btnText.addClass('d-none');
+                            $spinner.removeClass('d-none');
+
+                            if (methode === 'virement_bancaire') {
+                                $('#section-mobile-money :input').prop('disabled', true);
+                            } else {
+                                $('#section-banque :input').prop('disabled', true);
+                            }
+
+                            const formData = $form.serialize();
+                            $('#section-mobile-money :input, #section-banque :input').prop('disabled',
+                                false);
+
+                            $.ajax({
+                                url: targetUrl,
+                                type: 'POST',
+                                data: formData,
+                                dataType: 'json',
+                                success: function(response) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Succès !',
+                                        text: response.message
+                                    }).then(() => {
+                                        if (mobileMethods.includes(methode)) {
+                                            window.location.href =
+                                                "{{ route('paroisse.history') }}";
+                                        } else {
+                                            window.location.href =
+                                                "{{ route('paroisse.retraits') }}";
+                                        }
+                                    });
+                                },
+                                error: function(xhr) {
+                                    let msg = "Erreur lors du traitement.";
+                                    if (xhr.responseJSON && xhr.responseJSON.message) msg =
+                                        xhr.responseJSON.message;
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Erreur',
+                                        text: msg
+                                    });
+                                },
+                                complete: function() {
+                                    $btn.prop('disabled', false);
+                                    $spinner.addClass('d-none');
+                                    $btnText.removeClass('d-none');
+                                }
+                            });
+                        }
+                    });
+                });
             });
-        });
-    </script>
+        </script>
+    @endpush
 @endsection

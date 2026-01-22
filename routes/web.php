@@ -14,6 +14,7 @@ use App\Http\Controllers\Paroisse\Paiement\ParoissePaiement;
 use App\Http\Controllers\Paroisse\ParoisseController;
 use App\Http\Controllers\Paroisse\ParoisseDashboard;
 use App\Http\Controllers\Paroisse\Paroissien\ParoissienController;
+use App\Http\Controllers\Paroisse\ReversementController;
 use App\Http\Controllers\Redirectionpaiement\PaymentRedirectController;
 use App\Http\Controllers\Redirectionpaiement\RedirectController;
 use App\Http\Controllers\User\AuthenticateUser;
@@ -185,6 +186,9 @@ Route::middleware('paroisse')->prefix('parish')->group(function () {
     Route::get('/historye', [ParoissePaiement::class, 'history'])->name('paroisse.history');
     Route::delete('/retrait/{id}/annuler', [ParoissePaiement::class, 'annuler'])->name('paroisse.retrait.annuler');
 
+
+    //route pour Mobile Money
+    Route::post('/paroisse/reversement/store', [ReversementController::class, 'store'])->name('old_reversement.store');
     // Les routes pour modifier des informations de la paroisse
     Route::get('/profile', [AuthenticateParoisse::class, 'editProfile'])->name('paroisse.profile');
     Route::put('/profile/update', [AuthenticateParoisse::class, 'updateProfile'])->name('paroisse.profile.update');
