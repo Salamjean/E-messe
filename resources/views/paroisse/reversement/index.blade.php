@@ -96,21 +96,34 @@
         <div class="row justify-content-center mb-4">
             <div class="col-md-4 col-lg-4 col-xl-4">
                 <div class="solde-card">
-                    <div class="solde-icon">
-                        <i class="fas fa-wallet"></i>
-                    </div>
-
+                    <div class="solde-icon"><i class="fas fa-wallet"></i></div>
                     <h3
                         style="font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem; opacity: 0.95; text-transform: uppercase; letter-spacing: 1px;">
-                        Solde disponible
-                    </h3>
-
+                        Solde Paroisse</h3>
                     <span class="montant text-center"
-                        style="font-size: 2.5rem; font-weight: 800; margin: 0; line-height: 1.2; color: #7ebac4;">
+                        style="font-size: 2rem; font-weight: 800; margin: 0; line-height: 1.2; color: #ffffff;">
                         {{ number_format($soldeDisponible ?? 0, 0, ',', ' ') }} FCFA
                     </span>
+                    <small class="text-white-50">Disponible pour retrait</small>
                 </div>
             </div>
+
+            @if (isset($soldeCinetPay))
+                <div class="col-md-4 col-lg-4 col-xl-4">
+                    <div class="solde-card" style="background-color: #181824;">
+                        <div class="solde-icon" style="background: rgba(126, 186, 196, 0.2);"><i
+                                class="fas fa-university text-info"></i></div>
+                        <h3
+                            style="font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem; opacity: 0.95; text-transform: uppercase; letter-spacing: 1px;">
+                            Compte Transfert API</h3>
+                        <span class="montant text-center"
+                            style="font-size: 2rem; font-weight: 800; margin: 0; line-height: 1.2; color: #7ebac4;">
+                            {{ number_format($soldeCinetPay['amount'] ?? 0, 0, ',', ' ') }} FCFA
+                        </span>
+                        <small class="text-info">Solde réel CinetPay</small>
+                    </div>
+                </div>
+            @endif
         </div>
 
         <!-- Tableau des transactions -->

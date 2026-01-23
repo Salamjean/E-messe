@@ -109,8 +109,8 @@
                                 <label for="montant" class="form-label">Montant à retirer (FCFA) <span
                                         class="text-danger">*</span></label>
                                 <input type="number" class="form-control form-control-modern" id="montant" name="montant"
-                                    required min="1000" max="{{ $soldeDisponible ?? 0 }}" placeholder="Ex: 5000">
-                                <div class="form-text text-muted mt-2">Le montant minimum de retrait est de 1 000 FCFA</div>
+                                    required min="100" max="{{ $soldeDisponible ?? 0 }}" placeholder="Ex: 5000">
+                                <div class="form-text text-muted mt-2">Le montant minimum de retrait est de 100 FCFA</div>
                             </div>
 
                             <div class="mb-4">

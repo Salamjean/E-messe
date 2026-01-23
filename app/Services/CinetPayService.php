@@ -9,7 +9,7 @@ class CinetPayService
 {
     protected $baseUrl = 'https://api-checkout.cinetpay.com/v2/payment';
 
-    protected $transferBaseUrl = 'https://client.cinetpay.com/v1';
+    protected $transferBaseUrl = 'https://client.cinetpay.com/v1/auth/login'; // https://client.cinetpay.com/v1
 
     protected $apiKey;
 
@@ -29,14 +29,24 @@ class CinetPayService
      */
     protected function authenticateTransfer()
     {
-        Log::info('Authentification CinetPay Transfer en cours...');
         try {
-            $response = Http::withoutVerifying()->asForm()->post($this->transferBaseUrl.'/auth/login', [
-                'apikey' => $this->apiKey,
-                'password' => $this->password,
-            ]);
+            // Identifier l'IP publique du serveur pour aider à la whitelist CinetPay
+            $ip = Http::get('https://api.ipify.org')->body();
+            Log::info("Tentative d'authentification CinetPay Transfer. IP du serveur : $ip");
+
+            $response = Http::withoutVerifying()
+                ->asForm()
+                ->post($this->transferBaseUrl.'/auth/login', [
+                    'apikey' => $this->apiKey,
+                    'password' => $this->password,
+                ]);
 
             $result = $response->json();
+
+            Log::info('Réponse brute reçue de CinetPay Transfer:', [
+                'status' => $response->status(),
+                'result' => $result,
+            ]);
 
             if ($response->successful() && isset($result['data']['token'])) {
                 Log::info('Authentification CinetPay Transfer réussie.');
@@ -44,7 +54,10 @@ class CinetPayService
                 return $result['data']['token'];
             }
 
-            Log::error('Erreur lors de l\'authentification CinetPay Transfer', ['response' => $result]);
+            Log::error('Erreur lors de l\'authentification CinetPay Transfer', [
+                'status' => $response->status(),
+                'response' => $result,
+            ]);
 
             return null;
         } catch (\Exception $e) {

@@ -93,7 +93,10 @@ class ParoissePaiement extends Controller
         $paroisse = Auth::guard('paroisse')->user();
         $soldeDisponible = $this->calculerSolde($paroisse->id);
 
-        return view('paroisse.reversement.index', compact('soldeDisponible'));
+        // Optionnel : Récupérer le solde réel du compte CinetPay pour information
+        $soldeCinetPay = $this->cinetpay->getTransferBalance();
+
+        return view('paroisse.reversement.index', compact('soldeDisponible', 'soldeCinetPay'));
     }
 
     public function getData(Request $request)
