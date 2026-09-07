@@ -45,6 +45,7 @@ return [
         'api_key' => env('WAVE_API_KEY'),
         'business_id' => env('WAVE_BUSINESS_ID'),
         'env' => env('WAVE_ENVIRONMENT', 'sandbox'),
+        'redirect_host' => env('WAVE_REDIRECT_HOST', 'sancta-missa.com'),
     ],
     'fcm' => [
     'key' => env('FIREBASE_SERVER_KEY'),

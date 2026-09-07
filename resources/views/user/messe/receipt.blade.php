@@ -326,9 +326,9 @@
                         $iconClass = 'bank';
                         $logoPath = asset('assets/assets/image_recu/stripe.png');
                     } else {
-                        // CinetPay / Autre
-                        $iconClass = 'bank';
-                        $logoPath = 'https://admin.cinetpay.com/img/logo.png';
+                        // Par défaut Wave
+                        $iconClass = 'wave';
+                        $logoPath = asset('assets/assets/image_recu/wave.png');
                     }
                 @endphp
                 <div class="payment-icon {{ $iconClass }}">
@@ -386,7 +386,7 @@
                 <div class="reference-row">
                     <span class="reference-label">Opérateur</span>
                     <span
-                        class="reference-value">{{ strtoupper($messe->paiements->first()->operateur ?? 'CinetPay') }}</span>
+                        class="reference-value">{{ strtoupper($messe->paiements->first()->operateur ?? 'WAVE') }}</span>
                 </div>
             </div>
 

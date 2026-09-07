@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion Paroisse - E-Messe</title>
+    <title>Vérification OTP - Paroisse E-Messe</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -40,7 +40,7 @@
             background-image:
                 radial-gradient(at 0% 0%, rgba(204, 164, 94, 0.15) 0px, transparent 50%),
                 radial-gradient(at 100% 100%, rgba(94, 167, 181, 0.15) 0px, transparent 50%);
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         .auth-card {
@@ -70,7 +70,7 @@
 
         .auth-left {
             flex: 1;
-            background: linear-gradient(#c2a367, #c2a367), url('{{ asset('assets/assets/images/bggg.jpg') }}');
+            background: linear-gradient(rgba(194, 163, 103, 0.92), rgba(179, 141, 69, 0.95)), url('{{ asset('assets/assets/images/bggg.jpg') }}');
             background-size: cover;
             background-position: center;
             padding: 50px;
@@ -85,40 +85,36 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(135deg, rgba(204, 164, 94, 0.4) 0%, transparent 100%);
+            background: linear-gradient(135deg, rgba(204, 164, 94, 0.3) 0%, transparent 100%);
         }
 
         .left-content {
             position: relative;
             z-index: 1;
+            text-align: center;
+        }
+
+        .verification-icon {
+            font-size: 75px;
+            margin-bottom: 25px;
+            color: #ffffff;
+            filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.2));
         }
 
         .left-content h1 {
-            font-size: 38px;
+            font-size: 32px;
             font-weight: 700;
             line-height: 1.2;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            color: #ffffff;
         }
 
-        .feature-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
+        .left-content p {
             font-size: 16px;
-            opacity: 0.9;
-        }
-
-        .feature-item i {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            color: var(--primary);
+            opacity: 0.95;
+            max-width: 320px;
+            margin: 0 auto;
+            line-height: 1.5;
         }
 
         .auth-right {
@@ -128,33 +124,55 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            position: relative;
         }
 
-        .auth-header {
-            margin-bottom: 35px;
+        .back-home {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            width: 45px;
+            height: 45px;
+            background: #ffffff;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark);
+            text-decoration: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06);
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .back-home:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
         }
 
         .auth-logo {
-            height: 100px;
-            width: 100px;
-            margin: auto;
-            margin-bottom: 25px;
+            height: 85px;
+            width: 85px;
+            margin: 0 auto 20px auto;
             display: block;
+        }
 
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
         }
 
         .auth-header h2 {
-            font-size: 28px;
-            font-weight: 500;
-            text-align: center;
+            font-size: 26px;
+            font-weight: 700;
             color: var(--dark);
             margin-bottom: 8px;
         }
 
         .auth-header p {
             color: var(--text-muted);
-            font-size: 15px;
-            text-align: center;
+            font-size: 14.5px;
         }
 
         .form-group {
@@ -167,6 +185,7 @@
             font-weight: 600;
             color: var(--dark);
             margin-bottom: 8px;
+            text-align: center;
         }
 
         .input-group-modern {
@@ -187,27 +206,26 @@
             padding: 14px 16px 14px 48px;
             border: 2px solid #f1f1f1;
             border-radius: 14px;
-            font-size: 15px;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 6px;
+            text-align: center;
             transition: var(--transition);
             background: #fbfbfb;
+        }
+
+        .form-control-modern::placeholder {
+            letter-spacing: 6px;
+            font-weight: 400;
+            font-size: 18px;
+            opacity: 0.5;
         }
 
         .form-control-modern:focus {
             border-color: var(--primary);
             background: white;
             outline: none;
-            box-shadow: 0 0 0 4px rgba(204, 164, 94, 0.1);
-        }
-
-
-
-        .password-toggle {
-            position: absolute;
-            right: 16px;
-            left: auto !important;
-            cursor: pointer;
-            color: var(--text-muted);
-            z-index: 10;
+            box-shadow: 0 0 0 4px rgba(204, 164, 94, 0.15);
         }
 
         .btn-auth {
@@ -221,7 +239,7 @@
             font-weight: 700;
             cursor: pointer;
             transition: var(--transition);
-            margin-top: 10px;
+            margin-bottom: 25px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -231,21 +249,11 @@
         .btn-auth:hover {
             background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(204, 164, 94, 0.2);
-        }
-
-        .forgot-password {
-            display: block;
-            text-align: right;
-            margin-top: 10px;
-            color: var(--primary);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
+            box-shadow: 0 10px 20px rgba(204, 164, 94, 0.25);
         }
 
         .alert-modern {
-            padding: 16px;
+            padding: 14px 18px;
             border-radius: 14px;
             margin-bottom: 25px;
             font-size: 14px;
@@ -266,6 +274,33 @@
             border-left: 4px solid #e74c3c;
         }
 
+        .error-hint {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .resend-box {
+            text-align: center;
+            font-size: 14.5px;
+            color: var(--text-muted);
+        }
+
+        .resend-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+            transition: var(--transition);
+        }
+
+        .resend-link:hover {
+            text-decoration: underline;
+        }
+
         @media (max-width: 850px) {
             .auth-left {
                 display: none;
@@ -284,112 +319,74 @@
 
 <body>
     <div class="auth-card">
+        <a href="{{ route('paroisse.forgot-password.form') }}" class="back-home" title="Retour">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+
         <div class="auth-left">
             <div class="left-content">
-                <h1>Espace Paroisse</h1>
-                <div class="feature-item">
-                    <i class="fas fa-church"></i>
-                    <span>Gestion des paroissiens simplifiée</span>
+                <div class="verification-icon">
+                    <i class="fas fa-shield-alt"></i>
                 </div>
-                <div class="feature-item">
-                    <i class="fas fa-hand-holding-heart"></i>
-                    <span>Suivi des dons et collectes</span>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span>Organisation des messes et événements</span>
-                </div>
+                <h1>Vérification Paroisse</h1>
+                <p>Un code de sécurité à 6 chiffres a été envoyé à l'adresse e-mail de votre paroisse pour autoriser la réinitialisation.</p>
             </div>
         </div>
 
         <div class="auth-right">
             <div class="auth-header">
                 <img src="{{ asset('assets/assets/images/logo_principal.svg') }}" class="auth-logo" alt="Logo">
-                <h2>Connexion</h2>
-                <p>Bienvenue dans votre interface de gestion paroissiale.</p>
+                <h2>Vérification OTP</h2>
+                <p>Saisissez le code à 6 chiffres reçu par e-mail.</p>
             </div>
 
-            @if (Session::get('success'))
+            @if (session('success'))
                 <div class="alert-modern alert-success">
                     <i class="fas fa-check-circle"></i>
-                    <span>{{ Session::get('success') }}</span>
+                    <span>{{ session('success') }}</span>
                 </div>
             @endif
 
-            @if (Session::get('error'))
+            @if (session('error'))
                 <div class="alert-modern alert-error">
                     <i class="fas fa-exclamation-circle"></i>
-                    <span>{{ Session::get('error') }}</span>
+                    <span>{{ session('error') }}</span>
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('paroisse.handleLogin') }}">
+            <form method="POST" action="{{ route('paroisse.verify-otp.check') }}">
                 @csrf
-                <div class="form-group">
-                    <label class="form-label">Adresse Email</label>
-                    <div class="input-group-modern">
-                        <i class="fas fa-envelope"></i>
-                        <input type="email" name="email" class="form-control-modern" value="{{ old('email') }}"
-                            placeholder="paroisse@email.com" required>
-                    </div>
-                    @error('email')
-                        <div style="color: #e74c3c; font-size: 12px; margin-top: 5px;">{{ $message }}</div>
-                    @enderror
-                </div>
+                @php
+                    $targetEmail = $email ?? session('paroisse_email') ?? session('email') ?? old('email');
+                @endphp
+                <input type="hidden" name="email" value="{{ $targetEmail }}">
 
                 <div class="form-group">
-                    <label class="form-label">Mot de passe</label>
+                    <label class="form-label">Code de vérification (6 chiffres)</label>
                     <div class="input-group-modern">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" name="password" id="password" class="form-control-modern"
-                            placeholder="••••••••" required>
-                        <i class="fas fa-eye password-toggle" id="togglePassword"></i>
+                        <i class="fas fa-key" style="letter-spacing: normal; font-size: 18px;"></i>
+                        <input type="text" name="otp" class="form-control-modern" maxlength="6"
+                            pattern="[0-9]{6}" placeholder="••••••" required autofocus autocomplete="one-time-code">
                     </div>
-                    <a href="{{ route('paroisse.forgot-password.form') }}" class="forgot-password">Mot de passe oublié ?</a>
-                    @error('password')
-                        <div style="color: #e74c3c; font-size: 12px; margin-top: 5px;">{{ $message }}</div>
+                    @error('otp')
+                        <div class="error-hint">
+                            <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                        </div>
                     @enderror
                 </div>
 
                 <button type="submit" class="btn-auth">
-                    <i class="fas fa-sign-in-alt"></i>
-                    <span>Se connecter</span>
+                    <i class="fas fa-check-circle"></i>
+                    <span>Vérifier le code</span>
                 </button>
             </form>
+
+            <div class="resend-box">
+                Vous n'avez pas reçu de code ?<br>
+                <a href="{{ route('paroisse.forgot-password.form') }}" class="resend-link">Renvoyer un nouveau code</a>
+            </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const toggleBtn = document.querySelector('#togglePassword');
-            const passwordInput = document.querySelector('#password');
-
-            toggleBtn.addEventListener('click', function() {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-                this.classList.toggle('fa-eye-slash');
-            });
-
-            @if (Session::has('success'))
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Succès',
-                    text: '{{ Session::get('success') }}',
-                    confirmButtonColor: '#cca45e'
-                });
-            @endif
-
-            @if (Session::has('error'))
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erreur',
-                    text: '{{ Session::get('error') }}',
-                    confirmButtonColor: '#cca45e'
-                });
-            @endif
-        });
-    </script>
 </body>
 
 </html>

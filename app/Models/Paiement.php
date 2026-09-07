@@ -62,4 +62,12 @@ class Paiement extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Accesseur pour compatibilité avec le terme 'operateur'
+     */
+    public function getOperateurAttribute()
+    {
+        return $this->methode ?? 'wave';
+    }
 }

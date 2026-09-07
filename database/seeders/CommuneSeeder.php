@@ -6,7 +6,8 @@ use Illuminate\Support\Facades\DB;
 
 class CommuneSeeder extends Seeder {
     public function run(): void {
-        DB::table('communes')->insert([
+        if (DB::table('communes')->count() === 0) {
+            DB::table('communes')->insert([
             // Abidjan (ville_id = 1)
             ['ville_id' => 1, 'nom_commune' => 'Cocody'],
             ['ville_id' => 1, 'nom_commune' => 'Plateau'],
@@ -40,6 +41,7 @@ class CommuneSeeder extends Seeder {
             // Korhogo (ville_id = 6)
             ['ville_id' => 6, 'nom_commune' => 'Haoussabougou'],
             ['ville_id' => 6, 'nom_commune' => 'Soba'],
+            ['ville_id' => 6, 'nom_commune' => 'Sinistré'],
 
             // Man (ville_id = 7)
             ['ville_id' => 7, 'nom_commune' => 'Zagne'],
@@ -97,5 +99,6 @@ class CommuneSeeder extends Seeder {
             ['ville_id' => 20, 'nom_commune' => 'Guessiguié'],
             ['ville_id' => 20, 'nom_commune' => 'Grand-Morié'],
         ]);
+        }
     }
 }

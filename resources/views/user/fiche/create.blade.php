@@ -70,7 +70,7 @@
                                     <label class="font-weight-bold text-muted small">Date de Naissance <span
                                             class="text-danger">*</span></label>
                                     <input type="date" class="form-control" name="date_naissance"
-                                        value="{{ old('date_naissance', optional($paroissien->date_naissance)->format('Y-m-d')) }}">
+                                        value="{{ old('date_naissance', $paroissien?->date_naissance?->format('Y-m-d')) }}">
 
                                 </div>
                             </div>
@@ -189,7 +189,7 @@
                                         <div class="col-md-6 form-group">
                                             <label class="font-weight-bold text-muted small">Date de Baptême</label>
                                             <input type="date" class="form-control" name="date_bapteme"
-                                                value="{{ old('date_bapteme', optional($paroissien->date_bapteme)->format('Y-m-d')) }}">
+                                                value="{{ old('date_bapteme', $paroissien?->date_bapteme?->format('Y-m-d')) }}">
 
                                         </div>
                                         <div class="col-md-6 form-group">

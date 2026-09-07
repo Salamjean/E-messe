@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Paroisse\Paiement;
 use App\Http\Controllers\Controller;
 use App\Models\ParoisseRetrait;
 use App\Models\Reversement;
-use App\Services\CinetPayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -14,12 +13,6 @@ use Yajra\DataTables\Facades\DataTables;
 
 class ParoissePaiement extends Controller
 {
-    protected $cinetpay;
-
-    public function __construct(CinetPayService $cinetpay)
-    {
-        $this->cinetpay = $cinetpay;
-    }
 
     public function history()
     {
@@ -93,10 +86,7 @@ class ParoissePaiement extends Controller
         $paroisse = Auth::guard('paroisse')->user();
         $soldeDisponible = $this->calculerSolde($paroisse->id);
 
-        // Optionnel : Récupérer le solde réel du compte CinetPay pour information
-        $soldeCinetPay = $this->cinetpay->getTransferBalance();
-
-        return view('paroisse.reversement.index', compact('soldeDisponible', 'soldeCinetPay'));
+        return view('paroisse.reversement.index', compact('soldeDisponible'));
     }
 
     public function getData(Request $request)
@@ -218,57 +208,28 @@ class ParoissePaiement extends Controller
         Log::info('Enregistrement du reversement en base de données.', ['id' => $reversement->id]);
 
         try {
-            // 4. Appel au service CinetPay
-            Log::info('Appel à l\'API CinetPay (sendMoney)...');
-            $result = $this->cinetpay->sendMoney(
-                $request->prefix,
-                $request->telephone,
-                $request->montant,
-                $reference,
-                $paroisse->name
-            );
+            $reversement->update([
+                'statut' => 'pending',
+            ]);
 
-            Log::info('Réponse traitée de CinetPay Service:', ['result' => $result]);
-            $reversement->update(['donnees_api' => $result]);
+            Log::info('Création de la fiche de retrait correspondante (ParoisseRetrait).');
+            $retrait = new ParoisseRetrait;
+            $retrait->paroisse_id = $paroisse->id;
+            $retrait->montant = $request->montant;
+            $retrait->methode = $request->methode ?? 'wave';
+            $retrait->numero_compte = '(+'.$request->prefix.') '.$request->telephone;
+            $retrait->nom_titulaire = $paroisse->name.' (Mobile Money Wave)';
+            $retrait->reference = $reference;
+            $retrait->statut = 'en_attente';
+            $retrait->traite_le = now();
+            $retrait->save();
 
-            // 5. Gestion Réussite / Échec
-            if (isset($result['code']) && ($result['code'] == '0' || $result['code'] == '201' || $result['code'] == '00')) {
-                Log::info('Le transfert CinetPay a été accepté par l\'API.', ['data' => $result['data'] ?? null]);
+            Log::info('Demande de reversement enregistrée avec succès.', ['retrait_id' => $retrait->id]);
 
-                // SUCCÈS - L'argent est envoyé ou en cours chez CinetPay
-                $reversement->update([
-                    'statut' => 'success',
-                    'cinetpay_transfer_id' => $result['data']['transfer_id'] ?? null,
-                ]);
-
-                Log::info('Création de la fiche de retrait correspondante (ParoisseRetrait).');
-                $retrait = new ParoisseRetrait;
-                $retrait->paroisse_id = $paroisse->id;
-                $retrait->montant = $request->montant;
-                $retrait->methode = $request->methode;
-                $retrait->numero_compte = '(+'.$request->prefix.') '.$request->telephone;
-                $retrait->nom_titulaire = $paroisse->name.' (Mobile Money)';
-                $retrait->reference = $reference;
-                $retrait->statut = 'initié'; // Statut initié pour mobile money
-                $retrait->traite_le = now();
-                $retrait->save();
-
-                Log::info('Processus de reversement terminé avec succès.', ['retrait_id' => $retrait->id]);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Le retrait via '.ucfirst($request->methode).' a été initié avec succès.',
-                ]);
-            } else {
-                // ÉCHEC
-                Log::error('Le transfert CinetPay a été rejeté par l\'API.', ['result' => $result]);
-                $reversement->update(['statut' => 'failed']);
-                $errorMessage = $result['message'] ?? $result['msg'] ?? 'Erreur inconnue';
-
-                return response()->json([
-                    'message' => "Le transfert a échoué : $errorMessage",
-                ], 400);
-            }
+            return response()->json([
+                'success' => true,
+                'message' => 'Votre demande de retrait via '.ucfirst($request->methode ?? 'Wave').' a été enregistrée avec succès. Elle sera traitée par l\'administration.',
+            ]);
 
         } catch (\Exception $e) {
             Log::critical('Exception fatale lors du reversement: '.$e->getMessage(), [

@@ -13,11 +13,12 @@ class AdminSeeder extends Seeder
      */
     public function run(): void
     {
-       Admin::create([
-            'name' => 'KKS-technologies',
-            'email' => 'admin@gmail.com',
-            'password' => Hash::make('azertyui'),
-        ]);
-       
+        Admin::firstOrCreate(
+            ['email' => 'admin@gmail.com'],
+            [
+                'name' => 'KKS-technologies',
+                'password' => Hash::make('azertyui'),
+            ]
+        );
     }
 }

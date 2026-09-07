@@ -302,7 +302,7 @@
             <div class="reference-row">
                 <span class="reference-label">Opérateur</span>
                 <span
-                    class="reference-value">{{ strtoupper($messe->paiements->first()->operateur ?? 'CinetPay') }}</span>
+                    class="reference-value">{{ strtoupper($messe->paiements->first()->operateur ?? 'WAVE') }}</span>
             </div>
         </div>
 

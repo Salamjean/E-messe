@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Paroisse;
 use App\Http\Controllers\Controller;
 use App\Models\Paroisse;
 use App\Models\ResetCodePasswordParoisse;
+use App\Notifications\ForgotPasswordParoisseNotification;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -194,5 +197,162 @@ class AuthenticateParoisse extends Controller
 
             return back()->withErrors(['error' => 'Une erreur est survenue lors de la mise à jour. Veuillez réessayer.'])->withInput();
         }
+    }
+
+    /**
+     * Affiche le formulaire de demande de réinitialisation de mot de passe (Paroisse)
+     */
+    public function showForgotPasswordForm()
+    {
+        return view('paroisse.auth.forgot_password');
+    }
+
+    /**
+     * Traite la demande de réinitialisation et envoie le code OTP
+     */
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:paroisses,email',
+        ], [
+            'email.required' => 'L\'adresse e-mail est obligatoire.',
+            'email.email' => 'L\'adresse e-mail n\'est pas valide.',
+            'email.exists' => 'Aucune paroisse trouvée avec cette adresse e-mail.',
+        ]);
+
+        $paroisse = Paroisse::where('email', $request->email)->first();
+
+        // Générer un code OTP à 6 chiffres
+        $otp = rand(100000, 999999);
+        $token = Hash::make($otp);
+
+        // Stocker le token dans password_reset_tokens
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $paroisse->email],
+            [
+                'token' => $token,
+                'created_at' => Carbon::now(),
+            ]
+        );
+
+        // Envoyer l'email avec le code OTP
+        try {
+            $paroisse->notify(new ForgotPasswordParoisseNotification($otp, $paroisse));
+        } catch (Exception $e) {
+            Log::error('Erreur envoi email OTP paroisse : ' . $e->getMessage());
+
+            return back()->withErrors(['email' => 'Impossible d\'envoyer l\'e-mail. Veuillez vérifier la configuration d\'envoi ou réessayer.']);
+        }
+
+        return redirect()->route('paroisse.verify-otp.form')->with([
+            'paroisse_email' => $paroisse->email,
+            'email' => $paroisse->email,
+            'success' => 'Un code de vérification a été envoyé à l\'adresse e-mail de votre paroisse.',
+        ]);
+    }
+
+    /**
+     * Affiche le formulaire de vérification OTP (Paroisse)
+     */
+    public function showVerifyOtpForm()
+    {
+        $email = session('paroisse_email') ?? session('email') ?? old('email');
+
+        if (! $email) {
+            return redirect()->route('paroisse.forgot-password.form');
+        }
+
+        session()->flash('paroisse_email', $email);
+        session()->flash('email', $email);
+
+        return view('paroisse.auth.verify_otp', compact('email'));
+    }
+
+    /**
+     * Vérifie le code OTP saisi (Paroisse)
+     */
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|digits:6',
+        ], [
+            'otp.required' => 'Le code OTP est obligatoire.',
+            'otp.digits' => 'Le code OTP doit comporter exactement 6 chiffres.',
+        ]);
+
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->first();
+
+        if (! $record || ! Hash::check($request->otp, $record->token)) {
+            return back()->withInput()->with('paroisse_email', $request->email)->with('email', $request->email)->withErrors(['otp' => 'Code OTP invalide ou expiré.']);
+        }
+
+        // Vérifier si le token a expiré (15 minutes)
+        if (Carbon::parse($record->created_at)->addMinutes(15)->isPast()) {
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+            return back()->withInput()->with('paroisse_email', $request->email)->with('email', $request->email)->withErrors(['otp' => 'Le code OTP a expiré. Veuillez en demander un nouveau.']);
+        }
+
+        return redirect()->route('paroisse.reset-password.form')->with([
+            'paroisse_email' => $request->email,
+            'email' => $request->email,
+        ]);
+    }
+
+    /**
+     * Affiche le formulaire de réinitialisation de mot de passe (Paroisse)
+     */
+    public function showResetPasswordForm()
+    {
+        $email = session('paroisse_email') ?? session('email') ?? old('email');
+
+        if (! $email) {
+            return redirect()->route('paroisse.forgot-password.form');
+        }
+
+        session()->flash('paroisse_email', $email);
+        session()->flash('email', $email);
+
+        return view('paroisse.auth.reset_password', compact('email'));
+    }
+
+    /**
+     * Réinitialise le mot de passe de la paroisse
+     */
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:paroisses,email',
+            'password' => [
+                'required',
+                'confirmed',
+                'min:8',
+                'regex:/[a-z]/',      // Au moins une minuscule
+                'regex:/[A-Z]/',      // Au moins une majuscule
+                'regex:/[0-9]/',      // Au moins un chiffre
+            ],
+        ], [
+            'email.exists' => 'Aucune paroisse trouvée avec cet e-mail.',
+            'password.required' => 'Le mot de passe est obligatoire.',
+            'password.min' => 'Le mot de passe doit comporter au moins 8 caractères.',
+            'password.confirmed' => 'Les deux mots de passe ne correspondent pas.',
+            'password.regex' => 'Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre.',
+        ]);
+
+        $paroisse = Paroisse::where('email', $request->email)->firstOrFail();
+        $paroisse->password = Hash::make($request->password);
+        $paroisse->save();
+
+        // Supprimer le token après réinitialisation
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Le mot de passe de votre paroisse a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.',
+            'redirect_url' => route('paroisse.login'),
+        ]);
     }
 }

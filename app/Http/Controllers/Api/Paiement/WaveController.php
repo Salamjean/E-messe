@@ -14,12 +14,16 @@ use Carbon\Carbon;
 // use App\Services\FirebaseNotificationService;
 use App\Notifications\PaiementSuccessNotification;
 use App\Notifications\PaiementEchecNotification;
+use App\Services\WaveService;
 
 class WaveController extends Controller
 {
-    /**
-     * Initier un paiement Wave pour une messe
-     */
+    protected $waveService;
+
+    public function __construct(WaveService $waveService)
+    {
+        $this->waveService = $waveService;
+    }
 
     /**
      * Obtenir le checkout_url Wave pour initier un paiement
@@ -27,7 +31,7 @@ class WaveController extends Controller
     public function checkoutUrl(Request $request): JsonResponse
     {
         $request->validate([
-            // 'messe_id' => 'required|exists:messes,id', 
+            'messe_id' => 'required|exists:messes,id', 
             'montant'  => 'required|numeric|min:100',
         ]);
 
@@ -37,80 +41,64 @@ class WaveController extends Controller
             // 🔹 Récupérer la messe 
             $messe = Messe::findOrFail($request->messe_id);
 
-
             // 🔹 Générer une référence unique 
             $reference = 'MESSE_WAVE_' . time() . '_' . $user->id;
 
             // 🔹 Créer le paiement localement 
             $paiement = Paiement::create([
-                'messe_id' => $messe->id,
-                'user_id'  => $user->id,
-                'reference'=> $reference,
-                'montant'  => $request->montant,
-                'devise'   => 'XOF',
-                'methode'  => 'wave',
-                'statut'   => 'en_attente',
+                'messe_id'  => $messe->id,
+                'user_id'   => $user->id,
+                'reference' => $reference,
+                'montant'   => $request->montant,
+                'devise'    => 'XOF',
+                'methode'   => 'wave',
+                'statut'    => 'en_attente',
             ]);
 
             // 🔹 URLs de redirection
-            $baseUrl = 'https://sancta-missa.com';
-            $successUrl = $baseUrl . '/paiement/wave/success?ref=' . $reference;
-            $errorUrl   = $baseUrl . '/paiement/wave/error?ref=' . $reference;
+            $successUrl = route('wave.success', ['ref' => $reference]);
+            $errorUrl   = route('wave.error', ['ref' => $reference]);
 
-            // 🔹 Requête vers l’API Wave
-            $response = Http::withOptions(['verify' => false])
-                ->withHeaders([
-                    'Authorization' => 'Bearer ' . env('WAVE_API_KEY'),
-                    'Content-Type'  => 'application/json',
-                ])
-                ->post('https://api.wave.com/v1/checkout/sessions', [
-                    'amount'      => (string) $request->montant,
-                    'currency'    => 'XOF',
-                    'success_url' => $successUrl,
-                    'error_url'   => $errorUrl,
-                ]);
+            // 🔹 Session Wave via WaveService
+            $result = $this->waveService->createCheckoutSession(
+                $request->montant,
+                'XOF',
+                $reference,
+                $successUrl,
+                $errorUrl,
+                [
+                    'messe_id'  => $messe->id,
+                    'user_id'   => $user->id,
+                    'reference' => $reference,
+                ]
+            );
 
-            $data = $response->json();
-
-            // 🔹 Si la requête a échoué
-            if (!$response->successful()) {
-                Log::error('Erreur Wave API: ' . json_encode($data));
+            if (!$result['success'] || empty($result['wave_launch_url'])) {
+                Log::error('Erreur Wave API checkoutUrl: ' . json_encode($result));
 
                 $paiement->update(['statut' => 'en_attente']); 
                 $messe->update(['statut' => 'en_attente_paiement']); 
 
                 return response()->json([
                     'message' => 'Erreur lors de la création de la session de paiement.',
-                    'details' => $data['message'] ?? 'Erreur inconnue.',
+                    'details' => $result['message'] ?? 'Erreur inconnue.',
                 ], 400);
-            }
-
-            // 🔹 Vérifier que le lien de paiement existe
-            if (!isset($data['wave_launch_url'])) {
-                Log::error('Wave launch URL manquant: ' . json_encode($data));
-
-                $paiement->update(['statut' => 'en_attente']);
-                $messe->update(['statut' => 'en_attente_paiement']);
-
-                return response()->json([
-                    'message' => 'URL de paiement non générée par Wave.',
-                    'details' => $data,
-                ], 500);
             }
 
             // 🔹 Mise à jour du paiement avec les données de la transaction
             $paiement->update([
-                'transaction_id'      => $data['id'] ?? null,
-                'donnees_transaction' => $data,
+                'transaction_id'      => $result['session_id'] ?? null,
+                'donnees_transaction' => $result['data'] ?? [],
             ]);
 
-            // $messe->update(['statut' => 'en attente']);
             return response()->json([
-                'reference'    => $reference,
-                'checkout_url' => $data['wave_launch_url'],
-                'session_id'   => $data['id'] ?? null,
-                'statut'       => 'success',
-                'message'      => 'URL de paiement générée avec succès.',
+                'reference'       => $reference,
+                'checkout_url'    => $result['wave_launch_url'],
+                'wave_launch_url' => $result['wave_launch_url'],
+                'session_id'      => $result['session_id'] ?? null,
+                'statut'          => 'success',
+                'status'          => 'success',
+                'message'         => 'URL de paiement générée avec succès.',
             ], 200);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -155,7 +143,7 @@ class WaveController extends Controller
         $request->validate([
             'messe_id' => 'required|exists:messes,id',
             'montant' => 'required|numeric|min:100',
-            'telephone' => 'required|string|min:8',
+            'telephone' => 'nullable|string',
         ]);
 
         $user = $request->user();
@@ -177,32 +165,34 @@ class WaveController extends Controller
 
             // 2️⃣ Préparer les URLs
             $successUrl = route('wave.success', ['ref' => $reference]);
-            $errorUrl   = route('wave.error', ['ref' => $reference]);   // redirection en cas d'échec
+            $errorUrl   = route('wave.error', ['ref' => $reference]);
 
-            // 3️⃣ Appel API Wave
-            $response = Http::withOptions(['verify' => false])
-                ->withHeaders([
-                    'Authorization' => 'Bearer ' . env('WAVE_API_KEY'),
-                    'Content-Type' => 'application/json',
-                ])
-                ->post('https://api.wave.com/v1/checkout/sessions', [
-                    'amount' => (string) $request->montant,
-                    'currency' => 'XOF',
-                    'success_url' => $successUrl,
-                    'error_url' => $errorUrl,
-                    'metadata' => [
-                        'messe_id' => $messe->id,
-                        'user_id' => $user->id,
-                        'reference' => $reference,
-                    ],
-                ]);
+            // 3️⃣ Appel via WaveService
+            $result = $this->waveService->createCheckoutSession(
+                $request->montant,
+                'XOF',
+                $reference,
+                $successUrl,
+                $errorUrl,
+                [
+                    'messe_id' => $messe->id,
+                    'user_id' => $user->id,
+                    'reference' => $reference,
+                ]
+            );
 
-            $data = $response->json();
+            if (!$result['success'] || empty($result['wave_launch_url'])) {
+                Log::error('Erreur Wave API initier: ' . json_encode($result));
+                return response()->json([
+                    'message' => 'Erreur lors de l’initiation du paiement Wave',
+                    'details' => $result['message'] ?? 'Erreur inconnue',
+                ], 400);
+            }
 
             // 4️⃣ Sauvegarde des infos Wave en base
             $paiement->update([
-                'transaction_id' => $data['id'] ?? null,
-                'donnees_transaction' => $data,
+                'transaction_id' => $result['session_id'] ?? null,
+                'donnees_transaction' => $result['data'] ?? [],
             ]);
 
             // 5️⃣ Retour JSON au front-end
@@ -210,7 +200,9 @@ class WaveController extends Controller
                 'message' => 'Paiement initié avec succès',
                 'paiement' => $paiement,
                 'wave' => [
-                    'checkout_url' => $data['checkout_url'] ?? null,
+                    'checkout_url' => $result['wave_launch_url'],
+                    'wave_launch_url' => $result['wave_launch_url'],
+                    'session_id'   => $result['session_id'] ?? null,
                     'success_url'  => $successUrl,
                     'error_url'    => $errorUrl,
                 ],
@@ -271,34 +263,54 @@ class WaveController extends Controller
     {
         Log::info('Webhook Wave reçu : ', $request->all());
 
-        // La structure des webhooks Wave enveloppe souvent les données
-        $data = $request->input('data'); 
-        $transactionId = $data['id'] ?? null;
-        $status = $data['status'] ?? null;
+        // La structure des webhooks Wave enveloppe souvent les données dans 'data'
+        $data = $request->input('data') ?? $request->all(); 
+        $transactionId = $data['id'] ?? $request->input('id');
+        $clientReference = $data['client_reference'] ?? $request->input('client_reference');
+        $status = $data['payment_status'] ?? $data['status'] ?? $request->input('status');
+        $checkoutStatus = $data['checkout_status'] ?? null;
+        $eventType = $request->input('type');
 
-        if (!$transactionId) {
-            Log::warning('Webhook Wave reçu sans ID de transaction.');
-            return response()->json(['message' => 'ID de transaction manquant'], 400);
+        if (!$transactionId && !$clientReference) {
+            Log::warning('Webhook Wave reçu sans ID de transaction ni client_reference.');
+            return response()->json(['message' => 'Identifiant de transaction manquant'], 400);
         }
 
-        // On charge l'utilisateur pour pouvoir lui envoyer la notification
-        $paiement = Paiement::with('user', 'messe')->where('transaction_id', $transactionId)->first();
+        // On cherche le paiement par son transaction_id (ou par sa référence de messe)
+        $paiement = Paiement::with('user', 'messe')
+            ->where(function ($query) use ($transactionId, $clientReference) {
+                if ($transactionId) {
+                    $query->where('transaction_id', $transactionId);
+                }
+                if ($clientReference) {
+                    $query->orWhere('reference', $clientReference);
+                }
+            })
+            ->first();
 
         if (!$paiement) {
-            Log::warning('⚠️ Webhook reçu pour transaction inconnue : ' . $transactionId);
+            Log::warning("⚠️ Webhook reçu pour transaction inconnue : {$transactionId} / {$clientReference}");
             return response()->json(['message' => 'Transaction non reconnue']);
         }
         
-        // Évite de traiter plusieurs fois le même webhook (si le statut est déjà final)
+        // Évite de traiter plusieurs fois le même webhook
         if (in_array($paiement->statut, ['paye', 'echec'])) {
-            Log::info("ℹ️ Webhook pour la transaction {$transactionId} déjà traitée. Statut actuel: {$paiement->statut}.");
+            Log::info("ℹ️ Webhook pour paiement #{$paiement->id} déjà traité. Statut: {$paiement->statut}.");
             return response()->json(['message' => 'Webhook déjà traité']);
         }
 
+        $isSuccess = in_array($status, ['successful', 'succeeded', 'complete', 'paid']) 
+            || $checkoutStatus === 'complete' 
+            || $eventType === 'checkout.session.completed';
+
+        $isFailed = in_array($status, ['failed', 'cancelled', 'expired']) 
+            || $eventType === 'checkout.session.failed';
+
         // --- CAS 1 : PAIEMENT RÉUSSI ---
-        if ($status === 'successful') {
+        if ($isSuccess) {
             $paiement->update([
                 'statut' => 'paye',
+                'methode' => 'wave',
                 'date_paiement' => Carbon::now(),
                 'donnees_transaction' => $request->all(),
             ]);
@@ -315,9 +327,10 @@ class WaveController extends Controller
             Log::info("✅ Paiement Wave réussi pour la messe #{$paiement->messe_id}");
 
         // --- CAS 2 : PAIEMENT ÉCHOUÉ ---
-        } elseif ($status === 'failed') {
+        } elseif ($isFailed) {
             $paiement->update([
                 'statut' => 'echec',
+                'methode' => 'wave',
                 'donnees_transaction' => $request->all(),
             ]);
 
@@ -337,16 +350,20 @@ class WaveController extends Controller
     }
     
     /**
-     * Vérifier le statut d’une transaction sur Wave
+     * Vérifier le statut d’une session de paiement sur Wave
      */
     public function verifier($id): JsonResponse
     {
         try {
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . env('WAVE_API_KEY'),
-            ])->get("https://api.wave.com/v1/checkout/sessions/{$id}");
+            $data = $this->waveService->verifyBySessionId($id);
 
-            return response()->json($response->json(), 200);
+            if ($data) {
+                return response()->json($data, 200);
+            }
+
+            return response()->json([
+                'message' => 'Session de paiement introuvable ou erreur de communication',
+            ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Erreur lors de la vérification du paiement',
@@ -357,47 +374,12 @@ class WaveController extends Controller
 
     public function success(Request $request)
     {
-        $ref = $request->query('ref');
-
-        // 🔹 On récupère le paiement lié à la référence
-        $paiement = Paiement::where('reference', $ref)->first();
-
-        if ($paiement) {
-            // Marquer le paiement comme "paye"
-            $paiement->update(['statut' => 'paye']);
-
-            // Mettre la messe en "en attente"
-            $messe = $paiement->messe;
-            if ($messe) {
-                $messe->update(['statut' => 'en attente']);
-            }
-        }
-
-        // 🔹 Rediriger l'utilisateur vers ton site
-        return redirect()->away("https://sancta-missa.com/api/messes/");
+        return app(\App\Http\Controllers\Redirectionpaiement\RedirectController::class)->success($request);
     }
-
 
     public function error(Request $request)
     {
-        $ref = $request->query('ref');
-
-        // 🔹 On récupère le paiement lié à la référence
-        $paiement = Paiement::where('reference', $ref)->first();
-
-        if ($paiement) {
-            // Marquer le paiement comme "en_attente" (échec ou annulé)
-            $paiement->update(['statut' => 'en_attente']);
-
-            // Remettre la messe en "en_attente_paiement"
-            $messe = $paiement->messe;
-            if ($messe) {
-                $messe->update(['statut' => 'en_attente_paiement']);
-            }
-        }
-
-        // 🔹 Rediriger l'utilisateur vers ton site
-        return redirect()->away("https://sancta-missa.com/api/messes/");
+        return app(\App\Http\Controllers\Redirectionpaiement\RedirectController::class)->error($request);
     }
 
 

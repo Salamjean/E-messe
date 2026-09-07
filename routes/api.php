@@ -34,10 +34,10 @@ Route::get('/paiement/wave/verifier/{id}', [WaveController::class, 'verifier']);
 // Notification CinetPay pour les reversements (payouts)
 Route::post('/cinetpay/notify', [\App\Http\Controllers\Paroisse\Paiement\ParoissePaiement::class, 'handleNotification'])->name('cinetpay.notify');
 
-Route::post('/test-firebase', [TestController::class, 'testFirebaseNotification']);
+// Route::post('/test-firebase', [TestController::class, 'testFirebaseNotification']);
 // ✅ Routes pour redirection après paiement
-Route::get('/paiement/wave/success', [WaveController::class, 'success'])->name('wave.success');
-Route::get('/paiement/wave/error', [WaveController::class, 'error'])->name('wave.error');
+Route::get('/paiement/wave/success', [WaveController::class, 'success']);
+Route::get('/paiement/wave/error', [WaveController::class, 'error']);
 
 Route::get('/test-mail', function () {
     Mail::raw('Test email Laravel', function ($m) {
@@ -145,11 +145,11 @@ Route::middleware(['auth:sanctum', 'user.status'])->group(function () {
 
     });
 
-    // Route pour les paiement
+    // Route pour les paiement (Wave)
     Route::prefix('paiement')->group(function () {
+        Route::post('/initier', [WaveController::class, 'checkoutUrl']);
         Route::post('/wave/checkout-url', [WaveController::class, 'checkoutUrl']);
         Route::post('/wave/initier', [WaveController::class, 'initier']);
-
     });
 
     Route::prefix('paiement/cinetpay')->group(function () {

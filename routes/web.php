@@ -172,6 +172,16 @@ Route::middleware('admin')->prefix('admin')->group(function () {
 Route::prefix('parish')->group(function () {
     Route::get('/login', [AuthenticateParoisse::class, 'login'])->name('paroisse.login');
     Route::post('/login', [AuthenticateParoisse::class, 'handleLogin'])->name('paroisse.handleLogin');
+
+    // Mot de passe oublié (Paroisse)
+    Route::get('/forgot-password', [AuthenticateParoisse::class, 'showForgotPasswordForm'])->name('paroisse.forgot-password.form');
+    Route::post('/forgot-password', [AuthenticateParoisse::class, 'forgotPassword'])->name('paroisse.forgot-password.send');
+
+    Route::get('/verify-otp', [AuthenticateParoisse::class, 'showVerifyOtpForm'])->name('paroisse.verify-otp.form');
+    Route::post('/verify-otp', [AuthenticateParoisse::class, 'verifyOtp'])->name('paroisse.verify-otp.check');
+
+    Route::get('/reset-password', [AuthenticateParoisse::class, 'showResetPasswordForm'])->name('paroisse.reset-password.form');
+    Route::post('/reset-password', [AuthenticateParoisse::class, 'resetPassword'])->name('paroisse.reset-password.update');
 });
 
 Route::middleware('paroisse')->prefix('parish')->group(function () {
