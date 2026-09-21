@@ -316,13 +316,13 @@ class MesseController extends Controller
                 'dates_selectionnees' => $datesJson,
             ]);
 
-            if ($messe->user) {
-                try {
-                    $messe->user->notify(new MesseEnAttentePaiementNotification($messe));
-                } catch (\Exception $e) {
-                    Log::error('Échec de l\'envoi de la notification en attente de paiement pour la messe #'.$messe->id.': '.$e->getMessage());
-                }
-            }
+            // if ($messe->user) {
+            //     try {
+            //         $messe->user->notify(new MesseEnAttentePaiementNotification($messe));
+            //     } catch (\Exception $e) {
+            //         Log::error('Échec de l\'envoi de la notification en attente de paiement pour la messe #'.$messe->id.': '.$e->getMessage());
+            //     }
+            // }
 
             // $reference = 'MESSE_API_'.time().'_'.$messe->id;
 

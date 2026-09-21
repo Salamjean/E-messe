@@ -44,11 +44,11 @@ class RedirectController extends Controller
             if ($messe) {
                 $messe->update(['statut' => 'en attente']);
 
-                // Notification par email
+                // Notification utilisateur
                 if ($messe->user && $messe->user->emailNotif) {
                     try {
-                        $messe->user->notify(new PaiementSuccessNotification($messe));
-                    } catch (\Exception $e) {
+                        $messe->user->notify(new PaiementSuccessNotification($paiement));
+                    } catch (\Throwable $e) {
                         Log::error("Échec notification paiement (Messe #{$messe->id}): " . $e->getMessage());
                     }
                 }

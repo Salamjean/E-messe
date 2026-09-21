@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use Google\Client as Google_Client;
+use Google\Auth\Credentials\ServiceAccountCredentials;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -13,7 +13,6 @@ class FcmService
 
     public function __construct()
     {
-        $this->projectId = env('FIREBASE_PROJECT_ID');
         $this->initializeAuth();
     }
 
@@ -22,20 +21,22 @@ class FcmService
         $credentialsPath = storage_path('app/firebase_credentials.json');
         
         if (!file_exists($credentialsPath)) {
-            throw new \Exception('Fichier de credentials Firebase manquant: ' . $credentialsPath);
+            Log::warning('Fichier de credentials Firebase manquant: ' . $credentialsPath);
+            return;
         }
 
         try {
-            $client = new Google_Client();
-            $client->setAuthConfig($credentialsPath);
-            $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
-            $client->fetchAccessTokenWithAssertion();
+            $credentials = new ServiceAccountCredentials(
+                'https://www.googleapis.com/auth/firebase.messaging',
+                $credentialsPath
+            );
+            $token = $credentials->fetchAuthToken();
             
-            $this->accessToken = $client->getAccessToken()['access_token'];
+            $this->accessToken = $token['access_token'] ?? null;
+            $this->projectId = env('FIREBASE_PROJECT_ID') ?: $credentials->getProjectId();
             
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Erreur d\'authentification FCM: ' . $e->getMessage());
-            throw $e;
         }
     }
 
@@ -43,6 +44,11 @@ class FcmService
     {
         if (empty($token)) {
             Log::warning('Token FCM vide');
+            return null;
+        }
+
+        if (empty($this->accessToken) || empty($this->projectId)) {
+            Log::error('Impossible d\'envoyer la notification FCM : accessToken ou projectId manquant');
             return null;
         }
 
@@ -98,7 +104,7 @@ class FcmService
             Log::info('Notification FCM envoyée avec succès');
             return $response->json();
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Exception FCM: ' . $e->getMessage());
             return null;
         }

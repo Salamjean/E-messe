@@ -13,18 +13,6 @@ use PDF;
 
 class DemandeController extends Controller
 {
-    // public function index()
-    // {
-    //     $today = now()->startOfDay();
-
-    //     $filteredMessess = Auth::guard('paroisse')->user()->messes()
-    //         ->where('statut', 'confirmee')
-    //         ->whereDate('date_souhaitee', '<=', $today)
-    //         ->orderBy('created_at', 'desc')
-    //         ->get();
-
-    //     return view('paroisse.demande.index', compact('filteredMessess'));
-    // }
 
     public function index(Request $request)
     {
@@ -308,15 +296,6 @@ class DemandeController extends Controller
         }
     }
 
-    // public function validate()
-    // {
-    //     $filteredMessess = Auth::guard('paroisse')->user()->messes()
-    //         ->orderBy('created_at', 'desc')
-    //         ->where('statut', 'en attente')
-    //         ->get();
-
-    //     return view('paroisse.demande.validate', compact('filteredMessess'));
-    // }
 
     public function validate(Request $request)
     {
@@ -520,7 +499,7 @@ class DemandeController extends Controller
             try {
                 // Notification en base + FCM automatique
                 $messe->user->notify(new \App\Notifications\MesseConfirmeeNotification($messe));
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 \Log::error("Échec notification messe #{$messe->id}: ".$e->getMessage());
             }
         }
@@ -554,7 +533,7 @@ class DemandeController extends Controller
                 if ($messe->user) {
                     try {
                         $messe->user->notify(new \App\Notifications\MesseConfirmeeNotification($messe));
-                    } catch (\Exception $e) {
+                    } catch (\Throwable $e) {
                         \Log::error("Échec notification groupée messe #{$messe->id}: ".$e->getMessage());
                     }
                 }

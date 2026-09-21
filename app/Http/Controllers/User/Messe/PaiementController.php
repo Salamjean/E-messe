@@ -168,7 +168,7 @@ class PaiementController extends Controller
 
                 if ($messe->user && $messe->user->emailNotif) {
                     try {
-                        $messe->user->notify(new PaiementSuccessNotification($messe));
+                        $messe->user->notify(new PaiementSuccessNotification($paiement));
                     } catch (\Exception $e) {
                         Log::error("Échec de notification de paiement (Messe #{$messe->id}): " . $e->getMessage());
                     }

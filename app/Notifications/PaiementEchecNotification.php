@@ -14,9 +14,13 @@ class PaiementEchecNotification extends Notification
 
     protected $paiement;
 
-    public function __construct(Paiement $paiement)
+    public function __construct($paiement)
     {
-        $this->paiement = $paiement;
+        if ($paiement instanceof \App\Models\Messe) {
+            $this->paiement = $paiement->paiements()->latest()->first() ?? $paiement;
+        } else {
+            $this->paiement = $paiement;
+        }
     }
 
     public function via($notifiable)
